@@ -8,6 +8,10 @@ const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
+console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'set' : 'NOT SET');
+console.log('JWT_EXPIRE:', process.env.JWT_EXPIRE);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+
 const app = express();
 
 // CORS FIRST - must be before rate limiter so error responses have headers

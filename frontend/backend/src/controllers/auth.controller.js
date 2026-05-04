@@ -4,11 +4,11 @@ const User = require('../models/User');
 const { validationResult } = require('express-validator');
 
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '7d' });
+  return jwt.sign({ userId }, process.env.JWT_SECRET || 'fallback-secret-key', { expiresIn: '7d' });
 };
 
 const generateResetToken = (userId) => {
-  return jwt.sign({ userId, type: 'reset' }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  return jwt.sign({ userId, type: 'reset' }, process.env.JWT_SECRET || 'fallback-secret-key', { expiresIn: '1h' });
 };
 
 const getClientIp = (req) => {
