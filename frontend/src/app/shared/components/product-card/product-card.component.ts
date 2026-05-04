@@ -79,10 +79,11 @@ import { QuickViewComponent } from '../quick-view/quick-view.component';
         <!-- Product Image -->
         <a [routerLink]="['/product', product.slug]" class="block h-full p-5">
           <img 
-            [src]="product.media.images[0] | imageUrl" 
+            [src]="(product.media?.images?.[0] || '') | imageUrl" 
             [alt]="product.name" 
             loading="lazy"
             class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500 ease-smooth"
+            onerror="this.src='https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image'"
           >
         </a>
 
