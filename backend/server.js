@@ -8,25 +8,15 @@ const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
+console.log('ENV CHECK - JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'NOT SET');
+console.log('ENV CHECK - NODE_ENV:', process.env.NODE_ENV);
+console.log('ENV CHECK - FRONTEND_URL:', process.env.FRONTEND_URL);
+
 const app = express();
 
-// CORS FIRST - must be before rate limiter so error responses have headers
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-device-id');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  if (req.method === 'OPTIONS') return res.status(204).end();
-  next();
-});
-
-// CORS configuration - supports both dev and prod
-const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? [process.env.FRONTEND_URL].filter(Boolean)
-  : ['http://localhost:4200', 'http://localhost:4201'];
-
+// Simplified CORS - allows any origin for production
 app.use(cors({
-  origin: allowedOrigins,
+  origin: true,
   credentials: true
 }));
 

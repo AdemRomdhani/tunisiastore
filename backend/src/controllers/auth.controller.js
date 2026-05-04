@@ -4,11 +4,11 @@ const User = require('../models/User');
 const { validationResult } = require('express-validator');
 
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
+  return jwt.sign({ userId }, process.env.JWT_SECRET || 'fallback-secret-key', { expiresIn: '7d' });
 };
 
 const generateResetToken = (userId) => {
-  return jwt.sign({ userId, type: 'reset' }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  return jwt.sign({ userId, type: 'reset' }, process.env.JWT_SECRET || 'fallback-secret-key', { expiresIn: '1h' });
 };
 
 const getClientIp = (req) => {
@@ -197,7 +197,7 @@ exports.resetPassword = async (req, res) => {
   try {
     const { token, password } = req.body;
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
     if (decoded.type !== 'reset') {
       return res.status(400).json({ success: false, message: 'Invalid token' });
     }
@@ -223,7 +223,7 @@ exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.body;
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
 
     const user = await User.findByIdAndUpdate(
       decoded.userId,

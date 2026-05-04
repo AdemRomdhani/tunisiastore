@@ -13,7 +13,7 @@ async function getUserFromRequest(req) {
   
   if (token) {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
       const User = require('../models/User');
       return await User.findById(decoded.userId).select('-password');
     } catch (e) {}
