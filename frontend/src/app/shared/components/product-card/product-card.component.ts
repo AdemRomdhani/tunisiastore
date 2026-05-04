@@ -283,14 +283,7 @@ export class ProductCardComponent {
     } else {
       this.wishlistService.addToWishlist(productId).subscribe({
         next: () => this.wishlistService.loadWishlist(),
-        error: (err) => {
-          if (err.error?.message === 'Product already in wishlist') {
-            this.wishlistService.loadWishlist();
-          } else {
-            console.error('Wishlist error:', err);
-            this.wishlistService.loadWishlist();
-          }
-        }
+        error: () => this.wishlistService.loadWishlist() // Silent fail - just reload
       });
     }
   }
