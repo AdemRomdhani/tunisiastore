@@ -4,7 +4,7 @@ const User = require('../models/User');
 const { validationResult } = require('express-validator');
 
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '7d' });
 };
 
 const generateResetToken = (userId) => {
