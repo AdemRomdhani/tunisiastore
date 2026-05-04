@@ -10,12 +10,18 @@ const transporter = nodemailer.createTransport({
   },
   debug: true,
   logger: true,
-  connectionTimeout: 10000
+  connectionTimeout: 10000,
+  tls: {
+    rejectUnauthorized: false
+  }
 });
+
+console.log('📧 [Email] Transporter created with:', { user: process.env.SMTP_USER, port: 465, secure: true });
 
 transporter.verify(function(error, success) {
   if (error) {
     console.log('📧 [Email] SMTP connection FAILED:', error.message);
+    console.log('📧 [Email] Full error:', error);
   } else {
     console.log('📧 [Email] SMTP connection OK');
   }
