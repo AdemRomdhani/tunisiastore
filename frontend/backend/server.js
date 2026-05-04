@@ -14,29 +14,9 @@ console.log('NODE_ENV:', process.env.NODE_ENV);
 
 const app = express();
 
-// CORS FIRST - must be before rate limiter so error responses have headers
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  const allowedOrigins = [
-    'http://localhost:4200',
-    'http://localhost:4201',
-    'https://tunisiastore.onrender.com'
-  ];
-  if (allowedOrigins.includes(origin) {
-    res.header('Access-Control-Allow-Origin', origin);
-  } else {
-    res.header('Access-Control-Allow-Origin', 'https://tunisiastore.onrender.com');
-  }
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-device-id');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  if (req.method === 'OPTIONS') return res.status(204).end();
-  next();
-});
-
-// CORS configuration - supports both dev and prod
+// Simplified CORS - single middleware
 app.use(cors({
-  origin: ['http://localhost:4200', 'http://localhost:4201', 'https://tunisiastore.onrender.com'],
+  origin: true,
   credentials: true
 }));
 
