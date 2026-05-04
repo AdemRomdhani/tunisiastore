@@ -1,15 +1,14 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const crypto = require('crypto');
 
-// Create uploads directory if not exists
-const uploadDir = path.join(__dirname, '../../uploads/products');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-// Map of safe extensions by mimetype
 const safeExtensions = {
   'image/jpeg': '.jpg',
   'image/png': '.png',
@@ -17,31 +16,58 @@ const safeExtensions = {
   'image/gif': '.gif'
 };
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    // Generate UUID-like random filename
-    const uniqueId = crypto.randomUUID();
-    // Get safe extension based on mimetype, default to .jpg
-    const ext = safeExtensions[file.mimetype] || '.jpg';
-    cb(null, file.fieldname + '-' + uniqueId + ext);
+let storage;
+
+if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
+  console.log('📷 Using Cloudinary for image uploads');
+  
+  storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'tunisia-store',
+      allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+      transformation: [{ width: 1200, height: 1200, crop: 'limit', quality: 'auto' }]
+    },
+    filename: (req, file, cb) => {
+      const uniqueId = crypto.randomUUID();
+      const ext = safeExtensions[file.mimetype] || '.jpg';
+      cb(null, file.fieldname + '-' + uniqueId + ext);
+    }
+  });
+} else {
+  console.log('📷 Using local storage for image uploads (Cloudinary not configured)');
+  const path = require('path');
+  const fs = require('fs');
+  
+  const uploadDir = path.join(__dirname, '../../uploads/products');
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
   }
-});
+  
+  storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueId = crypto.randomUUID();
+      const ext = safeExtensions[file.mimetype] || '.jpg';
+      cb(null, file.fieldname + '-' + uniqueId + ext);
+    }
+  });
+}
 
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
-    files: 10 // Max 10 files per request
+    fileSize: 5 * 1024 * 1024,
+    files: 10
   },
   fileFilter: (req, file, cb) => {
-    // Only allow safe image mimetypes
-    if (safeExtensions[file.mimetype]) {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed.'), false);
+      cb(new Error('Format d\'image non autorisé. Utilisez JPG, PNG, WebP ou GIF.'));
     }
   }
 });

@@ -5,6 +5,7 @@ export const environment = {
   currency: 'TND',
   currencySymbol: 'DT',
   freeShippingThreshold: 200,
+  cloudinaryCloudName: 'your_cloud_name',
   contact: {
     phone: '+216 70 000 000',
     email: 'contact@tunisiastore.tn',
