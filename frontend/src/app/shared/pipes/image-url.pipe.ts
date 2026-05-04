@@ -17,15 +17,16 @@ export class ImageUrlPipe implements PipeTransform {
       return `https://res.cloudinary.com/${environment.cloudinaryCloudName}/image/upload/${value}`;
     }
     
-    // If it's a local upload path, prepend the backend API URL
-    if (value.startsWith('/uploads')) {
-      return `${environment.apiUrl.replace('/api', '')}${value}`;
+    // Handle Cloudinary public_id patterns (alphanumeric with underscores/dashes)
+    const cloudName = environment.cloudinaryCloudName;
+    if (cloudName && cloudName !== 'your_cloud_name' && /^[a-zA-Z0-9_-]+$/.test(value)) {
+      return `https://res.cloudinary.com/${cloudName}/image/upload/tunisia-store/${value}`;
     }
     
-    // For any other value, check if it's a known pattern and try Cloudinary
-    const cloudName = environment.cloudinaryCloudName;
-    if (cloudName && cloudName !== 'your_cloud_name') {
-      return `https://res.cloudinary.com/${cloudName}/image/upload/${value}`;
+    // Local uploads - old format that won't work on Render (no persistent storage)
+    // Return placeholder for these
+    if (value.includes('uploads') || value.startsWith('products/') || value.startsWith('images-')) {
+      return 'https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image';
     }
     
     // Fallback to placeholder
