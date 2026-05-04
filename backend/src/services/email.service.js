@@ -120,9 +120,13 @@ class EmailService {
     }
   }
 
-  async sendVerificationEmail(user, token) {
+async sendVerificationEmail(user, token) {
+    console.log('📧 [Email] Attempting to send verification email to:', user.email);
+    console.log('📧 SMTP_USER set:', !!process.env.SMTP_USER);
+    console.log('📧 SMTP_PASS length:', process.env.SMTP_PASS ? process.env.SMTP_PASS.length : 0);
+    
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.log('📧 [Email] Verification email skipped - SMTP not configured');
+      console.log('📧 [Email] Skipped - SMTP not configured');
       return;
     }
     

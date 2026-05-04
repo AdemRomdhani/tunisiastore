@@ -54,7 +54,7 @@ import { AuthService } from '../../../core/services/auth.service';
             <button 
               type="submit"
               [disabled]="loading()"
-              class="w-full btn-primary py-3"
+              class="w-full btn-primary py-3 relative z-10"
             >
               @if (loading()) {
                 Inscription en cours...
