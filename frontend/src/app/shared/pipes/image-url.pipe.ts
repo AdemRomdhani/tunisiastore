@@ -10,25 +10,31 @@ export class ImageUrlPipe implements PipeTransform {
     if (!value || !value.toString().trim()) return 'https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image';
     
     let url = value.trim();
+    const cloudName = environment.cloudinaryCloudName;
     
-    // Fix doubled URLs - find the actual Cloudinary URL after the duplication
-    // Pattern: https://res.cloudinary.com/.../image/upload/https://res.cloudinary.com/.../image/upload/v.../xxx.jpg
+    // Fix URLs missing cloud name: res.cloudinary.com/image/upload/xxx -> res.cloudinary.com/ddualyszh/image/upload/xxx
+    if (url.includes('res.cloudinary.com') && !url.includes(`res.cloudinary.com/${cloudName}/image/upload`)) {
+      url = url.replace(
+        /res\.cloudinary\.com\/image\/upload\//,
+        `res.cloudinary.com/${cloudName}/image/upload/`
+      );
+    }
+    
+    // Fix doubled URLs
     if (url.includes('res.cloudinary.com') && url.includes('image/upload/')) {
       const uploads = url.split('/image/upload/');
       if (uploads.length >= 2) {
-        // Take the last part after /image/upload/
         const lastPart = '/image/upload/' + uploads[uploads.length - 1];
-        url = 'https://res.cloudinary.com' + lastPart;
+        url = `https://res.cloudinary.com/${cloudName}` + lastPart;
       }
     }
     
-    // If it's already a full URL, return as-is
-    if (url.startsWith('http')) {
+    // If it's a full URL with cloud name, return it
+    if (url.startsWith('http') && url.includes(`res.cloudinary.com/${cloudName}/image/upload`)) {
       return url;
     }
     
-    // Handle Cloudinary public_id
-    const cloudName = environment.cloudinaryCloudName;
+    // Handle plain public_id
     if (cloudName && cloudName !== 'your_cloud_name') {
       if (url.includes('tunisia-store/') || /^[a-zA-Z0-9_\/-]+$/.test(url)) {
         return `https://res.cloudinary.com/${cloudName}/image/upload/${url}`;
