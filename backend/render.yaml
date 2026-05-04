@@ -1,0 +1,14 @@
+build:
+  command: npm install
+  publish: .
+
+services:
+  - type: web
+    name: tunisiastore-api
+    env: node
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
