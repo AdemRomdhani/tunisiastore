@@ -1,8 +1,5 @@
 build:
-  npm install
-  npm run build
+  command: npm install && npm run build
+  publish: dist/tunisia-store/browser
 
-publish: dist/tunisia-store/browser
-
-cache:
-  - node_modules
+runtime: node:18
