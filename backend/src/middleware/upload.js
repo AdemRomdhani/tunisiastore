@@ -82,12 +82,17 @@ upload.getImageUrl = (file) => {
     return file.path;
   }
   
-  // Cloudinary returns secure_url in the file object
+  // Cloudinary returns secure_url in the file object - use this first
   if (file.secure_url) {
     return file.secure_url;
   }
   
-  // If we have a path/public_id, construct URL
+  // If we have a path that starts with http, return as-is
+  if (file.path && file.path.startsWith('http')) {
+    return file.path;
+  }
+  
+  // If we have a public_id, construct URL
   if (file.path && file.path.includes('tunisia-store')) {
     return `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/${file.path}`;
   }
