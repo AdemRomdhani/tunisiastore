@@ -1,0 +1,406 @@
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { ProductService, Product, ProductFilters } from '../../core/services/product.service';
+import { CategoryService, Category } from '../../core/services/category.service';
+import { CartService } from '../../core/services/cart.service';
+import { SeoService } from '../../core/services/seo.service';
+import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
+import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { environment } from '../../../environments/environment';
+
+@Component({
+  selector: 'app-products',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule, RouterModule, FormsModule, ProductCardComponent, SkeletonComponent, EmptyStateComponent],
+  template: `
+    <div class="container mx-auto px-4 py-8">
+      <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Sidebar Filters -->
+        <aside class="w-full lg:w-64 flex-shrink-0">
+          <div class="bg-surface-50 rounded-2xl shadow-card p-6 sticky top-24">
+            <h3 class="font-bold text-lg text-surface-800 mb-5">Filtres</h3>
+            
+            <!-- Search -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-surface-700 mb-2">Rechercher</label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  [(ngModel)]="searchQuery"
+                  (ngModelChange)="onSearchChange($event)"
+                  placeholder="Nom du produit..."
+                  class="input-field pr-10"
+                >
+                @if (searchQuery()) {
+                  <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="mb-6">
+              <h4 class="font-medium mb-3 text-surface-800">Catégories</h4>
+              <div class="space-y-1 max-h-52 overflow-y-auto py-1">
+                <label class="flex items-center gap-3 cursor-pointer px-2 py-2 rounded-lg hover:bg-surface-100 transition-colors">
+                  <input 
+                    type="radio" 
+                    name="category"
+                    value=""
+                    [checked]="selectedCategory() === ''"
+                    (change)="selectCategory('')"
+                    class="w-4 h-4 text-primary-600 rounded-full border-surface-300 focus:ring-primary-500"
+                  >
+                  <span class="text-sm text-surface-600">Toutes</span>
+                </label>
+                @for (cat of categories(); track cat._id) {
+                  <label class="flex items-center gap-3 cursor-pointer px-2 py-2 rounded-lg hover:bg-surface-100 transition-colors">
+                    <input 
+                      type="radio" 
+                      name="category"
+                      [value]="cat.slug"
+                      [checked]="selectedCategory() === cat.slug"
+                      (change)="selectCategory(cat.slug)"
+                      class="w-4 h-4 text-primary-600 rounded-full border-surface-300 focus:ring-primary-500"
+                    >
+                    <span class="text-sm text-surface-600">{{ cat.name }}</span>
+                  </label>
+                }
+              </div>
+            </div>
+
+            <!-- Price Range -->
+            <div class="mb-6">
+              <h4 class="font-medium mb-3 text-surface-800">Prix (TND)</h4>
+              <div class="flex gap-2">
+                <input 
+                  type="number" 
+                  [(ngModel)]="minPrice"
+                  placeholder="Min"
+                  class="input-field text-sm"
+                >
+                <input 
+                  type="number" 
+                  [(ngModel)]="maxPrice"
+                  placeholder="Max"
+                  class="input-field text-sm"
+                >
+              </div>
+              <button 
+                (click)="applyPriceFilter()"
+                class="btn-secondary w-full mt-3 text-sm"
+              >
+                Appliquer
+              </button>
+            </div>
+
+            <!-- Sort -->
+            <div>
+              <h4 class="font-medium mb-3 text-surface-800">Trier par</h4>
+              <select 
+                [(ngModel)]="sortOrder"
+                (change)="updateSort($event)"
+                class="input-field text-sm"
+              >
+                <option value="-createdAt">Nouveautés</option>
+                <option value="price-asc">Prix: Croissant</option>
+                <option value="price-desc">Prix: Décroissant</option>
+                <option value="rating">Mieux notés</option>
+              </select>
+            </div>
+
+            @if (hasActiveFilters()) {
+              <button 
+                (click)="clearFilters()"
+                class="w-full mt-6 text-primary-600 text-sm font-medium hover:text-primary-700 transition-colors"
+              >
+                Réinitialiser les filtres
+              </button>
+            }
+          </div>
+        </aside>
+
+        <!-- Products Grid -->
+        <div class="flex-1">
+          <!-- Active Bundles Banner -->
+          @if (bundles().length > 0) {
+            <div class="mb-6 animate-fade-in">
+              <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 shadow-card">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h2 class="text-xl font-bold text-white mb-1">Packs & Bundles</h2>
+                    <p class="text-indigo-100 text-sm">Économisez plus avec nos packages!</p>
+                  </div>
+                  <a routerLink="/bundles" class="bg-white text-indigo-600 px-5 py-2.5 rounded-xl font-medium hover:bg-indigo-50 transition-all duration-200">
+                    Voir les packs
+                  </a>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
+                  @for (bundle of bundles().slice(0, 3); track bundle._id) {
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-all duration-200 cursor-pointer group" [routerLink]="['/bundles']">
+                      <p class="text-white font-medium text-sm truncate group-hover:text-white">{{ bundle.name }}</p>
+                      <div class="flex items-baseline gap-2 mt-1">
+                        <span class="text-white font-bold text-lg">{{ bundle.pricing.price | number:'1.3-3' }} DT</span>
+                        @if (bundle.pricing.discountPercentage > 0) {
+                          <span class="text-xs text-indigo-200 line-through">{{ bundle.pricing.originalPrice | number:'1.3-3' }}</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+          
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold text-surface-800">
+              {{ getPageTitle() }}
+            </h1>
+            <span class="text-sm text-surface-500">
+              {{ pagination().total || 0 }} produit(s)
+            </span>
+          </div>
+
+          @if (loading()) {
+            <app-skeleton type="product-list" [count]="8" gridClass="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"/>
+          } @else if (products().length === 0) {
+            <app-empty-state
+              title="Aucun produit trouvé"
+              [description]="searchQuery() ? 'Essayez un autre terme de recherche' : 'Nous navons pas encore de produits'"
+              icon="products"
+              actionLabel="Réinitialiser les filtres"
+              (actionClick)="clearFilters()"
+            />
+          } @else {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              @for (product of products(); track product._id) {
+                <app-product-card [product]="product"/>
+              }
+            </div>
+
+            <!-- Pagination -->
+            @if (pagination().pages > 1) {
+              <div class="flex justify-center mt-12 gap-2">
+                <button 
+                  (click)="changePage(pagination().current - 1)"
+                  [disabled]="pagination().current === 1"
+                  class="px-4 py-2 border border-surface-200 rounded-xl hover:bg-surface-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Précédent
+                </button>
+                
+                @for (page of getPageNumbers(); track page) {
+                  <button 
+                    (click)="changePage(page)"
+                    [class.bg-primary-600]="page === pagination().current"
+                    [class.text-white]="page === pagination().current"
+                    class="w-10 h-10 border border-surface-200 rounded-xl hover:bg-surface-50 font-medium transition-colors"
+                  >
+                    {{ page }}
+                  </button>
+                }
+                
+                <button 
+                  (click)="changePage(pagination().current + 1)"
+                  [disabled]="pagination().current === pagination().pages"
+                  class="px-4 py-2 border border-surface-200 rounded-xl hover:bg-surface-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Suivant
+                </button>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  `
+})
+export class ProductsComponent implements OnInit {
+  private productService = inject(ProductService);
+  private categoryService = inject(CategoryService);
+  private route = inject(ActivatedRoute);
+  private seo = inject(SeoService);
+  private http = inject(HttpClient);
+
+  products = signal<Product[]>([]);
+  categories = signal<Category[]>([]);
+  bundles = signal<any[]>([]);
+  loading = signal(true);
+
+  pagination = signal({ page: 1, limit: 12, pages: 1, total: 0, current: 1 });
+
+  searchQuery = signal('');
+  selectedCategory = signal('');
+  minPrice = signal<number | null>(null);
+  maxPrice = signal<number | null>(null);
+  sortOrder = signal('-createdAt');
+
+  filters: ProductFilters = {};
+
+  ngOnInit() {
+    this.loadCategories();
+    this.loadBundles();
+    this.loadProducts();
+    
+    this.route.queryParams.subscribe(params => {
+      if (params['category']) this.selectCategory(params['category']);
+      if (params['search']) this.searchQuery.set(params['search']);
+      if (params['minPrice']) this.minPrice.set(+params['minPrice']);
+      if (params['maxPrice']) this.maxPrice.set(+params['maxPrice']);
+      if (params['onSale']) this.filters.onSale = true;
+      if (params['sort']) this.sortOrder.set(params['sort']);
+      this.loadProducts();
+    });
+  }
+
+  private loadCategories() {
+    this.categoryService.getCategories().subscribe({
+      next: (res) => this.categories.set(res.categories)
+    });
+  }
+
+  private loadBundles() {
+    this.http.get<any>(`${environment.apiUrl}/bundles`).subscribe({
+      next: (res) => this.bundles.set(res.bundles || [])
+    });
+  }
+
+  loadProducts() {
+    this.loading.set(true);
+    const page = this.pagination();
+    
+    this.productService.getProducts({
+      ...this.filters,
+      page: page.page,
+      limit: page.limit,
+      sort: this.sortOrder()
+    }).subscribe({
+      next: (res) => {
+        const page = res.pagination || { page: 1, limit: 12, pages: 1, total: 0 };
+        this.products.set(res.products);
+        this.pagination.set({
+          page: page.page,
+          limit: page.limit,
+          pages: page.pages,
+          total: page.total,
+          current: page.page
+        });
+        this.loading.set(false);
+        
+        this.seo.updateMeta({
+          title: this.getPageTitle(),
+          description: `Découvrez notre collection de ${page.total} produits`
+        });
+      },
+      error: () => this.loading.set(false)
+    });
+  }
+
+  onSearchChange(query: string) {
+    this.searchQuery.set(query);
+    this.filters.search = query || undefined;
+    this.pagination.update(p => ({ ...p, page: 1 }));
+    this.loadProducts();
+  }
+
+  clearSearch() {
+    this.searchQuery.set('');
+    this.filters.search = undefined;
+    this.pagination.update(p => ({ ...p, page: 1 }));
+    this.loadProducts();
+  }
+
+  selectCategory(slug: string) {
+    this.selectedCategory.set(slug);
+    this.filters.category = slug || undefined;
+    this.pagination.update(p => ({ ...p, page: 1 }));
+    this.loadProducts();
+  }
+
+  applyPriceFilter() {
+    if (this.minPrice() || this.maxPrice()) {
+      this.filters.minPrice = this.minPrice() || undefined;
+      this.filters.maxPrice = this.maxPrice() || undefined;
+    } else {
+      delete this.filters.minPrice;
+      delete this.filters.maxPrice;
+    }
+    this.pagination.update(p => ({ ...p, page: 1 }));
+    this.loadProducts();
+  }
+
+  updateFilter(key: string, value: string) {
+    (this.filters as any)[key] = value;
+    this.pagination.update(p => ({ ...p, page: 1 }));
+    this.loadProducts();
+  }
+
+  updateSort(event: Event) {
+    const value = (event.target as HTMLSelectElement).value;
+    this.updateFilter('sort', value);
+  }
+
+  clearFilters() {
+    this.searchQuery.set('');
+    this.selectedCategory.set('');
+    this.minPrice.set(null);
+    this.maxPrice.set(null);
+    this.sortOrder.set('-createdAt');
+    this.filters = {};
+    this.pagination.update(p => ({ ...p, page: 1 }));
+    this.loadProducts();
+  }
+
+  hasActiveFilters(): boolean {
+    return !!(this.searchQuery() || this.selectedCategory() || 
+             this.minPrice() || this.maxPrice() || this.filters.onSale);
+  }
+
+  changePage(page: number) {
+    this.pagination.update(p => ({ ...p, page }));
+    this.loadProducts();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  getPageNumbers(): number[] {
+    const pages = this.pagination().pages;
+    const current = this.pagination().current;
+    const result: number[] = [];
+    
+    let start = Math.max(1, current - 2);
+    let end = Math.min(pages, current + 2);
+    
+    if (end - start < 4) {
+      if (start === 1) {
+        end = Math.min(pages, 5);
+      } else {
+        start = Math.max(1, pages - 4);
+      }
+    }
+    
+    for (let i = start; i <= end; i++) {
+      result.push(i);
+    }
+    
+    return result;
+  }
+
+  getPageTitle(): string {
+    if (this.searchQuery()) return `Résultats pour "${this.searchQuery()}"`;
+    if (this.selectedCategory()) {
+      const cat = this.categories().find(c => c.slug === this.selectedCategory());
+      return cat?.name || 'Produits';
+    }
+    if (this.filters.onSale) return 'Promotions';
+    return 'Tous les produits';
+  }
+}
