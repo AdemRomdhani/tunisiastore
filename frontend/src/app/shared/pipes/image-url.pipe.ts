@@ -9,25 +9,27 @@ export class ImageUrlPipe implements PipeTransform {
   transform(value: string | undefined | null): string {
     if (!value || !value.toString().trim()) return 'https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image';
     
-    const trimmedValue = value.trim();
+    let url = value.trim();
+    
+    // Fix doubled URLs - remove the first part if it's duplicated
+    const doubledPattern = /^https:\/\/res\.cloudinary\.com\/[^\/]+\/image\/upload\/https:\/\/res\.cloudinary\.com\//;
+    if (doubledPattern.test(url)) {
+      url = url.replace(/^https:\/\/res\.cloudinary\.com\/[^\/]+\/image\/upload\//, '');
+    }
     
     // If it's already a full URL, return as-is
-    if (trimmedValue.startsWith('http')) {
-      // Don't show placeholder for valid URLs
-      if (trimmedValue.includes('placehold.co')) return trimmedValue;
-      return trimmedValue;
+    if (url.startsWith('http')) {
+      return url;
     }
     
     // Handle Cloudinary public_id
     const cloudName = environment.cloudinaryCloudName;
     if (cloudName && cloudName !== 'your_cloud_name') {
-      // If it looks like a Cloudinary public_id
-      if (trimmedValue.includes('tunisia-store/') || /^[a-zA-Z0-9_\/-]+$/.test(trimmedValue)) {
-        return `https://res.cloudinary.com/${cloudName}/image/upload/${trimmedValue}`;
+      if (url.includes('tunisia-store/') || /^[a-zA-Z0-9_\/-]+$/.test(url)) {
+        return `https://res.cloudinary.com/${cloudName}/image/upload/${url}`;
       }
     }
     
-    // All other cases - show placeholder
     return 'https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image';
   }
 }
