@@ -7,8 +7,7 @@ import { environment } from '../../../environments/environment';
 })
 export class ImageUrlPipe implements PipeTransform {
   transform(value: string | undefined | null): string {
-    // Handle empty, undefined, or short values
-    if (!value || !value.trim() || value.length < 5) return 'https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image';
+    if (!value || !value.toString().trim()) return 'https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image';
     
     const trimmedValue = value.trim();
     
@@ -26,13 +25,19 @@ export class ImageUrlPipe implements PipeTransform {
       return `https://res.cloudinary.com/${cloudName}/image/upload/tunisia-store/${trimmedValue}`;
     }
     
-    // Local uploads - old format that won't work on Render (no persistent storage)
-    // Return placeholder for these
-    if (trimmedValue.includes('uploads') || trimmedValue.startsWith('products/') || trimmedValue.startsWith('images-')) {
+    // Check if it's any kind of relative path or local image file that won't resolve
+    // This includes: /uploads/*, uploads/*, products/*, images-*.jpg, *.jpg, *.png, *.webp
+    const hasImageExtension = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(trimmedValue);
+    const isLocalPath = trimmedValue.includes('uploads') || 
+                        trimmedValue.includes('products') || 
+                        trimmedValue.startsWith('images-') ||
+                        trimmedValue.startsWith('/images');
+    
+    if (isLocalPath || hasImageExtension) {
       return 'https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image';
     }
     
     // Fallback to placeholder
-    return 'https://placehold.co/400x400/e2e8f0/1e293b?text=Image';
+    return 'https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image';
   }
 }
