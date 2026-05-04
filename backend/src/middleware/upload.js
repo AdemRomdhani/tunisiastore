@@ -17,8 +17,9 @@ const safeExtensions = {
 };
 
 let storage;
+const useCloudinary = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY;
 
-if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
+if (useCloudinary) {
   console.log('📷 Using Cloudinary for image uploads');
   
   storage = new CloudinaryStorage({
@@ -71,5 +72,15 @@ const upload = multer({
     }
   }
 });
+
+// Helper to get full image URL from Cloudinary path
+upload.getImageUrl = (cloudinaryPath) => {
+  if (!cloudinaryPath) return 'https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image';
+  if (cloudinaryPath.startsWith('http')) return cloudinaryPath;
+  if (!useCloudinary) return cloudinaryPath;
+  
+  // Cloudinary returns path like "tunisia-store/filename"
+  return `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/${cloudinaryPath}`;
+};
 
 module.exports = upload;

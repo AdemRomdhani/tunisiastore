@@ -5,6 +5,7 @@ const Coupon = require('../models/Coupon');
 const Newsletter = require('../models/Newsletter');
 const Contact = require('../models/Contact');
 const SMSService = require('../services/sms.service');
+const upload = require('../middleware/upload');
 
 // Helper to build nested object from flat FormData
 const buildNestedObject = (body, prefix) => {
@@ -70,7 +71,7 @@ exports.createProductAdmin = async (req, res) => {
     inventory.reserved = 0;
 
     const images = req.files && req.files.length > 0 
-      ? req.files.map(file => file.path || `/uploads/products/${file.filename}`)
+      ? req.files.map(file => upload.getImageUrl(file.path))
       : ['https://placehold.co/400x400?text=No+Image'];
 
     // Handle badges - parse JSON if string, otherwise use as array
@@ -175,7 +176,7 @@ exports.updateProductAdmin = async (req, res) => {
     
     if (req.files && req.files.length > 0) {
       updateData.media = {
-        images: req.files.map(file => file.path || `/uploads/products/${file.filename}`)
+        images: req.files.map(file => upload.getImageUrl(file.path))
       };
     }
 
