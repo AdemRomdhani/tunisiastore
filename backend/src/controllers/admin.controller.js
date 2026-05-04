@@ -70,7 +70,7 @@ exports.createProductAdmin = async (req, res) => {
     inventory.reserved = 0;
 
     const images = req.files && req.files.length > 0 
-      ? req.files.map(file => `/uploads/products/${file.filename}`)
+      ? req.files.map(file => file.path || `/uploads/products/${file.filename}`)
       : ['https://placehold.co/400x400?text=No+Image'];
 
     // Handle badges - parse JSON if string, otherwise use as array
@@ -175,7 +175,7 @@ exports.updateProductAdmin = async (req, res) => {
     
     if (req.files && req.files.length > 0) {
       updateData.media = {
-        images: req.files.map(file => `/uploads/products/${file.filename}`)
+        images: req.files.map(file => file.path || `/uploads/products/${file.filename}`)
       };
     }
 
