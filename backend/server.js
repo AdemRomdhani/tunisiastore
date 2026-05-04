@@ -14,6 +14,8 @@ console.log('ENV CHECK - FRONTEND_URL:', process.env.FRONTEND_URL);
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 // Explicit CORS - required for credentials
 const corsOptions = {
   origin: 'https://tunisiastore.onrender.com',
