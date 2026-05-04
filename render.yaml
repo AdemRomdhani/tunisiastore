@@ -1,0 +1,8 @@
+build:
+  npm install
+  npm run build
+
+publish: dist/tunisia-store/browser
+
+cache:
+  - node_modules
