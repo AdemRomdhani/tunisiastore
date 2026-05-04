@@ -7,7 +7,7 @@ import { environment } from '../../../environments/environment';
 })
 export class ImageUrlPipe implements PipeTransform {
   transform(value: string | undefined): string {
-    if (!value) return 'https://placehold.co/400x400?text=No+Image';
+    if (!value || value.length < 5) return 'https://placehold.co/400x400/e2e8f0/1e293b?text=Image';
     
     // If it's already a full URL (Cloudinary, external URLs, etc.), return as-is
     if (value.startsWith('http')) return value;
@@ -29,6 +29,6 @@ export class ImageUrlPipe implements PipeTransform {
     }
     
     // Fallback to placeholder
-    return 'https://placehold.co/400x400?text=Image';
+    return 'https://placehold.co/400x400/e2e8f0/1e293b?text=Image';
   }
 }
