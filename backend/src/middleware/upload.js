@@ -73,14 +73,26 @@ const upload = multer({
   }
 });
 
-// Helper to get full image URL from Cloudinary path
-upload.getImageUrl = (cloudinaryPath) => {
-  if (!cloudinaryPath) return 'https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image';
-  if (cloudinaryPath.startsWith('http')) return cloudinaryPath;
-  if (!useCloudinary) return cloudinaryPath;
+// Helper to get full image URL from Cloudinary file object
+upload.getImageUrl = (file) => {
+  if (!file) return 'https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image';
   
-  // Cloudinary returns path like "tunisia-store/filename"
-  return `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/${cloudinaryPath}`;
+  // If using local storage
+  if (!useCloudinary && file.path) {
+    return file.path;
+  }
+  
+  // Cloudinary returns secure_url in the file object
+  if (file.secure_url) {
+    return file.secure_url;
+  }
+  
+  // If we have a path/public_id, construct URL
+  if (file.path && file.path.includes('tunisia-store')) {
+    return `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/${file.path}`;
+  }
+  
+  return 'https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image';
 };
 
 module.exports = upload;
