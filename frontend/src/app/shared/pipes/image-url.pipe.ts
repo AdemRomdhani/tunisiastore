@@ -11,10 +11,15 @@ export class ImageUrlPipe implements PipeTransform {
     
     let url = value.trim();
     
-    // Fix doubled URLs - remove the first part if it's duplicated
-    const doubledPattern = /^https:\/\/res\.cloudinary\.com\/[^\/]+\/image\/upload\/https:\/\/res\.cloudinary\.com\//;
-    if (doubledPattern.test(url)) {
-      url = url.replace(/^https:\/\/res\.cloudinary\.com\/[^\/]+\/image\/upload\//, '');
+    // Fix doubled URLs - find the actual Cloudinary URL after the duplication
+    // Pattern: https://res.cloudinary.com/.../image/upload/https://res.cloudinary.com/.../image/upload/v.../xxx.jpg
+    if (url.includes('res.cloudinary.com') && url.includes('image/upload/')) {
+      const uploads = url.split('/image/upload/');
+      if (uploads.length >= 2) {
+        // Take the last part after /image/upload/
+        const lastPart = '/image/upload/' + uploads[uploads.length - 1];
+        url = 'https://res.cloudinary.com' + lastPart;
+      }
     }
     
     // If it's already a full URL, return as-is
