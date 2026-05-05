@@ -15,16 +15,6 @@ console.log('NODE_ENV:', process.env.NODE_ENV);
 
 const app = express();
 
-app.use('/uploads', express.static('uploads'));
-
-// Serve Angular frontend static files
-app.use(express.static(path.join(__dirname, '../dist/tunisia-store/browser')));
-
-// SPA fallback - serve index.html for all Angular routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/tunisia-store/browser/index.html'));
-});
-
 // Simplified CORS - single middleware
 app.use(cors({
   origin: true,
@@ -66,8 +56,11 @@ app.use(morgan('dev'));
 app.use(express.json({ limit: '500kb' }));
 app.use(express.urlencoded({ extended: true, limit: '500kb' }));
 
+// Static files - uploads and Angular build (MUST be before API routes)
 app.use('/uploads', express.static('uploads'));
+app.use(express.static(path.join(__dirname, '../dist/tunisia-store/browser')));
 
+// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/tunisia_store')
   .then(() => {
     console.log('✅ MongoDB Connected');
@@ -186,6 +179,11 @@ app.get('/api/test/email', async (req, res) => {
   } catch (err) {
     res.json({ success: false, error: err.message });
   }
+});
+
+// SPA fallback - serve index.html for all Angular routes (MUST be last)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/tunisia-store/browser/index.html'));
 });
 
 // Error handler - masks internal errors in production
