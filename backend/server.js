@@ -15,16 +15,6 @@ console.log('ENV CHECK - FRONTEND_URL:', process.env.FRONTEND_URL);
 
 const app = express();
 
-app.use('/uploads', express.static('uploads'));
-
-// Serve Angular frontend static files
-app.use(express.static(path.join(__dirname, '../dist/tunisia-store/browser')));
-
-// SPA fallback - serve index.html for all Angular routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/tunisia-store/browser/index.html'));
-});
-
 app.set('trust proxy', 1);
 
 // Explicit CORS - required for credentials
@@ -69,8 +59,11 @@ app.use(morgan('dev'));
 app.use(express.json({ limit: '500kb' }));
 app.use(express.urlencoded({ extended: true, limit: '500kb' }));
 
+// Static files - uploads and Angular build (MUST be before API routes and after body parsing)
 app.use('/uploads', express.static('uploads'));
+app.use(express.static(path.join(__dirname, '../dist/tunisia-store/browser')));
 
+// Connect to MongoDB and seed
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/tunisia_store')
   .then(() => {
     console.log('✅ MongoDB Connected');
