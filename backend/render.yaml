@@ -1,6 +1,6 @@
 build:
-  command: npm install
-  publish: .
+  command: npm install && npm run build
+  publish: dist/tunisia-store/browser
 
 services:
   - type: web
@@ -12,3 +12,5 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: FRONTEND_URL
+        value: https://tunisiastore.onrender.com

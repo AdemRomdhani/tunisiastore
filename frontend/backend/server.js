@@ -6,6 +6,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
+const path = require('path');
 require('dotenv').config();
 
 console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'set' : 'NOT SET');
@@ -13,6 +14,16 @@ console.log('JWT_EXPIRE:', process.env.JWT_EXPIRE);
 console.log('NODE_ENV:', process.env.NODE_ENV);
 
 const app = express();
+
+app.use('/uploads', express.static('uploads'));
+
+// Serve Angular frontend static files
+app.use(express.static(path.join(__dirname, '../dist/tunisia-store/browser')));
+
+// SPA fallback - serve index.html for all Angular routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/tunisia-store/browser/index.html'));
+});
 
 // Simplified CORS - single middleware
 app.use(cors({

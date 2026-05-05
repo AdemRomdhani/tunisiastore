@@ -6,6 +6,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
+const path = require('path');
 require('dotenv').config();
 
 console.log('ENV CHECK - JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'NOT SET');
@@ -14,11 +15,21 @@ console.log('ENV CHECK - FRONTEND_URL:', process.env.FRONTEND_URL);
 
 const app = express();
 
+app.use('/uploads', express.static('uploads'));
+
+// Serve Angular frontend static files
+app.use(express.static(path.join(__dirname, '../dist/tunisia-store/browser')));
+
+// SPA fallback - serve index.html for all Angular routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/tunisia-store/browser/index.html'));
+});
+
 app.set('trust proxy', 1);
 
 // Explicit CORS - required for credentials
 const corsOptions = {
-  origin: 'https://tunisiastore.onrender.com',
+  origin: ['https://tunisiastore.onrender.com', 'https://tunisia-store-frontend.onrender.com'],
   credentials: true
 };
 app.use(cors(corsOptions));
@@ -178,6 +189,11 @@ app.get('/api/test/email', async (req, res) => {
   } catch (err) {
     res.json({ success: false, error: err.message });
   }
+});
+
+// SPA fallback - serve index.html for all Angular routes (MUST be last)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/tunisia-store/browser/index.html'));
 });
 
 // Error handler - masks internal errors in production

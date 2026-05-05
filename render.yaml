@@ -2,4 +2,15 @@ build:
   command: npm install && npm run build
   publish: dist/tunisia-store/browser
 
-runtime: node:18
+services:
+  - type: web
+    name: tunisiastore
+    env: node
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: node backend/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: https://tunisiastore.onrender.com
