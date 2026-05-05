@@ -218,6 +218,41 @@ class EmailService {
       console.error('📧 [Email] Newsletter welcome failed:', err.message);
     }
   }
+
+  async sendReturnStatusUpdate(returnRequest, order, user) {
+    if (!process.env.RESEND_API_KEY) {
+      console.log('📧 [Email] Return status update skipped - RESEND_API_KEY not configured');
+      return;
+    }
+    
+    const statusLabels = {
+      PENDING: 'En attente',
+      APPROVED: 'Approuvée',
+      REJECTED: 'Rejetée',
+      PROCESSING: 'En traitement',
+      COMPLETED: 'Terminée'
+    };
+    
+    try {
+      await resend.emails.send({
+        from: 'Tunisia Store <onboarding@resend.dev>',
+        to: user.email,
+        subject: `Mise à jour de votre demande de retour ${order.orderNumber}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2>Mise à jour de votre demande de retour</h2>
+            <p>Bonjour ${user.firstName},</p>
+            <p>Votre demande de retour pour la commande <strong>${order.orderNumber}</strong> est maintenant: <strong>${statusLabels[returnRequest.status] || returnRequest.status}</strong></p>
+            ${returnRequest.status === 'REJECTED' && returnRequest.adminNote ? `<p><strong>Raison:</strong> ${returnRequest.adminNote}</p>` : ''}
+            <p style="color: #6b7280; font-size: 12px;">Merci pour votre confiance.</p>
+          </div>
+        `
+      });
+      console.log('📧 [Email] Return status update sent:', order.orderNumber, returnRequest.status);
+    } catch (err) {
+      console.error('📧 [Email] Return status update failed:', err.message);
+    }
+  }
 }
 
 module.exports = new EmailService();
