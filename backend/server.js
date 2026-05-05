@@ -61,7 +61,23 @@ app.use(express.urlencoded({ extended: true, limit: '500kb' }));
 
 // Static files - uploads and Angular build (MUST be before API routes and after body parsing)
 app.use('/uploads', express.static('uploads'));
-app.use(express.static(path.join(__dirname, '../dist/tunisia-store/browser')));
+
+// Serve Angular frontend - check multiple possible paths
+const distPath = path.join(__dirname, '../dist/tunisia-store/browser');
+console.log('📁 Serving static files from:', distPath);
+app.use(express.static(distPath));
+
+// Debug route to check what paths are being used
+app.get('/api/debug', (req, res) => {
+  const fs = require('fs');
+  const possiblePaths = [
+    path.join(__dirname, '../dist/tunisia-store/browser'),
+    path.join(__dirname, '../../dist/tunisia-store/browser'),
+    path.join(__dirname, './dist/tunisia-store/browser')
+  ];
+  const results = possiblePaths.map(p => ({ path: p, exists: fs.existsSync(p) }));
+  res.json({ debug: results, __dirname });
+});
 
 // Connect to MongoDB and seed
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/tunisia_store')
@@ -186,7 +202,9 @@ app.get('/api/test/email', async (req, res) => {
 
 // SPA fallback - serve index.html for all Angular routes (MUST be last)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/tunisia-store/browser/index.html'));
+  const indexPath = path.join(__dirname, '../dist/tunisia-store/browser/index.html');
+  console.log('📄 SPA fallback for:', req.path, '| index exists:', require('fs').existsSync(indexPath));
+  res.sendFile(indexPath);
 });
 
 // Error handler - masks internal errors in production
