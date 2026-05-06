@@ -122,6 +122,22 @@ exports.createProductAdmin = async (req, res) => {
     };
 
     const product = await Product.create(productData);
+    
+    // Send promo notification if product has PROMO badge
+    if (badges.includes('PROMO') || finalOnSale) {
+      console.log('📧 [Email] New promo product detected:', product.name);
+      const EmailService = require('../services/email.service');
+      const Newsletter = require('../models/Newsletter');
+      
+      try {
+        const subscribers = await Newsletter.find({ isActive: true }).select('email');
+        console.log('📧 [Email] Found subscribers:', subscribers.length);
+        await EmailService.sendNewPromoNotification(product, subscribers);
+      } catch (emailErr) {
+        console.error('📧 [Email] Promo notification failed:', emailErr.message);
+      }
+    }
+    
     res.status(201).json({ success: true, product });
   } catch (error) {
     console.error('Create Product Error:', error);
@@ -197,6 +213,24 @@ exports.updateProductAdmin = async (req, res) => {
       new: true,
       runValidators: true
     });
+    
+    // Check if product was newly set to PROMO or onSale (not was already)
+    const hadPromo = existingProduct?.badges?.includes('PROMO') || existingProduct?.onSale;
+    const hasPromo = product.badges?.includes('PROMO') || product.onSale;
+    
+    if (!hadPromo && hasPromo) {
+      console.log('📧 [Email] Product now has promo (was updated):', product.name);
+      const EmailService = require('../services/email.service');
+      const Newsletter = require('../models/Newsletter');
+      
+      try {
+        const subscribers = await Newsletter.find({ isActive: true }).select('email');
+        await EmailService.sendNewPromoNotification(product, subscribers);
+      } catch (emailErr) {
+        console.error('📧 [Email] Promo notification failed:', emailErr.message);
+      }
+    }
+    
     res.json({ success: true, product });
   } catch (error) {
     console.error('Update Product Error:', error);

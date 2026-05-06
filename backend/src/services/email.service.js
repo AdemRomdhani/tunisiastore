@@ -279,6 +279,62 @@ class EmailService {
       console.error('📧 [Email] Return status update failed:', err.message);
     }
   }
+
+  async sendNewPromoNotification(product, subscribers) {
+    if (!resend) {
+      console.log('📧 [Email] Promo notification skipped - Resend not initialized');
+      return;
+    }
+    
+    if (!subscribers || subscribers.length === 0) {
+      console.log('📧 [Email] No subscribers to notify');
+      return;
+    }
+    
+    const discount = product.pricing?.originalPrice 
+      ? Math.round(((product.pricing.originalPrice - product.pricing.price) / product.pricing.originalPrice) * 100) 
+      : 0;
+    
+    const imageUrl = product.media?.images?.[0] || 'https://placehold.co/400x400?text=Product';
+    
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+        <div style="background: #dc2626; color: white; padding: 15px; text-align: center;">
+          <h1 style="margin: 0;">🛒 Nouvelle offre spéciale!</h1>
+        </div>
+        <div style="padding: 20px;">
+          <img src="${imageUrl}" alt="${product.name}" style="max-width: 200px; border-radius: 8px; margin: 10px auto; display: block;">
+          <h2 style="color: #333;">${product.name}</h2>
+          <p style="font-size: 18px;">
+            <span style="color: #dc2626; font-weight: bold;">${product.pricing?.price?.toFixed(3)} DT</span>
+            ${product.pricing?.originalPrice ? `<span style="text-decoration: line-through; color: #999; margin-left: 10px;">${product.pricing.originalPrice.toFixed(3)} DT</span><span style="background: #dc2626; color: white; padding: 2px 8px; border-radius: 4px; margin-left: 10px; font-size: 14px;">-${discount}%</span>` : ''}
+          </p>
+          <a href="${process.env.FRONTEND_URL || 'https://tunisiastore.onrender.com'}/product/${product.slug}" style="display: inline-block; background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0; text-align: center; display: block;">Voir le produit</a>
+          <p style="color: #6b7280; font-size: 12px;">Merci pour votre confiance!</p>
+        </div>
+      </div>
+    `;
+    
+    // Send to all subscribers in batches
+    const batchSize = 10;
+    for (let i = 0; i < subscribers.length; i += batchSize) {
+      const batch = subscribers.slice(i, i + batchSize);
+      const emails = batch.map(s => s.email).join(', ');
+      
+      try {
+        await resend.emails.send({
+          from: 'Tunisia Store <onboarding@resend.dev>',
+          to: 'subscribers@tunisia-store.com', // Use BCC in production
+          bcc: emails,
+          subject: `🔥 Nouveau produit en promo: ${product.name} - ${discount}% de réduction!`,
+          html
+        });
+        console.log(`📧 [Email] Promo notification sent to batch ${Math.floor(i/batchSize) + 1}`);
+      } catch (err) {
+        console.error('📧 [Email] Promo notification failed:', err.message);
+      }
+    }
+  }
 }
 
 module.exports = new EmailService();
