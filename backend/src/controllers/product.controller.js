@@ -92,7 +92,6 @@ exports.getProducts = async (req, res) => {
         badges: p.badges
       })));
     }
-      .lean();
 
     const count = await Product.countDocuments(query);
 
