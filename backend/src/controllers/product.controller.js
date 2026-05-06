@@ -47,12 +47,9 @@ exports.getProducts = async (req, res) => {
     }
     if (onSale === 'true') {
       query.$or = [
-        { onSale: true, saleEndsAt: { $gt: new Date() } },
-        { onSale: true, saleEndsAt: { $exists: false } },
-        { badges: { $in: ['PROMO'] }, saleEndsAt: { $gt: new Date() } },
-        { badges: { $in: ['PROMO'] }, saleEndsAt: { $exists: false }, onSale: { $ne: false } }
+        { onSale: true },
+        { badges: { $in: ['PROMO'] }, onSale: { $ne: false } }
       ];
-      console.log('[getProducts] onSale filter applied');
     } else if (onSale === 'false') {
       query.$and = [
         { onSale: false },
