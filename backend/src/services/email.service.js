@@ -1,14 +1,30 @@
 const nodemailer = require('nodemailer');
 const { Resend } = require('resend');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend;
+try {
+  if (process.env.RESEND_API_KEY) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+    console.log('📧 [Email] Resend client initialized successfully');
+  } else {
+    resend = null;
+    console.log('📧 [Email] Resend client NOT initialized - no API key');
+  }
+} catch (err) {
+  console.error('📧 [Email] Failed to initialize Resend:', err.message);
+  resend = null;
+}
 
-console.log('📧 [Email] Resend initialized:', !!process.env.RESEND_API_KEY);
+// Log API key status on startup
+console.log('📧 [Email] ==========');
+console.log('📧 [Email] RESEND_API_KEY present:', !!process.env.RESEND_API_KEY);
+console.log('📧 [Email] RESEND_API_KEY value:', process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.substring(0, 10) + '...' : 'NOT SET');
+console.log('📧 [Email] ==========');
 
 class EmailService {
   async sendOrderConfirmation(order, user) {
-    if (!process.env.RESEND_API_KEY) {
-      console.log('📧 [Email] Skipped - RESEND_API_KEY not configured');
+    if (!resend) {
+      console.log('📧 [Email] Skipped - Resend not initialized');
       return;
     }
     
@@ -59,20 +75,22 @@ class EmailService {
     `;
 
     try {
+      console.log('📧 [Email] Attempting to send to:', user.email);
       const data = await resend.emails.send({
         from: 'Tunisia Store <onboarding@resend.dev>',
         to: user.email,
         subject: `Confirmation de commande ${order.orderNumber}`,
         html
       });
-      console.log('📧 [Email] Order confirmation sent:', order.orderNumber, data.id);
+      console.log('📧 [Email] Order confirmation sent:', order.orderNumber, 'ID:', data.id);
     } catch (err) {
       console.error('📧 [Email] Failed:', err.message);
+      console.error('📧 [Email] Error details:', JSON.stringify(err));
     }
   }
 
   async sendStatusUpdate(order, user) {
-    if (!process.env.RESEND_API_KEY) {
+    if (!resend) {
       console.log('📧 [Email] Status update skipped - RESEND_API_KEY not configured');
       return;
     }
@@ -107,10 +125,9 @@ class EmailService {
 
   async sendVerificationEmail(user, token) {
     console.log('📧 [Email] Attempting to send verification email to:', user.email);
-    console.log('📧 RESEND_API_KEY set:', !!process.env.RESEND_API_KEY);
     
-    if (!process.env.RESEND_API_KEY) {
-      console.log('📧 [Email] Skipped - RESEND_API_KEY not configured');
+    if (!resend) {
+      console.log('📧 [Email] Skipped - Resend not initialized');
       return;
     }
     
@@ -142,7 +159,7 @@ class EmailService {
   }
 
   async sendPasswordResetEmail(user, token) {
-    if (!process.env.RESEND_API_KEY) {
+    if (!resend) {
       console.log('📧 [Email] Password reset skipped - RESEND_API_KEY not configured');
       return;
     }
@@ -173,7 +190,7 @@ class EmailService {
   }
 
   async sendContactNotification(contact) {
-    if (!process.env.RESEND_API_KEY) return;
+    if (!resend) return;
     
     try {
       await resend.emails.send({
@@ -198,7 +215,7 @@ class EmailService {
   }
 
   async sendNewsletterWelcome(email) {
-    if (!process.env.RESEND_API_KEY) return;
+    if (!resend) return;
     
     try {
       await resend.emails.send({
@@ -220,7 +237,7 @@ class EmailService {
   }
 
   async sendReturnStatusUpdate(returnRequest, order, user) {
-    if (!process.env.RESEND_API_KEY) {
+    if (!resend) {
       console.log('📧 [Email] Return status update skipped - RESEND_API_KEY not configured');
       return;
     }
