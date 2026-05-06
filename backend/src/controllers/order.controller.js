@@ -26,6 +26,12 @@ exports.createOrder = async (req, res) => {
     let userId = req.user?.id;
     let user = null;
     
+    // If authenticated user, fetch the full user object
+    if (userId) {
+      user = await User.findById(userId);
+      console.log('👤 Authenticated user found:', user?.email);
+    }
+    
     // If no auth, check for existing user by email in shipping or guestEmail
     if (!userId && customerEmail) {
       user = await User.findOne({ email: customerEmail.toLowerCase() });
