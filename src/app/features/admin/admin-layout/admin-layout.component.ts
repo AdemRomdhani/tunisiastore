@@ -37,10 +37,20 @@ interface NotificationItem {
     <app-toast />
     
     <div class="min-h-screen bg-gray-50 flex">
+      <!-- Mobile Overlay -->
+      @if (sidebarOpen()) {
+        <div 
+          class="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          (click)="toggleSidebar()"
+        ></div>
+      }
+      
       <!-- Sidebar -->
       <aside 
-        class="fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-300 lg:translate-x-0"
-        [class]="'hidden lg:block -translate-x-full'"
+        class="fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-300"
+        [class.-translate-x-full]="!sidebarOpen()"
+        [class.translate-x-0]="sidebarOpen()"
+        [class.lg:translate-x-0]="true"
       >
         <div class="flex flex-col h-full">
           <!-- Logo -->
@@ -101,10 +111,13 @@ interface NotificationItem {
       <main class="flex-1 lg:ml-64" [class.pt-16]="stockAlerts().length > 0">
         <!-- Top Header -->
         <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
-          <div class="px-6 py-4 flex items-center justify-between">
+          <div class="px-4 lg:px-6 py-3 lg:py-4 flex items-center justify-between">
             <!-- Left: Mobile menu + Breadcrumbs -->
-            <div class="flex items-center gap-4">
-              <button class="lg:hidden p-2 text-gray-500 hover:text-gray-700">
+            <div class="flex items-center gap-2 lg:gap-4">
+              <button 
+                class="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                (click)="toggleSidebar()"
+              >
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
@@ -140,7 +153,7 @@ interface NotificationItem {
                   }
                 </button>
                 @if (showNotifications()) {
-                  <div class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-[500px] overflow-y-auto">
+                  <div class="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-[500px] overflow-y-auto">
                     <div class="p-3 border-b border-gray-100 flex justify-between items-center">
                       <h3 class="font-semibold text-gray-800">Notifications</h3>
                       <div class="flex items-center gap-2">
@@ -262,7 +275,7 @@ interface NotificationItem {
         </header>
         
         <!-- Page Content -->
-        <div class="p-6">
+        <div class="p-4 lg:p-6">
           <router-outlet/>
         </div>
       </main>
@@ -286,10 +299,15 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   lastAcknowledgedCounts = signal<{orders: number, contacts: number, returns: number, users: number, stock: number}>({orders: 0, contacts: 0, returns: 0, users: 0, stock: 0});
   notifications = signal<NotificationItem[]>([]);
   showNotifications = signal<boolean>(false);
+  sidebarOpen = signal<boolean>(false);
   private routerSubscription?: Subscription;
   private pollingInterval?: ReturnType<typeof setInterval>;
 
   ngOnInit() {}
+
+  toggleSidebar() {
+    this.sidebarOpen.set(!this.sidebarOpen());
+  }
 
   ngOnDestroy() {
     this.routerSubscription?.unsubscribe();
