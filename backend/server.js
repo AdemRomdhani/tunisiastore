@@ -60,10 +60,10 @@ app.use(morgan('dev'));
 app.use(express.json({ limit: '500kb' }));
 app.use(express.urlencoded({ extended: true, limit: '500kb' }));
 
-// Static files - uploads and Angular build (MUST be before API routes and after body parsing)
+// Static files - uploads and Angular build
 app.use('/uploads', express.static('uploads'));
 
-// Serve Angular frontend - check multiple possible paths
+// Serve Angular static files
 const distPath = path.join(__dirname, '../dist/tunisia-store/browser');
 console.log('📁 Serving static files from:', distPath);
 app.use(express.static(distPath));
@@ -201,8 +201,8 @@ app.get('/api/test/email', async (req, res) => {
   }
 });
 
-// SPA fallback - serve index.html for all Angular routes (MUST be last)
-app.get('*', (req, res) => {
+// SPA fallback - serve index.html for all non-API routes (MUST be last)
+app.get(/^(?!\/api\/).*/, (req, res) => {
   const indexPath = path.join(__dirname, '../dist/tunisia-store/browser/index.html');
   console.log('📄 SPA fallback for:', req.path, '| index exists:', require('fs').existsSync(indexPath));
   res.sendFile(indexPath);
