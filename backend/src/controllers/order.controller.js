@@ -177,15 +177,25 @@ exports.createOrder = async (req, res) => {
     }
 
     // Send confirmation email
+    console.log('=== Order Email Debug ===');
+    console.log('user:', user ? 'yes' : 'no');
+    console.log('guestEmail:', guestEmail);
+    console.log('shippingAddress.fullName:', shippingAddress.fullName);
+    
     if (user || guestEmail) {
       const EmailService = require('../services/email.service');
       try {
         const recipient = user || { email: guestEmail, firstName: shippingAddress.fullName };
+        console.log('Sending to:', recipient.email);
         await EmailService.sendOrderConfirmation(order, recipient);
+        console.log('Email sent successfully');
       } catch (emailErr) {
         console.error('Email confirmation failed:', emailErr.message);
       }
+    } else {
+      console.log('No email sent - no user or guestEmail');
     }
+    console.log('=== End Order Email Debug ===');
 
     // Send SMS notification
     try {
