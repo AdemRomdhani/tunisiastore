@@ -47,10 +47,8 @@ interface NotificationItem {
       
       <!-- Sidebar -->
       <aside 
-        class="fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-300"
-        [class.-translate-x-full]="!sidebarOpen()"
-        [class.translate-x-0]="sidebarOpen()"
-        [class.lg:translate-x-0]="true"
+        class="fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-300 lg:translate-x-0"
+        [ngClass]="{' -translate-x-full': !sidebarOpen(), 'translate-x-0': sidebarOpen()}"
       >
         <div class="flex flex-col h-full">
           <!-- Logo -->
@@ -115,8 +113,10 @@ interface NotificationItem {
             <!-- Left: Mobile menu + Breadcrumbs -->
             <div class="flex items-center gap-2 lg:gap-4">
               <button 
-                class="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                type="button"
+                class="lg:hidden p-2 -ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg touch-manipulation"
                 (click)="toggleSidebar()"
+                aria-label="Toggle menu"
               >
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
