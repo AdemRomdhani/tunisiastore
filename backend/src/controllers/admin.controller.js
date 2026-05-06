@@ -92,14 +92,17 @@ exports.createProductAdmin = async (req, res) => {
 
     // Handle sale timer
     const onSale = body.onSale === 'true' || body.onSale === true;
+    console.log('[Create] onSale:', body.onSale, '->', onSale);
     let saleEndsAt = undefined;
     if (body.saleEndsAt && body.saleEndsAt.trim()) {
       const saleEndsAtRaw = new Date(body.saleEndsAt);
       if (!isNaN(saleEndsAtRaw.getTime())) {
         saleEndsAt = saleEndsAtRaw;
+        console.log('[Create] saleEndsAt:', body.saleEndsAt, '->', saleEndsAt);
       }
     }
     const finalOnSale = onSale || (saleEndsAt && saleEndsAt > new Date());
+    console.log('[Create] finalOnSale:', finalOnSale);
 
     const productData = {
       name: body.name,
@@ -149,13 +152,19 @@ exports.updateProductAdmin = async (req, res) => {
     // Handle sale timer
     if (body.onSale !== undefined) {
       updateData.onSale = body.onSale === 'true';
+      console.log('[Update] onSale:', body.onSale, '->', updateData.onSale);
     }
     // Only update saleEndsAt if explicitly provided (not empty string)
     if (body.saleEndsAt !== undefined && body.saleEndsAt !== null && body.saleEndsAt.trim() !== '') {
       const saleEndsAtRaw = new Date(body.saleEndsAt);
       if (!isNaN(saleEndsAtRaw.getTime())) {
         updateData.saleEndsAt = saleEndsAtRaw;
+        console.log('[Update] saleEndsAt:', body.saleEndsAt, '->', updateData.saleEndsAt);
       }
+    } else if (body.saleEndsAt === '') {
+      // User cleared the date
+      updateData.saleEndsAt = null;
+      console.log('[Update] saleEndsAt cleared');
     }
 
     // Build nested pricing object if price is provided
