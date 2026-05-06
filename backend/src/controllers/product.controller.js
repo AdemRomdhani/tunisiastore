@@ -82,7 +82,16 @@ exports.getProducts = async (req, res) => {
       .lean()
       .sort(sortOptions)
       .limit(safeLimit)
-      .skip((page - 1) * safeLimit)
+      .skip((page - 1) * safeLimit);
+
+    if (onSale === 'true') {
+      console.log('[getProducts] Returning products:', products.map(p => ({
+        name: p.name,
+        onSale: p.onSale,
+        saleEndsAt: p.saleEndsAt,
+        badges: p.badges
+      })));
+    }
       .lean();
 
     const count = await Product.countDocuments(query);

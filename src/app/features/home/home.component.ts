@@ -417,7 +417,15 @@ export class HomeComponent implements OnInit {
 
 private loadFlashDeals() {
       this.productService.getProducts({ onSale: true, limit: 5, sort: 'price-asc' }).subscribe({
-        next: (res) => this.flashDeals.set(res.products)
+        next: (res) => {
+          console.log('[Home] Flash deals loaded:', res.products.map(p => ({
+            name: p.name,
+            onSale: p.onSale,
+            saleEndsAt: p.saleEndsAt,
+            badges: p.badges
+          })));
+          this.flashDeals.set(res.products);
+        }
       });
     }
 
