@@ -45,7 +45,10 @@ exports.getAllProductsAdmin = async (req, res) => {
 
 exports.getProductByIdAdmin = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate('category', 'name');
+    const product = await Product.findById(req.params.id)
+      .populate('category', 'name')
+      .select('name slug description shortDescription pricing inventory media category badges onSale saleEndsAt featured ratings isActive specifications attributes warranty weight dimensions')
+      .lean();
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
