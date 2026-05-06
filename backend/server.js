@@ -169,7 +169,7 @@ app.use('/api/shipping', require('./src/routes/shipping.routes'));
 app.use('/api/payments', require('./src/routes/payment.routes'));
 
 // Public health check — MUST be before protected routes or outside auth middleware
-app.get('/api/health', (req, res) => res.json({ status: 'OK' }));
+app.get('/api/health', (req, res) => res.json({ status: 'OK', timestamp: new Date().toISOString() }));
 
 // Test email endpoint
 app.get('/api/test/email', async (req, res) => {
