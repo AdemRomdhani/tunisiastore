@@ -47,8 +47,8 @@ interface NotificationItem {
       
       <!-- Sidebar -->
       <aside 
-        class="fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-300 lg:translate-x-0"
-        [ngClass]="{' -translate-x-full': !sidebarOpen(), 'translate-x-0': sidebarOpen()}"
+        [class]="sidebarOpen() || isDesktop() ? 'fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 translate-x-0' : 'fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 -translate-x-full'"
+        class="transition-transform duration-300 lg:translate-x-0 lg:block"
       >
         <div class="flex flex-col h-full">
           <!-- Logo -->
@@ -303,16 +303,33 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   private routerSubscription?: Subscription;
   private pollingInterval?: ReturnType<typeof setInterval>;
 
-  ngOnInit() {}
+  ngOnInit() {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', () => this.checkDesktop());
+    }
+  }
 
   toggleSidebar() {
     this.sidebarOpen.set(!this.sidebarOpen());
+  }
+
+  isDesktop(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth >= 1024;
+  }
+
+  checkDesktop() {
+    if (this.sidebarOpen() && this.isDesktop()) {
+      this.sidebarOpen.set(false);
+    }
   }
 
   ngOnDestroy() {
     this.routerSubscription?.unsubscribe();
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
+    }
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('resize', () => this.checkDesktop());
     }
   }
 
