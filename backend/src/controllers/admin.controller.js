@@ -276,6 +276,34 @@ exports.updateOrderStatusAdmin = async (req, res) => {
 
     await order.save();
 
+    // Send status update email
+    console.log('📧 Admin Status Update Debug - order.user:', order.user, 'guestEmail:', order.guestEmail);
+    const EmailService = require('../services/email.service');
+    const User = require('../models/User');
+    
+    let recipient = null;
+    if (order.user) {
+      const fullUser = await User.findById(order.user);
+      if (fullUser) {
+        recipient = fullUser;
+        console.log('📧 Sending to user:', fullUser.email);
+      }
+    } else if (order.guestEmail) {
+      recipient = { email: order.guestEmail, firstName: order.shippingAddress?.fullName || 'Client' };
+      console.log('📧 Sending to guest:', recipient.email);
+    }
+    
+    if (recipient) {
+      try {
+        await EmailService.sendStatusUpdate(order, recipient);
+        console.log('📧 Status update email sent');
+      } catch (emailErr) {
+        console.error('Status update email failed:', emailErr.message);
+      }
+    } else {
+      console.log('📧 No recipient for status update email');
+    }
+
     // Send SMS notification for shipping/delivery
     try {
       const phone = order.shippingAddress?.phone || order.guestPhone;
