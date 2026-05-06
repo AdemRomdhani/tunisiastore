@@ -143,17 +143,16 @@ exports.updateProductAdmin = async (req, res) => {
       }
     }
 
-    // Handle sale timer - save exactly what frontend sends
-    if (body.saleEndsAt && body.saleEndsAt.trim()) {
+    // Handle sale timer
+    if (body.onSale !== undefined) {
+      updateData.onSale = body.onSale === 'true';
+    }
+    // Only update saleEndsAt if explicitly provided (not empty string)
+    if (body.saleEndsAt !== undefined && body.saleEndsAt !== null && body.saleEndsAt.trim() !== '') {
       const saleEndsAtRaw = new Date(body.saleEndsAt);
       if (!isNaN(saleEndsAtRaw.getTime())) {
         updateData.saleEndsAt = saleEndsAtRaw;
       }
-    } else {
-      updateData.saleEndsAt = null;
-    }
-    if (body.onSale !== undefined) {
-      updateData.onSale = body.onSale === 'true';
     }
 
     // Build nested pricing object if price is provided
