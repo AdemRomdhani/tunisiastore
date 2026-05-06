@@ -1,13 +1,13 @@
 build:
-  command: npm install && npm run build
-  publish: .
+  command: npm install && npm run build && ls -la dist/
+  publish: dist/tunisia-store/browser
 
 services:
   - type: web
     name: tunisiastore
     env: node
     region: frankfurt
-    buildCommand: npm install
+    buildCommand: npm install && npm run build
     startCommand: node backend/server.js
     envVars:
       - key: NODE_ENV
