@@ -10,6 +10,11 @@ const SHIPPING_RATE = 7;
 const FREE_SHIPPING_THRESHOLD = 200;
 
 exports.createOrder = async (req, res) => {
+  console.log('📦 CREATE ORDER CALLED', { 
+    bodyKeys: Object.keys(req.body || {}),
+    hasUser: !!req.user,
+    userId: req.user?.id 
+  });
   try {
     const { shippingAddress, paymentMethod, notes, couponCode, guestEmail, guestPhone } = req.body;
 
