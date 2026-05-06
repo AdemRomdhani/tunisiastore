@@ -78,7 +78,8 @@ exports.getProducts = async (req, res) => {
 
     const products = await Product.find(query)
       .populate('category', 'name slug')
-      .select('-reviews -specifications -attributes')
+      .select('name slug pricing media category badges onSale saleEndsAt ratings inventory')
+      .lean()
       .sort(sortOptions)
       .limit(safeLimit)
       .skip((page - 1) * safeLimit)
