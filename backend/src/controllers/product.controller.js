@@ -22,6 +22,7 @@ exports.getProducts = async (req, res) => {
     const safeLimit = Math.min(Number(limit) || 12, maxLimit);
 
     const query = { isActive: true };
+    console.log('[getProducts] onSale param:', onSale);
 
     // Resolve category slug to ObjectId - optional filter
     if (category) {
