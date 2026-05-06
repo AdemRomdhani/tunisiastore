@@ -180,6 +180,7 @@ export class ProductDetailComponent implements OnInit {
             this.product.set(res.product);
             this.selectedImage.set(res.product.media.images[0]);
             this.seo.updateMeta({ title: res.product.name, description: res.product.description });
+            this.productService.addRecentlyViewed(res.product._id).subscribe();
           } else {
             this.error.set('Produit non trouvé');
           }
