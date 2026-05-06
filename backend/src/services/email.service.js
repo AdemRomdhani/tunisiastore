@@ -104,22 +104,31 @@ class EmailService {
       CANCELLED: 'Annulée'
     };
 
+    console.log('📧 [Email] Preparing status update email to:', user.email, 'for order:', order.orderNumber);
+    
     try {
-      await resend.emails.send({
+      const data = await resend.emails.send({
         from: 'Tunisia Store <onboarding@resend.dev>',
         to: user.email,
         subject: `Mise à jour de votre commande ${order.orderNumber}`,
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2>Statut mis à jour</h2>
-            <p>Bonjour ${user.firstName},</p>
-            <p>Votre commande <strong>${order.orderNumber}</strong> est maintenant: <strong>${statusLabels[order.status] || order.status}</strong></p>
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+            <div style="background: #dc2626; color: white; padding: 15px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="margin: 0;">Tunisia Store</h1>
+            </div>
+            <div style="padding: 20px;">
+              <h2 style="color: #333;">Mise à jour de votre commande</h2>
+              <p>Bonjour ${user.firstName || 'Client'},</p>
+              <p>Votre commande <strong>${order.orderNumber}</strong> est maintenant: <strong style="color: #dc2626;">${statusLabels[order.status] || order.status}</strong></p>
+              <p style="color: #666; font-size: 12px; margin-top: 20px;">Merci pour votre confiance!</p>
+            </div>
           </div>
         `
       });
-      console.log('📧 [Email] Status update sent:', order.orderNumber, order.status);
+      console.log('📧 [Email] Status update sent:', order.orderNumber, order.status, 'Response:', JSON.stringify(data));
     } catch (err) {
       console.error('📧 [Email] Status update failed:', err.message);
+      console.error('📧 [Email] Full error:', JSON.stringify(err));
     }
   }
 
