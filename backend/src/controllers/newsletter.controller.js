@@ -1,4 +1,5 @@
 const Newsletter = require('../models/Newsletter');
+const EmailService = require('../services/email.service');
 
 exports.subscribe = async (req, res) => {
   try {
@@ -22,6 +23,13 @@ exports.subscribe = async (req, res) => {
     }
     
     const subscription = await Newsletter.create({ email: email.toLowerCase() });
+    
+    // Send welcome email
+    try {
+      await EmailService.sendNewsletterWelcome(email);
+    } catch (emailErr) {
+      console.error('Newsletter welcome email failed:', emailErr.message);
+    }
     
     res.status(201).json({ success: true, message: 'Subscribed successfully' });
   } catch (error) {
