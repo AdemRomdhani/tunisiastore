@@ -425,30 +425,24 @@ private loadFlashDeals() {
             badges: p.badges
           })));
           this.flashDeals.set(res.products);
+          this.updateProductTimers();
         }
       });
     }
 
     private startCountdown() {
-      // Update timer display every second
-      this.updateProductTimers();
-      // Refresh from backend every 15 seconds to get real-time data
-      this.countdownInterval = setInterval(() => {
+      setInterval(() => {
         this.updateProductTimers();
-        this.loadFlashDealsRefresh();
-      }, 15000);
-    }
-
-    private loadFlashDealsRefresh() {
-      this.productService.getProducts({ onSale: true, limit: 5, sort: 'price-asc' }).subscribe({
-        next: (res) => this.flashDeals.set(res.products)
-      });
+      }, 1000);
     }
 
     private updateProductTimers() {
+      if (this.flashDeals().length === 0) return;
+      
       const activeProducts: Product[] = [];
       
       this.flashDeals().forEach(product => {
+        const timer = this.getProductTimer(product._id);
         if (product.saleEndsAt) {
           const endDate = new Date(product.saleEndsAt).getTime();
           const now = new Date().getTime();
@@ -462,22 +456,34 @@ private loadFlashDeals() {
               seconds: Math.floor((distance % (1000 * 60)) / 1000)
             });
             activeProducts.push(product);
-          } else {
-            this.productTimers.delete(product._id);
           }
         } else if (product.badges?.includes('PROMO')) {
           this.productTimers.set(product._id, { days: 0, hours: 0, minutes: 0, seconds: 0 });
           activeProducts.push(product);
         }
       });
-      
-      if (activeProducts.length !== this.flashDeals().length) {
-        this.flashDeals.set(activeProducts);
-      }
     }
 
     getProductTimer(productId: string) {
-      return this.productTimers.get(productId) || { days: 0, hours: 0, minutes: 0, seconds: 0 };
+      const timer = this.productTimers.get(productId);
+      if (timer) return timer;
+      
+      const product = this.flashDeals().find(p => p._id === productId);
+      if (product?.saleEndsAt) {
+        const endDate = new Date(product.saleEndsAt).getTime();
+        const now = new Date().getTime();
+        const distance = endDate - now;
+        
+        if (distance > 0) {
+          return {
+            days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+            minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+            seconds: Math.floor((distance % (1000 * 60)) / 1000)
+          };
+        }
+      }
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
     }
 
 getDiscount(product: Product): number {
