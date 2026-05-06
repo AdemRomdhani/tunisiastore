@@ -56,6 +56,7 @@ exports.addRecentlyViewed = async (req, res) => {
     console.log('=== addRecentlyViewed ===');
     console.log('productId:', productId);
     console.log('deviceId:', deviceId);
+    console.log('All headers:', req.headers);
     
     if (!productId) {
       return res.status(400).json({ success: false, message: 'productId required' });

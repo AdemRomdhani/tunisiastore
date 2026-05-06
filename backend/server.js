@@ -20,7 +20,8 @@ app.set('trust proxy', 1);
 // Explicit CORS - required for credentials
 const corsOptions = {
   origin: ['https://tunisiastore.onrender.com', 'https://tunisia-store-frontend.onrender.com'],
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-device-id']
 };
 app.use(cors(corsOptions));
 
