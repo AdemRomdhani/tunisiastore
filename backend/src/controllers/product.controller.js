@@ -22,7 +22,13 @@ exports.getProducts = async (req, res) => {
     const safeLimit = Math.min(Number(limit) || 12, maxLimit);
 
     const query = { isActive: true };
-    console.log('[getProducts] onSale param:', onSale);
+
+    if (onSale === 'true') {
+      query.$or = [
+        { onSale: true, $or: [{ saleEndsAt: { $gt: new Date() } }, { saleEndsAt: { $exists: false } }] },
+        { badges: { $in: ['PROMO'] }, $or: [{ saleEndsAt: { $gt: new Date() } }, { saleEndsAt: { $exists: false } }, { onSale: { $ne: false } }] }
+      ];
+    }
 
     // Resolve category slug to ObjectId - optional filter
     if (category) {
@@ -46,6 +52,7 @@ exports.getProducts = async (req, res) => {
         { badges: { $in: ['PROMO'] }, saleEndsAt: { $gt: new Date() } },
         { badges: { $in: ['PROMO'] }, saleEndsAt: { $exists: false }, onSale: { $ne: false } }
       ];
+      console.log('[getProducts] onSale filter applied');
     } else if (onSale === 'false') {
       query.$and = [
         { onSale: false },
