@@ -90,7 +90,7 @@ exports.createProductAdmin = async (req, res) => {
     // Handle sale timer
     const onSale = body.onSale === 'true' || body.onSale === true;
     let saleEndsAt = undefined;
-    if (body.saleEndsAt) {
+    if (body.saleEndsAt && body.saleEndsAt.trim()) {
       const saleEndsAtRaw = new Date(body.saleEndsAt);
       if (!isNaN(saleEndsAtRaw.getTime())) {
         saleEndsAt = saleEndsAtRaw;
@@ -144,11 +144,13 @@ exports.updateProductAdmin = async (req, res) => {
     }
 
     // Handle sale timer - save exactly what frontend sends
-    if (body.saleEndsAt) {
+    if (body.saleEndsAt && body.saleEndsAt.trim()) {
       const saleEndsAtRaw = new Date(body.saleEndsAt);
       if (!isNaN(saleEndsAtRaw.getTime())) {
         updateData.saleEndsAt = saleEndsAtRaw;
       }
+    } else {
+      updateData.saleEndsAt = null;
     }
     if (body.onSale !== undefined) {
       updateData.onSale = body.onSale === 'true';

@@ -42,7 +42,8 @@ exports.getProducts = async (req, res) => {
       query.$or = [
         { onSale: true, saleEndsAt: { $gt: new Date() } },
         { onSale: true, saleEndsAt: { $exists: false } },
-        { badges: 'PROMO', onSale: { $ne: false } }
+        { badges: { $in: ['PROMO'] }, saleEndsAt: { $gt: new Date() } },
+        { badges: { $in: ['PROMO'] }, saleEndsAt: { $exists: false }, onSale: { $ne: false } }
       ];
     } else if (onSale === 'false') {
       query.$and = [
