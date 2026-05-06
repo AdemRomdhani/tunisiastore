@@ -116,9 +116,9 @@ import { environment } from '../../../../environments/environment';
               </label>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Fin de la promo</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Date fin de la promo</label>
               <input 
-                type="datetime-local" 
+                type="date" 
                 [(ngModel)]="product.saleEndsAt" 
                 name="saleEndsAt" 
                 class="input-field"
@@ -306,14 +306,12 @@ export class AdminProductFormComponent implements OnInit, OnDestroy {
   }
 
   private formatDateForInput(date: Date): string {
-    if (!date || isNaN(date.getTime())) return '';
+    if (!date || isNaN(new Date(date).getTime())) return '';
     const d = new Date(date);
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    return `${year}-${month}-${day}`;
   }
 
   saveProduct() {
