@@ -23,7 +23,8 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/manifest.webmanifest"
+              "src/manifest.webmanifest",
+              { "glob": "_redirects", "input": "src/assets", "output": "/" }
             ],
             "styles": [
               "src/styles.css"
@@ -95,7 +96,8 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/manifest.webmanifest"
+              "src/manifest.webmanifest",
+              { "glob": "_redirects", "input": "src/assets", "output": "/" }
             ],
             "styles": [
               "src/styles.css"
