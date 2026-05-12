@@ -8,13 +8,14 @@ import { CategoryService, Category } from '../../../core/services/category.servi
 import { ProductService } from '../../../core/services/product.service';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../../../environments/environment';
+import { ImageUrlPipe } from '../../pipes/image-url.pipe';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ImageUrlPipe],
   template: `
     <nav class="bg-white shadow-card sticky top-0 z-50">
       <!-- Top bar -->
@@ -116,7 +117,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                         class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-surface-50 transition-colors"
                       >
                         @if (product.media?.images?.length > 0) {
-                          <img [src]="apiUrl + product.media.images[0]" [alt]="product.name" class="w-10 h-10 object-cover rounded-lg flex-shrink-0">
+                          <img [src]="product.media.images[0] | imageUrl" [alt]="product.name" class="w-10 h-10 object-cover rounded-lg flex-shrink-0">
                         } @else {
                           <div class="w-10 h-10 bg-surface-100 rounded-lg flex items-center justify-center flex-shrink-0">
                             <svg class="w-5 h-5 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -225,7 +226,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                         class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-surface-50 transition-colors"
                       >
                         @if (product.media?.images?.length > 0) {
-                          <img [src]="apiUrl + product.media.images[0]" [alt]="product.name" class="w-10 h-10 object-cover rounded-lg flex-shrink-0">
+                          <img [src]="product.media.images[0] | imageUrl" [alt]="product.name" class="w-10 h-10 object-cover rounded-lg flex-shrink-0">
                         } @else {
                           <div class="w-10 h-10 bg-surface-100 rounded-lg flex items-center justify-center flex-shrink-0">
                             <svg class="w-5 h-5 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -384,7 +385,9 @@ export class NavbarComponent implements OnInit {
   highlightedIndex = -1;
   mobileMenuOpen = signal(false);
   mobileSearchOpen = signal(false);
-  apiUrl = environment.apiUrl.replace('/api', '');
+  apiUrl = environment.production
+    ? 'https://tunisiastore.onrender.com'
+    : environment.apiUrl.replace('/api', '');
 
   searchInput = '';
 
