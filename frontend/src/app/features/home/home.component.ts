@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,6 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-home',
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, ProductCardComponent, FormsModule],
   template: `
     <div class="min-h-screen">
@@ -162,60 +161,101 @@ import { environment } from '../../../environments/environment';
         </div>
       </section>
 
-      <!-- Flash Deals Section -->
-      <section class="py-8 sm:py-12 bg-gradient-to-r from-orange-500 to-red-600">
-        <div class="container mx-auto px-3 sm:px-4">
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-8">
-            <div class="flex items-center gap-3 sm:gap-4">
-              <div class="bg-white text-orange-600 px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl">
-                <div class="flex items-center gap-2">
-                  <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11a1 1 0 11-2 0 1 1 0 012 0zm0-8a1 1 0 011 1v4a1 1 0 01-2 0V5a1 1 0 011-1z"/>
-                  </svg>
-                  <span class="text-lg sm:text-2xl font-bold">⚡</span>
-                </div>
-              </div>
-              <div>
-                <h2 class="text-lg sm:text-2xl font-bold text-white">Offres Flash</h2>
-                <p class="text-orange-100 text-xs sm:text-base">Ne manquez pas ces affaires limitées!</p>
-              </div>
-            </div>
-            @if (flashDeals().length > 0 && flashDeals()[0].saleEndsAt) {
-              <div class="flex items-center gap-1.5 sm:gap-2 bg-white/10 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full flex-wrap">
-                <span class="text-white text-xs sm:text-sm font-medium">Fin:</span>
-                <span class="bg-white text-orange-600 font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg text-xs sm:text-sm">{{ getProductTimer(flashDeals()[0]._id).hours }}h</span>
-                <span class="text-white">:</span>
-                <span class="bg-white text-orange-600 font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg text-xs sm:text-sm">{{ getProductTimer(flashDeals()[0]._id).minutes }}m</span>
-                <span class="text-white">:</span>
-                <span class="bg-white text-orange-600 font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg text-xs sm:text-sm">{{ getProductTimer(flashDeals()[0]._id).seconds }}s</span>
-              </div>
-            }
+      <!-- Flash Deals Section - Premium Redesign -->
+      @if (flashDeals().length > 0) {
+        <section class="py-12 sm:py-20 bg-surface-950 relative overflow-hidden">
+          <!-- Ambient Background Effects -->
+          <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute top-[-20%] right-[-10%] w-[50%] h-[70%] bg-primary-600/20 blur-[120px] rounded-full"></div>
+            <div class="absolute bottom-[-20%] left-[-10%] w-[40%] h-[60%] bg-orange-600/10 blur-[100px] rounded-full"></div>
           </div>
 
-          @if (flashDeals().length > 0) {
-            <div class="flex overflow-x-auto pb-2 gap-2 sm:gap-4 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:overflow-visible snap-x">
-              @for (product of flashDeals(); track product._id) {
-                <div class="flex-shrink-0 w-40 sm:w-auto snap-start">
-                  <app-product-card [product]="product"/>
+          <div class="container mx-auto px-4 relative z-10">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
+              <div class="text-center md:text-left">
+                <div class="inline-flex items-center gap-2 bg-primary-500/10 border border-primary-500/20 px-3 py-1 rounded-full mb-4">
+                  <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
+                  </span>
+                  <span class="text-primary-400 text-xs font-bold uppercase tracking-widest">Offres Limitées</span>
+                </div>
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-4">Offres <span class="text-primary-500">Flash</span></h2>
+                <p class="text-surface-400 max-w-md">Profitez de réductions exceptionnelles sur une sélection de produits. Ne tardez pas, le temps presse !</p>
+              </div>
+
+              @if (getSoonestExpiringDeal(); as timer) {
+                <div class="flex flex-col items-center gap-4 bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-2xl">
+                  <span class="text-surface-400 text-xs font-medium uppercase tracking-wider">La promo se termine dans</span>
+                  <div class="flex items-center gap-3">
+                    @if (timer.days > 0) {
+                      <div class="flex flex-col items-center">
+                        <div class="bg-primary-600 text-white w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black shadow-lg shadow-primary-600/20 mb-1">
+                          {{ timer.days }}
+                        </div>
+                        <span class="text-[10px] text-surface-500 uppercase font-bold">Jours</span>
+                      </div>
+                      <span class="text-2xl font-bold text-white mb-6">:</span>
+                    }
+                    <div class="flex flex-col items-center">
+                      <div class="bg-primary-600 text-white w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black shadow-lg shadow-primary-600/20 mb-1">
+                        {{ formatTime(timer.hours) }}
+                      </div>
+                      <span class="text-[10px] text-surface-500 uppercase font-bold">Heures</span>
+                    </div>
+                    <span class="text-2xl font-bold text-white mb-6">:</span>
+                    <div class="flex flex-col items-center">
+                      <div class="bg-primary-600 text-white w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black shadow-lg shadow-primary-600/20 mb-1">
+                        {{ formatTime(timer.minutes) }}
+                      </div>
+                      <span class="text-[10px] text-surface-500 uppercase font-bold">Minutes</span>
+                    </div>
+                    <span class="text-2xl font-bold text-white mb-6">:</span>
+                    <div class="flex flex-col items-center">
+                      <div class="bg-primary-600 text-white w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black shadow-lg shadow-primary-600/20 mb-1">
+                        {{ formatTime(timer.seconds) }}
+                      </div>
+                      <span class="text-[10px] text-surface-500 uppercase font-bold">Secondes</span>
+                    </div>
+                  </div>
                 </div>
               }
             </div>
-          } @else {
-            <div class="text-center py-6 sm:py-8">
-              <p class="text-white/70 text-sm sm:text-lg">Revenez bientôt pour les prochaines offres flash!</p>
-            </div>
-          }
 
-          <div class="text-center mt-6 sm:mt-8">
-            <a routerLink="/products" [queryParams]="{onSale: true}" class="inline-flex items-center gap-2 bg-white text-orange-600 px-5 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold hover:bg-gray-100 transition shadow-lg text-sm sm:text-base">
-              Voir toutes les offres
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-              </svg>
-            </a>
+            <!-- Products Grid/Carousel -->
+            <div class="flex overflow-x-auto pb-8 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 sm:overflow-visible snap-x no-scrollbar">
+              @for (product of flashDeals(); track product._id) {
+                <div class="flex-shrink-0 w-64 sm:w-auto snap-start flex flex-col gap-3 group">
+                  <div class="relative">
+                    <app-product-card [product]="product"/>
+                    <!-- Small over-card timer for each product -->
+                    @if (getProductTimer(product._id); as timer) {
+                      <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white rounded-full px-3 py-1 shadow-xl border border-surface-100 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <svg class="w-3 h-3 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-[10px] font-bold text-surface-900">
+                          @if (timer.days > 0) { {{ timer.days }}j }
+                          {{ formatTime(timer.hours) }}:{{ formatTime(timer.minutes) }}:{{ formatTime(timer.seconds) }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="text-center mt-12">
+              <a routerLink="/products" [queryParams]="{onSale: true}" class="group inline-flex items-center gap-3 bg-white/10 hover:bg-primary-600 border border-white/10 hover:border-primary-500 text-white px-8 py-4 rounded-2xl font-bold transition-all duration-300 shadow-xl backdrop-blur-md">
+                Explorer toutes les promotions
+                <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+              </a>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      }
 
       <!-- New Arrivals -->
       <section class="py-10 sm:py-16 bg-gray-50">
@@ -258,11 +298,11 @@ import { environment } from '../../../environments/environment';
           <div class="flex overflow-x-auto pb-2 gap-3 sm:gap-6 md:grid md:grid-cols-3 md:overflow-visible snap-x">
             @for (bundle of bundles(); track bundle._id) {
               <div class="flex-shrink-0 w-64 sm:w-auto snap-start bg-white rounded-xl p-4 hover:shadow-lg transition">
-                <h3 class="font-bold text-gray-900 mb-2">{{ bundle.name }}</h3>
-                <p class="text-sm text-gray-500 mb-3 line-clamp-2">{{ bundle.description }}</p>
+                <h3 class="font-bold text-gray-900 mb-2">{{ bundle?.name }}</h3>
+                <p class="text-sm text-gray-500 mb-3 line-clamp-2">{{ bundle?.description }}</p>
                 <div class="flex items-baseline gap-2 mb-3 flex-wrap">
-                  <span class="text-lg sm:text-xl font-bold text-indigo-600">{{ bundle.pricing.price | number:'1.3' }} DT</span>
-                  @if (bundle.pricing.originalPrice > bundle.pricing.price) {
+                  <span class="text-lg sm:text-xl font-bold text-indigo-600">{{ bundle?.pricing?.price | number:'1.3' }} DT</span>
+                  @if (bundle?.pricing?.originalPrice && bundle.pricing.originalPrice > bundle.pricing.price) {
                     <span class="text-xs text-gray-400 line-through">{{ bundle.pricing.originalPrice | number:'1.3' }}</span>
                     <span class="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded">-{{ bundle.pricing.discountPercentage }}%</span>
                   }
@@ -346,10 +386,11 @@ import { environment } from '../../../environments/environment';
     :host { display: block; }
   `]
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   private productService = inject(ProductService);
   private seo = inject(SeoService);
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
   
   featuredProducts = signal<Product[]>([]);
   newProducts = signal<Product[]>([]);
@@ -357,7 +398,13 @@ export class HomeComponent implements OnInit {
   flashDeals = signal<Product[]>([]);
 
   productTimers = new Map<string, { days: number; hours: number; minutes: number; seconds: number }>();
-  private countdownInterval: any;
+  private countdownInterval: any[] = [];
+
+  ngOnDestroy() {
+    if (this.countdownInterval.length > 0) {
+      this.countdownInterval.forEach(id => clearInterval(id));
+    }
+  }
 
   features = [
     { icon: '🚚', title: 'Livraison rapide', desc: '24-48h dans le Grand Tunis' },
@@ -419,13 +466,20 @@ private loadFlashDeals() {
     }
 
     private startCountdown() {
-      // Update timer display every second
+      // Update timer display every second for smooth countdown
       this.updateProductTimers();
-      // Refresh from backend every 15 seconds to get real-time data
-      this.countdownInterval = setInterval(() => {
+      
+      const uiInterval = setInterval(() => {
         this.updateProductTimers();
+      }, 1000);
+
+      // Refresh from backend every 15 seconds to get real-time data
+      const refreshInterval = setInterval(() => {
         this.loadFlashDealsRefresh();
       }, 15000);
+
+      // Store intervals to clear them on destroy
+      this.countdownInterval = [uiInterval, refreshInterval];
     }
 
     private loadFlashDealsRefresh() {
@@ -444,18 +498,29 @@ private loadFlashDeals() {
           const distance = endDate - now;
           
           if (distance > 0) {
+            // Calculate components
+            const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((distance % (1000 * 60)) / 1000);
+
             this.productTimers.set(product._id, {
-              days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-              hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-              minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-              seconds: Math.floor((distance % (1000 * 60)) / 1000)
+              days: d,
+              // If we have days, we might want to show them or add them to hours
+              // Let's keep them separate in the object but handle display in template or here
+              hours: h, 
+              minutes: m,
+              seconds: s
             });
             activeProducts.push(product);
           } else {
             this.productTimers.delete(product._id);
           }
-        } else if (product.badges?.includes('PROMO')) {
-          this.productTimers.set(product._id, { days: 0, hours: 0, minutes: 0, seconds: 0 });
+        } else {
+          // Keep product in list even if it has no timer or badge
+          if (product.badges?.includes('PROMO')) {
+            this.productTimers.set(product._id, { days: 0, hours: 0, minutes: 0, seconds: 0 });
+          }
           activeProducts.push(product);
         }
       });
@@ -463,10 +528,39 @@ private loadFlashDeals() {
       if (activeProducts.length !== this.flashDeals().length) {
         this.flashDeals.set(activeProducts);
       }
+      this.cdr.markForCheck();
+    }
+
+    getSoonestExpiringDeal(): { days: number; hours: number; minutes: number; seconds: number } | null {
+      if (this.flashDeals().length === 0) return null;
+      
+      let soonest: { days: number; hours: number; minutes: number; seconds: number } | null = null;
+      let minDistance = Infinity;
+
+      this.flashDeals().forEach(p => {
+        if (p.saleEndsAt) {
+          const distance = new Date(p.saleEndsAt).getTime() - new Date().getTime();
+          if (distance > 0 && distance < minDistance) {
+            minDistance = distance;
+            soonest = {
+              days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+              hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+              minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+              seconds: Math.floor((distance % (1000 * 60)) / 1000)
+            };
+          }
+        }
+      });
+      return soonest;
     }
 
     getProductTimer(productId: string) {
-      return this.productTimers.get(productId) || { days: 0, hours: 0, minutes: 0, seconds: 0 };
+      return this.productTimers.get(productId);
+    }
+
+    formatTime(val: number | undefined): string {
+      if (val === undefined || isNaN(val)) return '00';
+      return val < 10 ? `0${val}` : `${val}`;
     }
 
 getDiscount(product: Product): number {
@@ -484,3 +578,4 @@ getStockLeft(product: Product): number {
       return Math.max(0, qty);
     }
 }
+

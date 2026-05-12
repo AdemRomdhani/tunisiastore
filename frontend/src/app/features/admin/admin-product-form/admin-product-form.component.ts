@@ -107,23 +107,40 @@ import { environment } from '../../../../environments/environment';
             </div>
           </div>
 
-          <!-- Sale Timer -->
-          <div class="grid grid-cols-1 gap-4">
-            <div class="flex items-center gap-4">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" [(ngModel)]="product.onSale" name="onSale" class="w-4 h-4 text-primary-600 rounded">
-                <span class="text-sm font-medium text-gray-700">En vente promo</span>
-              </label>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Fin de la promo</label>
-              <input 
-                type="datetime-local" 
-                [(ngModel)]="product.saleEndsAt" 
-                name="saleEndsAt" 
-                class="input-field"
-                (change)="onSaleDatePicked()"
-              >
+          <!-- Sale & Promotions -->
+          <div class="bg-primary-50 rounded-xl p-4 border border-primary-100 space-y-4">
+            <h3 class="text-sm font-bold text-primary-900 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"/>
+              </svg>
+              Offre Flash & Promotion
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex items-center gap-4">
+                <label class="flex items-center gap-2 cursor-pointer group">
+                  <input type="checkbox" [(ngModel)]="product.onSale" name="onSale" class="w-5 h-5 text-primary-600 rounded-lg border-gray-300 focus:ring-primary-500">
+                  <div class="flex flex-col">
+                    <span class="text-sm font-semibold text-gray-900 group-hover:text-primary-700 transition">En vente promo</span>
+                    <span class="text-xs text-gray-500">Activer le prix promotionnel</span>
+                  </div>
+                </label>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Date de fin (Offre Flash)</label>
+                <div class="relative">
+                  <input 
+                    type="datetime-local" 
+                    [(ngModel)]="product.saleEndsAt" 
+                    name="saleEndsAt" 
+                    class="input-field pr-10"
+                    (change)="onSaleDatePicked()"
+                    [required]="product.onSale"
+                  >
+                </div>
+                <p class="text-[10px] text-gray-400 mt-1">Laissez vide pour une promo permanente</p>
+              </div>
             </div>
           </div>
 
