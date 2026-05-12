@@ -5,7 +5,6 @@ services:
     region: frankfurt
     buildCommand: npm install && mkdir -p dist/tunisia-store && cp -r ../frontend/dist/tunisia-store/browser dist/tunisia-store/
     startCommand: node server.js
-    rootDir: backend
     envVars:
       - key: NODE_ENV
         value: production

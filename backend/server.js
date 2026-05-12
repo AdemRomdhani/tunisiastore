@@ -66,7 +66,8 @@ app.use(express.urlencoded({ extended: true, limit: '500kb' }));
 app.use('/uploads', express.static('uploads'));
 
 // Serve Angular static files
-const distPath = path.join(__dirname, '../dist/tunisia-store/browser');
+const rootDir = path.resolve(__dirname, '..');
+const distPath = path.join(rootDir, 'dist/tunisia-store/browser');
 console.log('📁 Serving static files from:', distPath);
 app.use(express.static(distPath));
 
@@ -205,7 +206,7 @@ app.get('/api/test/email', async (req, res) => {
 
 // SPA fallback - serve index.html for all non-API routes (MUST be last)
 app.get(/^(?!\/api\/).*/, (req, res) => {
-  const indexPath = path.join(__dirname, '../dist/tunisia-store/browser/index.html');
+  const indexPath = path.join(rootDir, 'dist/tunisia-store/browser/index.html');
   console.log('📄 SPA fallback for:', req.path, '| index exists:', require('fs').existsSync(indexPath));
   res.sendFile(indexPath);
 });

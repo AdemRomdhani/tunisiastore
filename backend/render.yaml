@@ -3,7 +3,7 @@ services:
     name: tunisiastore
     env: node
     region: frankfurt
-    buildCommand: npm install && npm run build && mkdir -p dist/tunisia-store && cp -r ../frontend/dist/tunisia-store/browser dist/tunisia-store/
+    buildCommand: npm install && mkdir -p dist/tunisia-store && cp -r ../frontend/dist/tunisia-store/browser dist/tunisia-store/
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
