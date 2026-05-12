@@ -1,5 +1,5 @@
 const Product = require('../models/Product');
-const Category = require('../models/Category'); // make sure this import exists
+const Category = require('../models/Category');
 
 exports.autocomplete = async (req, res) => {
   try {
@@ -45,13 +45,11 @@ exports.getProducts = async (req, res) => {
       inStock
     } = req.query;
 
-    // Enforce max limit to prevent abuse
     const maxLimit = 50;
     const safeLimit = Math.min(Number(limit) || 12, maxLimit);
 
-const query = { isActive: true };
+    const query = { isActive: true };
 
-    // Resolve category slug to ObjectId - optional filter
     if (category) {
       const categoryDoc = await Category.findOne({ slug: category.toLowerCase().trim() });
       if (categoryDoc) {
@@ -65,19 +63,23 @@ const query = { isActive: true };
         { badges: { $in: ['BESTSELLER', 'PROMO'] } }
       ];
     }
+
     if (onSale === 'true') {
+      const now = new Date();
       query.$or = [
-        { onSale: true },
-        { badges: { $in: ['PROMO'] }, onSale: { $ne: false } },
+        // Products explicitly marked onSale with a future or no expiry date
+        { onSale: true, saleEndsAt: { $gt: now } },
+        { onSale: true, saleEndsAt: { $exists: false } },
+        { onSale: true, saleEndsAt: null },
+        // Products with PROMO badge
+        { badges: { $in: ['PROMO'] } },
+        // Products with a discounted price (originalPrice > price)
         { $expr: { $gt: ['$pricing.originalPrice', '$pricing.price'] } }
       ];
     } else if (onSale === 'false') {
-      query.$and = [
-        { onSale: false },
-        { badges: { $ne: 'PROMO' } },
-        { $expr: { $lte: ['$pricing.originalPrice', '$pricing.price'] } }
-      ];
+      query.onSale = { $ne: true };
     }
+
     if (inStock === 'true') query['inventory.quantity'] = { $gt: 0 };
     if (badges) query.badges = { $in: badges.split(',') };
     
@@ -94,7 +96,6 @@ const query = { isActive: true };
         { shortDescription: { $regex: escapedSearch, $options: 'i' } },
         { description: { $regex: escapedSearch, $options: 'i' } }
       ];
-      console.log('[Search] Looking for:', search, '| Query:', query.$or);
     }
 
     const sortOptions = {};
@@ -112,17 +113,6 @@ const query = { isActive: true };
       .limit(safeLimit)
       .skip((page - 1) * safeLimit);
 
-    console.log('[Search] Found', products.length, 'products for search:', search);
-
-    if (onSale === 'true') {
-      console.log('[getProducts] Returning products:', products.map(p => ({
-        name: p.name,
-        onSale: p.onSale,
-        saleEndsAt: p.saleEndsAt,
-        badges: p.badges
-      })));
-    }
-
     const count = await Product.countDocuments(query);
 
     res.json({
@@ -136,7 +126,7 @@ const query = { isActive: true };
       }
     });
   } catch (error) {
-    console.error('getProducts error:', error); // log full error server-side
+    console.error('getProducts error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -151,7 +141,6 @@ exports.getProduct = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    // Increment view count (you might want to track this separately)
     res.json({ success: true, product });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -242,7 +231,6 @@ exports.addReview = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    // Check if user already reviewed
     const existingReview = product.reviews.find(r => r.user.toString() === req.user.id);
     if (existingReview) {
       return res.status(400).json({ success: false, message: 'Vous avez déjà noté ce produit' });
@@ -260,12 +248,10 @@ exports.addReview = async (req, res) => {
 
     product.reviews.push(newReview);
 
-    // Update ratings average
     const totalRating = product.reviews.reduce((sum, r) => sum + r.rating, 0);
     product.ratings.average = Math.round((totalRating / product.reviews.length) * 10) / 10;
     product.ratings.count = product.reviews.length;
 
-    // Update distribution
     const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     product.reviews.forEach(r => {
       distribution[r.rating] = (distribution[r.rating] || 0) + 1;
