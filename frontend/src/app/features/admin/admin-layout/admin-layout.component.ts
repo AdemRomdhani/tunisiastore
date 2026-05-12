@@ -35,12 +35,18 @@ interface NotificationItem {
   imports: [CommonModule, RouterModule, ToastComponent],
   template: `
     <app-toast />
-    
+
+    <!-- Mobile Sidebar Overlay -->
+    @if (sidebarOpen()) {
+      <div class="lg:hidden fixed inset-0 z-30 bg-black/50" (click)="closeSidebar()"></div>
+    }
+
     <div class="min-h-screen bg-gray-50 flex">
       <!-- Sidebar -->
-      <aside 
-        class="fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-300 lg:translate-x-0"
-        [class]="'hidden lg:block -translate-x-full'"
+      <aside
+        class="fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-300"
+        [class.-translate-x-full]="!sidebarOpen()"
+        [class.translate-x-0]="sidebarOpen()"
       >
         <div class="flex flex-col h-full">
           <!-- Logo -->
@@ -103,12 +109,12 @@ interface NotificationItem {
         <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
           <div class="px-6 py-4 flex items-center justify-between">
             <!-- Left: Mobile menu + Breadcrumbs -->
-            <div class="flex items-center gap-4">
-              <button class="lg:hidden p-2 text-gray-500 hover:text-gray-700">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                </svg>
-              </button>
+<div class="flex items-center gap-4">
+               <button (click)="toggleSidebar()" class="lg:hidden p-2 text-gray-500 hover:text-gray-700">
+                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                 </svg>
+               </button>
               <nav class="flex items-center gap-2 text-sm">
                 <span class="text-gray-400">Admin</span>
                 @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
@@ -286,6 +292,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   lastAcknowledgedCounts = signal<{orders: number, contacts: number, returns: number, users: number, stock: number}>({orders: 0, contacts: 0, returns: 0, users: 0, stock: 0});
   notifications = signal<NotificationItem[]>([]);
   showNotifications = signal<boolean>(false);
+  sidebarOpen = signal(false);
   private routerSubscription?: Subscription;
   private pollingInterval?: ReturnType<typeof setInterval>;
 
@@ -355,6 +362,20 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   toggleNotifications() {
     this.showNotifications.set(!this.showNotifications());
+  }
+
+  toggleSidebar() {
+    this.sidebarOpen.update(v => !v);
+    if (this.sidebarOpen()) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+
+  closeSidebar() {
+    this.sidebarOpen.set(false);
+    document.body.style.overflow = '';
   }
 
   clearNotifications() {
