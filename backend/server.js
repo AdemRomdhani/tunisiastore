@@ -74,13 +74,16 @@ app.use(express.static(distPath));
 // Debug route to check what paths are being used
 app.get('/api/debug', (req, res) => {
   const fs = require('fs');
+  const rootDir = path.resolve(__dirname, '..');
+  const distPath = path.join(rootDir, 'dist/tunisia-store/browser');
   const possiblePaths = [
     path.join(__dirname, '../dist/tunisia-store/browser'),
     path.join(__dirname, '../../dist/tunisia-store/browser'),
-    path.join(__dirname, './dist/tunisia-store/browser')
+    path.join(rootDir, 'dist/tunisia-store/browser'),
+    path.join(__dirname, '../../frontend/dist/tunisia-store/browser'),
   ];
   const results = possiblePaths.map(p => ({ path: p, exists: fs.existsSync(p) }));
-  res.json({ debug: results, __dirname });
+  res.json({ debug: results, __dirname, rootDir, distPath });
 });
 
 // Connect to MongoDB and seed
