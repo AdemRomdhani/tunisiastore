@@ -44,7 +44,7 @@ interface NotificationItem {
     <div class="min-h-screen bg-gray-50 flex">
       <!-- Sidebar -->
       <aside
-        class="fixed lg:static inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-300 lg:transform-none flex-shrink-0"
+        class="fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-300 lg:transform-none flex-shrink-0"
         [class.-translate-x-full]="!sidebarOpen() && isMobile"
         [class.translate-x-0]="sidebarOpen() || !isMobile"
       >
@@ -104,7 +104,7 @@ interface NotificationItem {
       </aside>
 
 <!-- Main Content -->
-      <main class="flex-1 lg:ml-64 min-h-screen flex flex-col" [class.pt-16]="stockAlerts().length > 0">
+      <main class="flex-1 lg:ml-64 min-h-screen flex flex-col">
         <!-- Top Header -->
         <header class="bg-white border-b border-gray-200 sticky top-0 z-30 flex-shrink-0">
           <div class="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
