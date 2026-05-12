@@ -476,7 +476,7 @@ export class NavbarComponent implements OnInit {
     this.mobileSearchOpen.set(false);
     this.searchInput = '';
     this.searchResults.set([]);
-    this.router.navigate(['/products', product.slug]);
+    this.router.navigate(['/product', product.slug]);
   }
 
   doSearch() {
