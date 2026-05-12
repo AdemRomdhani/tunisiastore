@@ -38,13 +38,13 @@ interface NotificationItem {
 
     <!-- Mobile Sidebar Overlay -->
     @if (sidebarOpen()) {
-      <div class="lg:hidden fixed inset-0 z-30 bg-black/50" (click)="closeSidebar()"></div>
+      <div class="fixed inset-0 z-30 bg-black/50" (click)="closeSidebar()"></div>
     }
 
     <div class="min-h-screen bg-gray-50 flex">
       <!-- Sidebar -->
       <aside
-        class="fixed lg:static inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-300 lg:transform-none"
+        class="fixed lg:static inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-300 lg:transform-none flex-shrink-0"
         [class.-translate-x-full]="!sidebarOpen() && isMobile"
         [class.translate-x-0]="sidebarOpen() || !isMobile"
       >
@@ -103,55 +103,55 @@ interface NotificationItem {
         </div>
       </aside>
 
-      <!-- Main Content -->
-      <main class="flex-1 lg:ml-64" [class.pt-16]="stockAlerts().length > 0">
+<!-- Main Content -->
+      <main class="flex-1 lg:ml-64 min-h-screen flex flex-col" [class.pt-16]="stockAlerts().length > 0">
         <!-- Top Header -->
-        <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
-          <div class="px-6 py-4 flex items-center justify-between">
+        <header class="bg-white border-b border-gray-200 sticky top-0 z-30 flex-shrink-0">
+          <div class="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
             <!-- Left: Mobile menu + Breadcrumbs -->
-<div class="flex items-center gap-4">
-               <button (click)="toggleSidebar()" class="p-2 text-gray-500 hover:text-gray-700">
-                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center gap-3 sm:gap-4">
+               <button (click)="toggleSidebar()" class="p-2 text-gray-500 hover:text-gray-700 flex-shrink-0">
+                 <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                  </svg>
                </button>
-              <nav class="flex items-center gap-2 text-sm">
-                <span class="text-gray-400">Admin</span>
-                @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
-                  <span class="text-gray-400">/</span>
-                  @if (last) {
-                    <span class="font-medium text-gray-900">{{ crumb.label }}</span>
-                  } @else {
-                    <a [routerLink]="crumb.path" class="text-gray-500 hover:text-gray-700">{{ crumb.label }}</a>
-                  }
-                }
-              </nav>
+               <nav class="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm overflow-x-auto no-scrollbar">
+                 <span class="text-gray-400 whitespace-nowrap">Admin</span>
+                 @for (crumb of breadcrumbs(); track crumb.label; let last = $last) {
+                   <span class="text-gray-400 flex-shrink-0">/</span>
+                   @if (last) {
+                     <span class="font-medium text-gray-900 whitespace-nowrap">{{ crumb.label }}</span>
+                   } @else {
+                     <a [routerLink]="crumb.path" class="text-gray-500 hover:text-gray-700 whitespace-nowrap">{{ crumb.label }}</a>
+                   }
+                 }
+               </nav>
             </div>
-            
+
             <!-- Right: User -->
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
               <!-- Notifications Dropdown -->
               <div class="relative">
-                <button 
-                  (click)="toggleNotifications()" 
-                  class="relative p-2 text-gray-500 hover:text-gray-700 transition"
+                <button
+                  (click)="toggleNotifications()"
+                  class="relative p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 transition"
                 >
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                   </svg>
                   @if (totalNotifications > 0) {
-                    <span class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    <span class="absolute top-0.5 right-0.5 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                       {{ totalNotifications > 9 ? '9+' : totalNotifications }}
                     </span>
                   }
                 </button>
                 @if (showNotifications()) {
-                  <div class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-[500px] overflow-y-auto">
+                  <div class="absolute right-0 mt-2 w-72 sm:w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-[500px] overflow-y-auto">
                     <div class="p-3 border-b border-gray-100 flex justify-between items-center">
-                      <h3 class="font-semibold text-gray-800">Notifications</h3>
+                      <h3 class="font-semibold text-gray-800 text-sm">Notifications</h3>
                       <div class="flex items-center gap-2">
                         @if (totalNotifications > 0) {
-                          <button 
+                          <button
                             (click)="clearNotifications(); $event.stopPropagation()"
                             class="text-xs text-blue-600 hover:text-blue-800 font-medium"
                           >
@@ -161,19 +161,19 @@ interface NotificationItem {
                         <span class="text-xs text-gray-500">{{ totalNotifications }} nouveaux</span>
                       </div>
                     </div>
-                    
+
                     @if (notifications().length === 0 && recentOrders().length === 0) {
                       <div class="p-4 text-center text-gray-500">
                         Aucune notification
                       </div>
                     } @else {
                       @for (notif of notifications(); track notif.id) {
-                        <a 
-                          [routerLink]="notif.link" 
+                        <a
+                          [routerLink]="notif.link"
                           class="block p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
                         >
                           <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center"
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
                               [class.bg-blue-100]="notif.type === 'contact'"
                               [class.bg-yellow-100]="notif.type === 'order'"
                               [class.bg-red-100]="notif.type === 'stock'"
@@ -208,29 +208,29 @@ interface NotificationItem {
                                 }
                               }
                             </div>
-                            <div class="flex-1">
-                              <p class="font-medium text-gray-800 text-sm">{{ notif.title }}</p>
-                              <p class="text-xs text-gray-500">{{ notif.subtitle }}</p>
+                            <div class="flex-1 min-w-0">
+                              <p class="font-medium text-gray-800 text-sm truncate">{{ notif.title }}</p>
+                              <p class="text-xs text-gray-500 truncate">{{ notif.subtitle }}</p>
                             </div>
                           </div>
                         </a>
                       }
-                      
+
                       @if (recentOrders().length > 0) {
                         <div class="p-2 border-b border-gray-100 bg-gray-50">
                           <p class="text-xs font-semibold text-gray-600">Commandes récentes</p>
                         </div>
                         @for (order of recentOrders(); track order._id) {
-                          <a 
-                            [routerLink]="'/admin/orders'" 
+                          <a
+                            [routerLink]="'/admin/orders'"
                             class="block p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
                           >
-                            <div class="flex justify-between items-start">
-                              <div>
-                                <p class="font-medium text-gray-800 text-sm">{{ order.orderNumber }}</p>
-                                <p class="text-xs text-gray-500">{{ order.user?.firstName }} {{ order.user?.lastName }}</p>
+                            <div class="flex justify-between items-start gap-2">
+                              <div class="min-w-0">
+                                <p class="font-medium text-gray-800 text-sm truncate">{{ order.orderNumber }}</p>
+                                <p class="text-xs text-gray-500 truncate">{{ order.user?.firstName }} {{ order.user?.lastName }}</p>
                               </div>
-                              <span class="text-xs font-medium px-2 py-1 bg-yellow-100 text-yellow-800 rounded">
+                              <span class="text-xs font-medium px-2 py-1 bg-yellow-100 text-yellow-800 rounded flex-shrink-0">
                                 {{ order.status }}
                               </span>
                             </div>
@@ -242,22 +242,22 @@ interface NotificationItem {
                   </div>
                 }
               </div>
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <span class="text-sm font-bold text-indigo-600">
+              <div class="flex items-center gap-2 sm:gap-3">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                  <span class="text-xs sm:text-sm font-bold text-indigo-600">
                     {{ userInitials }}
                   </span>
                 </div>
-                <div class="hidden sm:block">
-                  <p class="text-sm font-medium text-gray-900">{{ authService.currentUser()?.firstName }}</p>
-                  <p class="text-xs text-gray-500">{{ authService.currentUser()?.email }}</p>
+                <div class="hidden sm:block min-w-0">
+                  <p class="text-sm font-medium text-gray-900 truncate">{{ authService.currentUser()?.firstName }}</p>
+                  <p class="text-xs text-gray-500 truncate">{{ authService.currentUser()?.email }}</p>
                 </div>
-                <a 
-                  routerLink="/" 
-                  class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition ml-2"
+                <a
+                  routerLink="/"
+                  class="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition flex-shrink-0"
                   title="Voir le site"
                 >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                   </svg>
                   <span class="hidden md:inline">Site</span>
@@ -266,9 +266,9 @@ interface NotificationItem {
             </div>
           </div>
         </header>
-        
+
         <!-- Page Content -->
-        <div class="p-6">
+        <div class="p-3 sm:p-4 lg:p-6 flex-1">
           <router-outlet/>
         </div>
       </main>
