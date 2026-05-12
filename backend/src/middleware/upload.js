@@ -77,7 +77,7 @@ const upload = multer({
 upload.getImageUrl = (file) => {
   if (!file) return 'https://placehold.co/400x400/e2e8f0/1e293b?text=No+Image';
   
-  // If using local storage
+  // If using local storage - return path as-is since express serves it at /uploads
   if (!useCloudinary && file.path) {
     return file.path;
   }

@@ -16,32 +16,28 @@ function isTokenExpired(token: string): boolean {
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = localStorage.getItem('token');
-  const router = inject(Router);
-  const authService = inject(AuthService);
 
   if (token && !isTokenExpired(token)) {
     req = req.clone({
       setHeaders: { Authorization: `Bearer ${token}` }
     });
-  } else if (token && isTokenExpired(token)) {
-    authService.clearAuth();
   }
 
   return next(req).pipe(
     catchError(err => {
-      // Server is completely down / network error
+      const router = inject(Router);
+      const authService = inject(AuthService);
+      
       if (err.status === 0) {
         authService.clearAuth();
         router.navigate(['/login']);
         return throwError(() => err);
       }
 
-      // Only logout on 401 for non-admin routes
       if (err.status === 401 && !router.url.startsWith('/admin')) {
         authService.clearAuth();
         router.navigate(['/login']);
       }
-      // On admin routes with 401, don't logout - just throw the error
       return throwError(() => err);
     })
   );

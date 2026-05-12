@@ -19,7 +19,9 @@ app.set('trust proxy', 1);
 
 // Explicit CORS - required for credentials
 const corsOptions = {
-  origin: ['https://tunisiastore.onrender.com', 'https://tunisia-store-frontend.onrender.com'],
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://tunisiastore.onrender.com', 'https://tunisia-store-frontend.onrender.com']
+    : ['http://localhost:4200', 'http://localhost:3000'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization', 'x-device-id']
 };

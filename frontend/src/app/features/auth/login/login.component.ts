@@ -10,14 +10,14 @@ import { ToastService } from '../../../core/services/toast.service';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
-    <div class="min-h-screen flex items-center justify-center bg-surface-50 py-12 px-4">
+    <div class="min-h-screen flex items-center justify-center bg-surface-50 py-8 sm:py-12 px-3 sm:px-4">
       <div class="max-w-md w-full">
-        <div class="text-center mb-8">
-          <h1 class="text-3xl font-bold text-surface-900">Connexion</h1>
+        <div class="text-center mb-6 sm:mb-8">
+          <h1 class="text-2xl sm:text-3xl font-bold text-surface-900">Connexion</h1>
           <p class="text-surface-500 mt-2">Accédez à votre compte</p>
         </div>
 
-        <div class="bg-surface-50 rounded-2xl shadow-card p-8">
+        <div class="bg-surface-50 rounded-2xl shadow-card p-5 sm:p-8">
           <form (ngSubmit)="login()" class="space-y-5">
             <div>
               <label class="block text-sm font-medium text-surface-700 mb-2">Email</label>

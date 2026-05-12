@@ -189,14 +189,14 @@ import { environment } from '../../../environments/environment';
           <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
             <h2 class="text-lg font-bold mb-4">Récapitulatif</h2>
             
-            <div class="space-y-3 mb-4 max-h-64 overflow-y-auto">
+              <div class="space-y-3 mb-4 max-h-64 overflow-y-auto">
               @for (item of cartItems(); track item._id) {
                 <div class="flex gap-3">
                   <img [src]="item.product.media.images[0] | imageUrl" class="w-16 h-16 object-contain bg-gray-50 rounded" width="64" height="64">
                   <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium truncate">{{ item.product.name }}</p>
                     <p class="text-xs text-gray-500">Qté: {{ item.quantity }}</p>
-                    <p class="text-sm font-bold text-primary-600">{{ item.product.pricing.price * item.quantity | number:'1.3' }} DT</p>
+                    <p class="text-sm font-bold text-primary-600">{{ item.product.pricing.price * item.quantity | number:'1.2-2' }} DT</p>
                   </div>
                 </div>
               }
@@ -204,18 +204,18 @@ import { environment } from '../../../environments/environment';
 
             <div class="border-t pt-4 space-y-2 text-sm">
               <div class="flex justify-between text-gray-600">
-                <span>Sous-total</span>
-                <span>{{ subtotal() | number:'1.3' }} DT</span>
+                <span>Sous-total HT</span>
+                <span>{{ subtotal() | number:'1.2-2' }} DT</span>
               </div>
               <div class="flex justify-between text-gray-600">
                 <span>Livraison</span>
-                <span>{{ shippingCost() | number:'1.3' }} DT</span>
+                <span>{{ shippingCost() === 0 ? 'gratuite' : (shippingCost() | number:'1.2-2') + ' DT' }}</span>
               </div>
               
               @if (discount() > 0) {
                 <div class="flex justify-between text-green-600">
                   <span>Réduction (-)</span>
-                  <span>-{{ discount() | number:'1.3' }} DT</span>
+                  <span>-{{ discount() | number:'1.2-2' }} DT</span>
                 </div>
               }
 
@@ -264,22 +264,22 @@ import { environment } from '../../../environments/environment';
               
               <div class="border-t pt-2 flex justify-between text-gray-600">
                 <span>Montant HT</span>
-                <span>{{ ht() | number:'1.3' }} DT</span>
+                <span>{{ ht() | number:'1.2-2' }} DT</span>
               </div>
               <div class="flex justify-between text-gray-600">
                 <span>TVA (19%)</span>
-                <span>{{ tva() | number:'1.3' }} DT</span>
+                <span>{{ tva() | number:'1.2-2' }} DT</span>
               </div>
               @if (timbre() > 0) {
                 <div class="flex justify-between text-gray-600">
                   <span>Timbre</span>
-                  <span>{{ timbre() | number:'1.3' }} DT</span>
+                  <span>{{ timbre() | number:'1.2-2' }} DT</span>
                 </div>
               }
               
               <div class="border-t pt-2 flex justify-between text-lg font-bold">
                 <span>Total TTC</span>
-                <span class="text-primary-600">{{ ttc() | number:'1.3' }} DT</span>
+                <span class="text-primary-600">{{ ttc() | number:'1.2-2' }} DT</span>
               </div>
             </div>
 
@@ -325,12 +325,16 @@ export class CheckoutComponent implements OnInit {
   });
 
   shippingCostValue = signal(7);
-  total = computed(() => this.subtotal() + this.shippingCost() - this.discount());
-  
-  ht = computed(() => this.total());
-  tva = computed(() => Math.round(this.ht() * 0.19 * 1000) / 1000);
+
+  // Professional calculation:
+  // Discount applies to products (subtotal) only — NOT to shipping
+  // HT = (subtotal - discount) + shipping
+  // TVA = 19% × HT
+  // TTC = HT + TVA + timbre
+  ht = computed(() => (this.subtotal() - this.discount()) + this.shippingCost());
+  tva = computed(() => Math.round(this.ht() * 0.19 * 100) / 100);
   timbre = computed(() => this.paymentMethod === 'CASH_ON_DELIVERY' ? 1 : 0);
-  ttc = computed(() => this.ht() + this.tva() + this.timbre());
+  ttc = computed(() => Math.round((this.ht() + this.tva() + this.timbre()) * 100) / 100);
   
   discount = signal(0);
   

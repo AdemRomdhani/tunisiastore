@@ -37,8 +37,11 @@ export class CartService {
   subtotal = computed(() => 
     this.cartItems().reduce((sum, item) => sum + (item.product.pricing.price * item.quantity), 0)
   );
-  shippingCost = computed(() => this.subtotal() >= 200 ? 0 : 10);
-  total = computed(() => this.subtotal() + this.shippingCost());
+  shippingCost = computed(() => this.subtotal() >= 200 ? 0 : 7);
+  ht = computed(() => this.subtotal() + this.shippingCost());
+  tva = computed(() => Math.round(this.ht() * 0.19 * 100) / 100);
+  timbre = computed(() => 0);
+  ttc = computed(() => this.ht() + this.tva());
 
   constructor(private http: HttpClient) {
     this.loadCart();

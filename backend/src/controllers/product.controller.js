@@ -1,6 +1,34 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category'); // make sure this import exists
 
+exports.autocomplete = async (req, res) => {
+  try {
+    const { q, limit = 8 } = req.query;
+    
+    if (!q || q.trim().length < 1) {
+      return res.json({ success: true, results: [] });
+    }
+
+    const safeLimit = Math.min(Number(limit) || 8, 10);
+    const escapedQuery = q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    const products = await Product.find({
+      isActive: true,
+      name: { $regex: `^${escapedQuery}`, $options: 'i' }
+    })
+      .select('name slug pricing media category badges')
+      .populate('category', 'name')
+      .sort({ name: 1 })
+      .limit(safeLimit)
+      .lean();
+
+    res.json({ success: true, results: products });
+  } catch (error) {
+    console.error('autocomplete error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 exports.getProducts = async (req, res) => {
   try {
     const {
@@ -21,14 +49,7 @@ exports.getProducts = async (req, res) => {
     const maxLimit = 50;
     const safeLimit = Math.min(Number(limit) || 12, maxLimit);
 
-    const query = { isActive: true };
-
-    if (onSale === 'true') {
-      query.$or = [
-        { onSale: true, $or: [{ saleEndsAt: { $gt: new Date() } }, { saleEndsAt: { $exists: false } }] },
-        { badges: { $in: ['PROMO'] }, $or: [{ saleEndsAt: { $gt: new Date() } }, { saleEndsAt: { $exists: false } }, { onSale: { $ne: false } }] }
-      ];
-    }
+const query = { isActive: true };
 
     // Resolve category slug to ObjectId - optional filter
     if (category) {
@@ -36,7 +57,6 @@ exports.getProducts = async (req, res) => {
       if (categoryDoc) {
         query.category = categoryDoc._id;
       }
-      // If category not found, just don't filter by category instead of returning 400
     }
 
     if (featured === 'true') {
@@ -48,12 +68,14 @@ exports.getProducts = async (req, res) => {
     if (onSale === 'true') {
       query.$or = [
         { onSale: true },
-        { badges: { $in: ['PROMO'] }, onSale: { $ne: false } }
+        { badges: { $in: ['PROMO'] }, onSale: { $ne: false } },
+        { $expr: { $gt: ['$pricing.originalPrice', '$pricing.price'] } }
       ];
     } else if (onSale === 'false') {
       query.$and = [
         { onSale: false },
-        { badges: { $ne: 'PROMO' } }
+        { badges: { $ne: 'PROMO' } },
+        { $expr: { $lte: ['$pricing.originalPrice', '$pricing.price'] } }
       ];
     }
     if (inStock === 'true') query['inventory.quantity'] = { $gt: 0 };
@@ -66,7 +88,13 @@ exports.getProducts = async (req, res) => {
     }
 
     if (search) {
-      query.$text = { $search: search };
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      query.$or = [
+        { name: { $regex: escapedSearch, $options: 'i' } },
+        { shortDescription: { $regex: escapedSearch, $options: 'i' } },
+        { description: { $regex: escapedSearch, $options: 'i' } }
+      ];
+      console.log('[Search] Looking for:', search, '| Query:', query.$or);
     }
 
     const sortOptions = {};
@@ -83,6 +111,8 @@ exports.getProducts = async (req, res) => {
       .sort(sortOptions)
       .limit(safeLimit)
       .skip((page - 1) * safeLimit);
+
+    console.log('[Search] Found', products.length, 'products for search:', search);
 
     if (onSale === 'true') {
       console.log('[getProducts] Returning products:', products.map(p => ({
@@ -178,7 +208,8 @@ exports.getProductReviews = async (req, res) => {
     const reviews = (product.reviews || [])
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .map(r => ({
-        user: r.user,
+        _id: r._id,
+        userId: { _id: r.user?._id, name: r.user ? `${r.user.firstName || ''} ${r.user.lastName || ''}`.trim() : 'Client' },
         rating: r.rating,
         title: r.title,
         comment: r.comment,

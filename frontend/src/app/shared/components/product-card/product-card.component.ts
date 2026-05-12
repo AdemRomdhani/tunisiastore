@@ -7,17 +7,14 @@ import { CompareService } from '../../../core/services/compare.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ImageUrlPipe } from '../../pipes/image-url.pipe';
-import { QuickViewComponent } from '../quick-view/quick-view.component';
+import { QuickViewService } from '../../../core/services/quick-view.service';
 
 @Component({
   selector: 'app-product-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, ImageUrlPipe, QuickViewComponent],
+  imports: [CommonModule, RouterModule, ImageUrlPipe],
   template: `
-    @if (quickViewOpen()) {
-      <app-quick-view [product]="product" (closed)="closeQuickView()"/>
-    }
     <div class="group bg-surface-50 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-350 ease-smooth border border-surface-100 overflow-hidden h-full flex flex-col animate-fade-in">
       <!-- Image Container -->
       <div class="relative overflow-hidden bg-gradient-to-b from-surface-100 to-surface-50 aspect-square">
@@ -193,21 +190,17 @@ export class ProductCardComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private quickViewService = inject(QuickViewService);
   
   adding = signal(false);
-  quickViewOpen = signal(false);
 
   openQuickView(event: Event) {
     event.preventDefault();
     event.stopPropagation();
-    this.quickViewOpen.set(true);
-    this.cdr.markForCheck();
+    this.quickViewService.open(this.product);
   }
 
-  closeQuickView() {
-    this.quickViewOpen.set(false);
-    this.cdr.markForCheck();
-  }
+  
 
   get isInCompare(): boolean {
     return this.compareService.isInCompare(this.product._id);

@@ -723,7 +723,8 @@ export class AdminOrdersComponent implements OnInit {
   getImageUrl(path: string): string {
     if (!path) return 'https://placehold.co/48x48?text=?';
     if (path.startsWith('http')) return path;
-    return `${this.apiUrl.replace('/api', '')}${path}`;
+    const baseUrl = this.apiUrl.replace('/api', '');
+    return path.startsWith('/') ? `${baseUrl}${path}` : `${baseUrl}/${path}`;
   }
 
   statusLabel(status: string): string {

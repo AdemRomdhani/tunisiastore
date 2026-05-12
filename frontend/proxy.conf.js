@@ -1,7 +1,8 @@
 const PROXY_CONFIG = [
   {
     context: [
-      "/api/**"
+      "/api/**",
+      "/uploads/**"
     ],
     target: "http://localhost:3000",
     secure: false,

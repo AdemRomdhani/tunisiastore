@@ -5,6 +5,7 @@ const { authenticate, authorize } = require('../middleware/auth');
 const { auditLog } = require('../middleware/auditLog');
 
 router.get('/', productController.getProducts);
+router.get('/autocomplete', productController.autocomplete);
 router.get('/:slug', productController.getProduct);
 router.get('/:slug/reviews', productController.getProductReviews);
 router.post('/:slug/reviews', authenticate, productController.addReview);

@@ -1,8 +1,10 @@
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ProductService, Product, ProductFilters } from '../../core/services/product.service';
 import { CategoryService, Category } from '../../core/services/category.service';
 import { CartService } from '../../core/services/cart.service';
@@ -18,27 +20,55 @@ import { environment } from '../../../environments/environment';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, FormsModule, ProductCardComponent, SkeletonComponent, EmptyStateComponent],
   template: `
-    <div class="container mx-auto px-4 py-8">
-      <div class="flex flex-col lg:flex-row gap-8">
-        <!-- Sidebar Filters -->
-        <aside class="w-full lg:w-64 flex-shrink-0">
+    <div class="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
+      <!-- Mobile Filter Toggle -->
+      <div class="lg:hidden mb-4 flex items-center justify-between">
+        <h1 class="text-lg sm:text-xl font-bold text-surface-800 truncate">
+          {{ getPageTitle() }}
+        </h1>
+        <div class="flex items-center gap-2">
+          @if (hasActiveFilters()) {
+            <button 
+              (click)="clearFilters()"
+              class="text-xs text-primary-600 font-medium hover:underline"
+            >
+              Réinitialiser
+            </button>
+          }
+          <button 
+            (click)="filterOpen.set(!filterOpen())"
+            class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-surface-700 bg-surface-100 hover:bg-surface-200 rounded-lg transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+            </svg>
+            Filtres
+            @if (hasActiveFilters()) {
+              <span class="w-2 h-2 bg-primary-600 rounded-full"></span>
+            }
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
+        <!-- Sidebar Filters - Desktop -->
+        <aside class="hidden lg:block w-64 flex-shrink-0">
           <div class="bg-surface-50 rounded-2xl shadow-card p-6 sticky top-24">
             <h3 class="font-bold text-lg text-surface-800 mb-5">Filtres</h3>
             
-            <!-- Search -->
             <div class="mb-6">
               <label class="block text-sm font-medium text-surface-700 mb-2">Rechercher</label>
               <div class="relative">
                 <input 
                   type="text" 
-                  [(ngModel)]="searchQuery"
+                  [ngModel]="searchQuery()"
                   (ngModelChange)="onSearchChange($event)"
                   placeholder="Nom du produit..."
-                  class="input-field pr-10"
+                  class="input-field pr-10 text-sm"
                 >
                 @if (searchQuery()) {
                   <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                   </button>
@@ -46,70 +76,34 @@ import { environment } from '../../../environments/environment';
               </div>
             </div>
 
-            <!-- Categories -->
             <div class="mb-6">
               <h4 class="font-medium mb-3 text-surface-800">Catégories</h4>
               <div class="space-y-1 max-h-52 overflow-y-auto py-1">
                 <label class="flex items-center gap-3 cursor-pointer px-2 py-2 rounded-lg hover:bg-surface-100 transition-colors">
-                  <input 
-                    type="radio" 
-                    name="category"
-                    value=""
-                    [checked]="selectedCategory() === ''"
-                    (change)="selectCategory('')"
-                    class="w-4 h-4 text-primary-600 rounded-full border-surface-300 focus:ring-primary-500"
-                  >
+                  <input type="radio" name="category" value="" [checked]="selectedCategory() === ''" (change)="selectCategory('')" class="w-4 h-4 text-primary-600 rounded-full border-surface-300 focus:ring-primary-500">
                   <span class="text-sm text-surface-600">Toutes</span>
                 </label>
                 @for (cat of categories(); track cat._id) {
                   <label class="flex items-center gap-3 cursor-pointer px-2 py-2 rounded-lg hover:bg-surface-100 transition-colors">
-                    <input 
-                      type="radio" 
-                      name="category"
-                      [value]="cat.slug"
-                      [checked]="selectedCategory() === cat.slug"
-                      (change)="selectCategory(cat.slug)"
-                      class="w-4 h-4 text-primary-600 rounded-full border-surface-300 focus:ring-primary-500"
-                    >
+                    <input type="radio" name="category" [value]="cat.slug" [checked]="selectedCategory() === cat.slug" (change)="selectCategory(cat.slug)" class="w-4 h-4 text-primary-600 rounded-full border-surface-300 focus:ring-primary-500">
                     <span class="text-sm text-surface-600">{{ cat.name }}</span>
                   </label>
                 }
               </div>
             </div>
 
-            <!-- Price Range -->
             <div class="mb-6">
               <h4 class="font-medium mb-3 text-surface-800">Prix (TND)</h4>
               <div class="flex gap-2">
-                <input 
-                  type="number" 
-                  [(ngModel)]="minPrice"
-                  placeholder="Min"
-                  class="input-field text-sm"
-                >
-                <input 
-                  type="number" 
-                  [(ngModel)]="maxPrice"
-                  placeholder="Max"
-                  class="input-field text-sm"
-                >
+                <input type="number" [(ngModel)]="minPrice" placeholder="Min" class="input-field text-sm flex-1">
+                <input type="number" [(ngModel)]="maxPrice" placeholder="Max" class="input-field text-sm flex-1">
               </div>
-              <button 
-                (click)="applyPriceFilter()"
-                class="btn-secondary w-full mt-3 text-sm"
-              >
-                Appliquer
-              </button>
+              <button (click)="applyPriceFilter()" class="btn-secondary w-full mt-3 text-sm">Appliquer</button>
             </div>
 
-            <!-- Sort -->
             <div>
               <h4 class="font-medium mb-3 text-surface-800">Trier par</h4>
-              <select 
-                [(ngModel)]="sortOrder"
-                (change)="updateSort($event)"
-                class="input-field text-sm"
-              >
+              <select [(ngModel)]="sortOrder" (change)="updateSort($event)" class="input-field text-sm">
                 <option value="-createdAt">Nouveautés</option>
                 <option value="price-asc">Prix: Croissant</option>
                 <option value="price-desc">Prix: Décroissant</option>
@@ -118,37 +112,109 @@ import { environment } from '../../../environments/environment';
             </div>
 
             @if (hasActiveFilters()) {
-              <button 
-                (click)="clearFilters()"
-                class="w-full mt-6 text-primary-600 text-sm font-medium hover:text-primary-700 transition-colors"
-              >
+              <button (click)="clearFilters()" class="w-full mt-6 text-primary-600 text-sm font-medium hover:text-primary-700 transition-colors">
                 Réinitialiser les filtres
               </button>
             }
           </div>
         </aside>
 
+        <!-- Mobile Filter Drawer -->
+        @if (filterOpen()) {
+          <div class="lg:hidden fixed inset-0 z-40 bg-black/50" (click)="filterOpen.set(false)">
+            <div class="absolute right-0 top-0 bottom-0 w-80 max-w-full bg-white shadow-xl overflow-y-auto" (click)="$event.stopPropagation()">
+              <div class="sticky top-0 bg-white border-b border-surface-200 px-4 py-3 flex items-center justify-between">
+                <h3 class="font-bold text-lg text-surface-800">Filtres</h3>
+                <button (click)="filterOpen.set(false)" class="p-2 text-surface-400 hover:text-surface-600 transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="p-4">
+                <div class="mb-5">
+                  <label class="block text-sm font-medium text-surface-700 mb-2">Rechercher</label>
+                  <div class="relative">
+                    <input type="text" [ngModel]="searchQuery()" (ngModelChange)="onSearchChange($event)" placeholder="Nom du produit..." class="input-field pr-10 text-sm">
+                    @if (searchQuery()) {
+                      <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <div class="mb-5">
+                  <h4 class="font-medium mb-3 text-surface-800">Catégories</h4>
+                  <div class="space-y-1">
+                    <label class="flex items-center gap-3 cursor-pointer px-2 py-2 rounded-lg hover:bg-surface-100 transition-colors">
+                      <input type="radio" name="cat-mobile" value="" [checked]="selectedCategory() === ''" (change)="selectCategory('')" class="w-4 h-4 text-primary-600 rounded-full">
+                      <span class="text-sm text-surface-600">Toutes</span>
+                    </label>
+                    @for (cat of categories(); track cat._id) {
+                      <label class="flex items-center gap-3 cursor-pointer px-2 py-2 rounded-lg hover:bg-surface-100 transition-colors">
+                        <input type="radio" name="cat-mobile" [value]="cat.slug" [checked]="selectedCategory() === cat.slug" (change)="selectCategory(cat.slug)" class="w-4 h-4 text-primary-600 rounded-full">
+                        <span class="text-sm text-surface-600">{{ cat.name }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+
+                <div class="mb-5">
+                  <h4 class="font-medium mb-3 text-surface-800">Prix (TND)</h4>
+                  <div class="flex gap-2">
+                    <input type="number" [(ngModel)]="minPrice" placeholder="Min" class="input-field text-sm flex-1">
+                    <input type="number" [(ngModel)]="maxPrice" placeholder="Max" class="input-field text-sm flex-1">
+                  </div>
+                  <button (click)="applyPriceFilter()" class="btn-secondary w-full mt-3 text-sm">Appliquer</button>
+                </div>
+
+                <div class="mb-5">
+                  <h4 class="font-medium mb-3 text-surface-800">Trier par</h4>
+                  <select [(ngModel)]="sortOrder" (change)="updateSort($event)" class="input-field text-sm">
+                    <option value="-createdAt">Nouveautés</option>
+                    <option value="price-asc">Prix: Croissant</option>
+                    <option value="price-desc">Prix: Décroissant</option>
+                    <option value="rating">Mieux notés</option>
+                  </select>
+                </div>
+
+                @if (hasActiveFilters()) {
+                  <button (click)="clearFilters()" class="w-full py-2.5 text-sm font-medium text-primary-600 border border-primary-200 rounded-xl hover:bg-primary-50 transition-colors">
+                    Réinitialiser les filtres
+                  </button>
+                }
+
+                <button (click)="filterOpen.set(false)" class="w-full mt-3 py-2.5 text-sm font-medium text-white bg-primary-600 rounded-xl hover:bg-primary-700 transition-colors">
+                  Voir les résultats
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
         <!-- Products Grid -->
         <div class="flex-1">
-          <!-- Active Bundles Banner -->
           @if (bundles().length > 0) {
-            <div class="mb-6 animate-fade-in">
-              <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 shadow-card">
-                <div class="flex items-center justify-between">
+            <div class="mb-4 sm:mb-6 animate-fade-in">
+              <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-card">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
-                    <h2 class="text-xl font-bold text-white mb-1">Packs & Bundles</h2>
-                    <p class="text-indigo-100 text-sm">Économisez plus avec nos packages!</p>
+                    <h2 class="text-lg sm:text-xl font-bold text-white mb-0.5 sm:mb-1">Packs & Bundles</h2>
+                    <p class="text-indigo-100 text-xs sm:text-sm">Économisez plus avec nos packages!</p>
                   </div>
-                  <a routerLink="/bundles" class="bg-white text-indigo-600 px-5 py-2.5 rounded-xl font-medium hover:bg-indigo-50 transition-all duration-200">
+                  <a routerLink="/bundles" class="bg-white text-indigo-600 px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl text-sm font-medium hover:bg-indigo-50 transition-all duration-200 whitespace-nowrap">
                     Voir les packs
                   </a>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
+                <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mt-3 sm:mt-5">
                   @for (bundle of bundles().slice(0, 3); track bundle._id) {
-                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 hover:bg-white/20 transition-all duration-200 cursor-pointer group" [routerLink]="['/bundles']">
-                      <p class="text-white font-medium text-sm truncate group-hover:text-white">{{ bundle.name }}</p>
+                    <div class="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 hover:bg-white/20 transition-all duration-200 cursor-pointer group" [routerLink]="['/bundles']">
+                      <p class="text-white font-medium text-xs sm:text-sm truncate">{{ bundle.name }}</p>
                       <div class="flex items-baseline gap-2 mt-1">
-                        <span class="text-white font-bold text-lg">{{ bundle.pricing.price | number:'1.3-3' }} DT</span>
+                        <span class="text-white font-bold text-base sm:text-lg">{{ bundle.pricing.price | number:'1.3-3' }} DT</span>
                         @if (bundle.pricing.discountPercentage > 0) {
                           <span class="text-xs text-indigo-200 line-through">{{ bundle.pricing.originalPrice | number:'1.3-3' }}</span>
                         }
@@ -160,18 +226,14 @@ import { environment } from '../../../environments/environment';
             </div>
           }
           
-          <!-- Header -->
-          <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-bold text-surface-800">
-              {{ getPageTitle() }}
-            </h1>
-            <span class="text-sm text-surface-500">
-              {{ pagination().total || 0 }} produit(s)
-            </span>
+          <!-- Header - Desktop -->
+          <div class="hidden lg:flex items-center justify-between mb-6">
+            <h1 class="text-xl font-bold text-surface-800">{{ getPageTitle() }}</h1>
+            <span class="text-sm text-surface-500">{{ pagination().total || 0 }} produit(s)</span>
           </div>
 
           @if (loading()) {
-            <app-skeleton type="product-list" [count]="8" gridClass="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"/>
+            <app-skeleton type="product-list" [count]="8" gridClass="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6"/>
           } @else if (products().length === 0) {
             <app-empty-state
               title="Aucun produit trouvé"
@@ -181,39 +243,23 @@ import { environment } from '../../../environments/environment';
               (actionClick)="clearFilters()"
             />
           } @else {
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
               @for (product of products(); track product._id) {
                 <app-product-card [product]="product"/>
               }
             </div>
 
-            <!-- Pagination -->
             @if (pagination().pages > 1) {
-              <div class="flex justify-center mt-12 gap-2">
-                <button 
-                  (click)="changePage(pagination().current - 1)"
-                  [disabled]="pagination().current === 1"
-                  class="px-4 py-2 border border-surface-200 rounded-xl hover:bg-surface-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
+              <div class="flex flex-wrap justify-center mt-8 sm:mt-12 gap-1.5 sm:gap-2">
+                <button (click)="changePage(pagination().current - 1)" [disabled]="pagination().current === 1" class="px-3 sm:px-4 py-2 text-xs sm:text-sm border border-surface-200 rounded-lg sm:rounded-xl hover:bg-surface-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                   Précédent
                 </button>
-                
                 @for (page of getPageNumbers(); track page) {
-                  <button 
-                    (click)="changePage(page)"
-                    [class.bg-primary-600]="page === pagination().current"
-                    [class.text-white]="page === pagination().current"
-                    class="w-10 h-10 border border-surface-200 rounded-xl hover:bg-surface-50 font-medium transition-colors"
-                  >
+                  <button (click)="changePage(page)" [class.bg-primary-600]="page === pagination().current" [class.text-white]="page === pagination().current" [class.border-primary-600]="page === pagination().current" class="w-9 h-9 sm:w-10 sm:h-10 text-xs sm:text-sm border border-surface-200 rounded-lg sm:rounded-xl hover:bg-surface-50 font-medium transition-colors">
                     {{ page }}
                   </button>
                 }
-                
-                <button 
-                  (click)="changePage(pagination().current + 1)"
-                  [disabled]="pagination().current === pagination().pages"
-                  class="px-4 py-2 border border-surface-200 rounded-xl hover:bg-surface-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
+                <button (click)="changePage(pagination().current + 1)" [disabled]="pagination().current === pagination().pages" class="px-3 sm:px-4 py-2 text-xs sm:text-sm border border-surface-200 rounded-lg sm:rounded-xl hover:bg-surface-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                   Suivant
                 </button>
               </div>
@@ -230,6 +276,8 @@ export class ProductsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private seo = inject(SeoService);
   private http = inject(HttpClient);
+  private cd = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
 
   products = signal<Product[]>([]);
   categories = signal<Category[]>([]);
@@ -243,17 +291,34 @@ export class ProductsComponent implements OnInit {
   minPrice = signal<number | null>(null);
   maxPrice = signal<number | null>(null);
   sortOrder = signal('-createdAt');
+  filterOpen = signal(false);
 
   filters: ProductFilters = {};
+
+  private searchSubject = new Subject<string>();
 
   ngOnInit() {
     this.loadCategories();
     this.loadBundles();
-    this.loadProducts();
-    
+
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.filters.search = query || undefined;
+      this.pagination.update(p => ({ ...p, page: 1 }));
+      this.loadProducts();
+    });
+
     this.route.queryParams.subscribe(params => {
-      if (params['category']) this.selectCategory(params['category']);
-      if (params['search']) this.searchQuery.set(params['search']);
+      if (params['category']) {
+        this.selectedCategory.set(params['category']);
+        this.filters.category = params['category'];
+      }
+      if (params['search']) {
+        this.searchQuery.set(params['search']);
+        this.filters.search = params['search'];
+      }
       if (params['minPrice']) this.minPrice.set(+params['minPrice']);
       if (params['maxPrice']) this.maxPrice.set(+params['maxPrice']);
       if (params['onSale']) this.filters.onSale = true;
@@ -264,13 +329,13 @@ export class ProductsComponent implements OnInit {
 
   private loadCategories() {
     this.categoryService.getCategories().subscribe({
-      next: (res) => this.categories.set(res.categories)
+      next: (res) => { this.categories.set(res.categories); this.cd.markForCheck(); }
     });
   }
 
   private loadBundles() {
     this.http.get<any>(`${environment.apiUrl}/bundles`).subscribe({
-      next: (res) => this.bundles.set(res.bundles || [])
+      next: (res) => { this.bundles.set(res.bundles || []); this.cd.markForCheck(); }
     });
   }
 
@@ -285,31 +350,32 @@ export class ProductsComponent implements OnInit {
       sort: this.sortOrder()
     }).subscribe({
       next: (res) => {
-        const page = res.pagination || { page: 1, limit: 12, pages: 1, total: 0 };
-        this.products.set(res.products);
-        this.pagination.set({
-          page: page.page,
-          limit: page.limit,
-          pages: page.pages,
-          total: page.total,
-          current: page.page
-        });
-        this.loading.set(false);
-        
-        this.seo.updateMeta({
-          title: this.getPageTitle(),
-          description: `Découvrez notre collection de ${page.total} produits`
+          this.ngZone.run(() => {
+          const page = res.pagination || { page: 1, limit: 12, pages: 1, total: 0 };
+          this.products.set(res.products);
+          this.pagination.set({
+            page: page.page,
+            limit: page.limit,
+            pages: page.pages,
+            total: page.total,
+            current: page.page
+          });
+          this.loading.set(false);
+          this.cd.markForCheck();
+          
+          this.seo.updateMeta({
+            title: this.getPageTitle(),
+            description: `Découvrez notre collection de ${page.total} produits`
+          });
         });
       },
-      error: () => this.loading.set(false)
+      error: () => { this.ngZone.run(() => { this.loading.set(false); this.cd.markForCheck(); }); }
     });
   }
 
   onSearchChange(query: string) {
     this.searchQuery.set(query);
-    this.filters.search = query || undefined;
-    this.pagination.update(p => ({ ...p, page: 1 }));
-    this.loadProducts();
+    this.searchSubject.next(query);
   }
 
   clearSearch() {

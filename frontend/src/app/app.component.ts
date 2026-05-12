@@ -6,12 +6,13 @@ import { FooterComponent } from './shared/components/footer/footer.component';
 import { ToastComponent } from './shared/components/toast/toast.component';
 import { WhatsAppChatComponent } from './shared/components/whatsapp-chat/whatsapp-chat.component';
 import { OfflineBannerComponent } from './shared/components/offline-banner/offline-banner.component';
+import { QuickViewComponent } from './shared/components/quick-view/quick-view.component';
 import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, NavbarComponent, FooterComponent, ToastComponent, WhatsAppChatComponent, OfflineBannerComponent],
+  imports: [CommonModule, RouterOutlet, NavbarComponent, FooterComponent, ToastComponent, WhatsAppChatComponent, OfflineBannerComponent, QuickViewComponent],
   template: `
     <app-toast />
     <app-navbar *ngIf="!isAdminRoute()"/>
@@ -21,6 +22,7 @@ import { filter } from 'rxjs/operators';
     <app-footer *ngIf="!isAdminRoute()"/>
     <app-whatsapp-chat *ngIf="!isAdminRoute()" />
     <app-offline-banner />
+    <app-quick-view />
   `
 })
 export class AppComponent {

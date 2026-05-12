@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProductService, Product } from '../../core/services/product.service';
@@ -16,14 +16,14 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
   selector: 'app-product-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, JsonLdComponent, ImageUrlPipe, ProductCardComponent, SkeletonComponent],
+  imports: [CommonModule, RouterModule, FormsModule, JsonLdComponent, ImageUrlPipe, ProductCardComponent, SkeletonComponent, DatePipe],
   styles: [`
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     .cursor-zoom-in { cursor: zoom-in; }
   `],
   template: `
-    <div class="container mx-auto px-4 py-6">
+    <div class="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
       @if (loading()) {
         <app-skeleton type="product-detail" [count]="4"/>
       } @else if (error()) {
@@ -38,7 +38,7 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
           </div>
         </div>
       } @else if (product()) {
-        <nav class="text-sm text-surface-500 mb-6 flex flex-wrap items-center gap-2">
+        <nav class="text-xs sm:text-sm text-surface-500 mb-4 sm:mb-6 flex flex-wrap items-center gap-1 sm:gap-2">
           <a routerLink="/" class="hover:text-primary-600">Accueil</a>
           <span class="text-surface-300">/</span>
           <a routerLink="/products" class="hover:text-primary-600">Produits</a>
@@ -47,91 +47,181 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
             <a [routerLink]="['/products']" [queryParams]="{category: product()?.category?.slug}" class="hover:text-primary-600">{{ product()?.category?.name }}</a>
           }
           <span class="text-surface-300">/</span>
-          <span class="text-surface-800 truncate max-w-[200px] font-medium">{{ product()?.name }}</span>
+          <span class="text-surface-800 truncate max-w-[150px] sm:max-w-[200px] font-medium">{{ product()?.name }}</span>
         </nav>
         <app-json-ld [data]="structuredData()"/>
-        <div class="grid lg:grid-cols-2 gap-8">
-          <div class="space-y-4">
-            <div class="bg-surface-50 rounded-2xl shadow-card p-6 relative overflow-hidden group">
+        <div class="grid lg:grid-cols-2 gap-6 sm:gap-8">
+          <div class="space-y-3 sm:space-y-4">
+            <div class="bg-surface-50 rounded-xl sm:rounded-2xl shadow-card p-4 sm:p-6 relative overflow-hidden group">
               <div class="relative cursor-zoom-in" (click)="toggleZoom()" (mousemove)="onImageMouseMove($event, mainImage)" #imageContainer>
-                <img #mainImage [src]="selectedImage() | imageUrl" [alt]="product()?.name" class="w-full max-w-lg mx-auto h-auto transition-transform duration-300" [class.scale-150]="zoomEnabled()" [style.transform-origin]="zoomEnabled() ? zoomPosition().x + '% ' + zoomPosition().y + '%' : 'center center'" width="500" height="500" loading="eager">
+                <img #mainImage [src]="selectedImage() | imageUrl" [alt]="product()?.name" class="w-full max-w-md sm:max-w-lg mx-auto h-auto transition-transform duration-300" [class.scale-150]="zoomEnabled()" [style.transform-origin]="zoomEnabled() ? zoomPosition().x + '% ' + zoomPosition().y + '%' : 'center center'" width="500" height="500" loading="eager">
                 @if (!zoomEnabled()) {
-                  <div class="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">Zoom</div>
+                  <div class="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-black/60 text-white text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex">Zoom</div>
                 }
               </div>
             </div>
-            <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            <div class="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide">
               @for (img of product()?.media?.images || []; track img; let i = $index) {
-                <button (click)="setImage(img); zoomEnabled.set(false)" [class.ring-2]="selectedImage() === img" [class.ring-primary-600]="selectedImage() === img" class="w-16 h-16 md:w-20 md:h-20 bg-surface-50 rounded-xl p-2 border-2 border-transparent flex-shrink-0 hover:border-primary-300 transition-all">
+                <button (click)="setImage(img); zoomEnabled.set(false)" [class.ring-2]="selectedImage() === img" [class.ring-primary-600]="selectedImage() === img" class="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-surface-50 rounded-lg sm:rounded-xl p-1.5 sm:p-2 border-2 border-transparent flex-shrink-0 hover:border-primary-300 transition-all">
                   <img [src]="img | imageUrl" [alt]="(product()?.name || '') + ' - image ' + (i+1)" class="w-full h-full object-contain" width="80" height="80" loading="lazy">
                 </button>
               }
             </div>
           </div>
           <div>
-            <div class="flex items-center gap-2 mb-3">
+            <div class="flex items-center gap-2 mb-2 sm:mb-3">
               @if (product()?.badges?.includes('NEW')) {
-                <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-lg">NOUVEAU</span>
+                <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 sm:px-2.5 py-1 rounded-lg">NOUVEAU</span>
               }
               @if (discount() > 0) {
-                <span class="bg-red-100 text-red-700 text-xs font-bold px-2.5 py-1 rounded-lg">-{{ discount() }}%</span>
+                <span class="bg-red-100 text-red-700 text-xs font-bold px-2 sm:px-2.5 py-1 rounded-lg">-{{ discount() }}%</span>
               }
             </div>
-            <h1 class="text-2xl md:text-3xl font-bold text-surface-900 mb-4">{{ product()?.name }}</h1>
+            <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-surface-900 mb-3 sm:mb-4">{{ product()?.name }}</h1>
             @if (product()?.ratings?.count) {
-              <div class="flex items-center gap-3 mb-5">
+              <div class="flex items-center gap-3 mb-4 sm:mb-5">
                 <div class="flex text-yellow-400">
                   @for (star of [1,2,3,4,5]; track star) {
-                    <svg class="w-5 h-5" [class.text-surface-200]="star > (product()?.ratings?.average || 0)" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" [class.text-surface-200]="star > (product()?.ratings?.average || 0)" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                     </svg>
                   }
                 </div>
-                <span class="text-sm text-surface-500">{{ product()?.ratings?.count }} avis</span>
+                <span class="text-xs sm:text-sm text-surface-500">{{ product()?.ratings?.count }} avis</span>
               </div>
             }
-            <div class="flex items-baseline gap-3 mb-5">
-              <span class="text-3xl md:text-4xl font-bold text-primary-600">{{ product()?.pricing?.price | number:'1.3' }} DT</span>
+            <div class="flex items-baseline gap-2 sm:gap-3 mb-4 sm:mb-5">
+              <span class="text-2xl sm:text-3xl md:text-4xl font-bold text-primary-600">{{ product()?.pricing?.price | number:'1.3' }} DT</span>
               @if (product()?.pricing?.originalPrice) {
-                <span class="text-lg text-surface-400 line-through">{{ product()?.pricing?.originalPrice | number:'1.3' }} DT</span>
+                <span class="text-base sm:text-lg text-surface-400 line-through">{{ product()?.pricing?.originalPrice | number:'1.3' }} DT</span>
               }
             </div>
-            <p class="text-surface-600 mb-6 leading-relaxed">{{ product()?.shortDescription || product()?.description }}</p>
-            <div class="flex items-center gap-3 mb-6">
+            <p class="text-surface-600 text-sm sm:text-base mb-5 sm:mb-6 leading-relaxed">{{ product()?.shortDescription || product()?.description }}</p>
+            <div class="flex items-center gap-3 mb-5 sm:mb-6">
               @if (availableStock() > 0) {
-                <span class="flex items-center gap-2 text-emerald-600 text-sm font-medium">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span class="flex items-center gap-1.5 sm:gap-2 text-emerald-600 text-xs sm:text-sm font-medium">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                   En stock ({{ availableStock() }})
                 </span>
               } @else {
                 <span class="flex items-center gap-2 text-red-500 text-sm font-medium">Rupture de stock</span>
               }
             </div>
-            <div class="flex gap-3 mb-6">
-              <div class="flex items-center border border-surface-200 rounded-xl">
-                <button (click)="decreaseQty()" class="w-12 h-12 flex items-center justify-center hover:bg-surface-100 rounded-l-xl">-</button>
-                <span class="w-14 text-center font-semibold text-lg">{{ quantity() }}</span>
-                <button (click)="increaseQty()" [disabled]="quantity() >= availableStock()" class="w-12 h-12 flex items-center justify-center hover:bg-surface-100 rounded-r-xl disabled:opacity-50">+</button>
+            <div class="flex gap-2 sm:gap-3 mb-5 sm:mb-6">
+              <div class="flex items-center border border-surface-200 rounded-lg sm:rounded-xl">
+                <button (click)="decreaseQty()" class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center hover:bg-surface-100 rounded-l-lg sm:rounded-l-xl text-lg sm:text-base">-</button>
+                <span class="w-10 sm:w-14 text-center font-semibold text-base sm:text-lg">{{ quantity() }}</span>
+                <button (click)="increaseQty()" [disabled]="quantity() >= availableStock()" class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center hover:bg-surface-100 rounded-r-lg sm:rounded-r-xl disabled:opacity-50 text-lg sm:text-base">+</button>
               </div>
-              <button (click)="addToCart()" [disabled]="availableStock() === 0 || addingToCart()" class="flex-1 btn-primary text-base">
+              <button (click)="addToCart()" [disabled]="availableStock() === 0 || addingToCart()" class="flex-1 btn-primary text-sm sm:text-base">
                 @if (addingToCart()) { <span>Ajout...</span> } @else { Ajouter au panier }
               </button>
             </div>
             @if (product()?.warranty) {
-              <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5">
-                <div class="flex items-center gap-2.5 text-blue-800 text-sm">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4 mb-4 sm:mb-5">
+                <div class="flex items-center gap-2 text-blue-800 text-xs sm:text-sm">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                   <span class="font-semibold">Garantie {{ product()?.warranty?.duration }} mois</span>
                 </div>
               </div>
             }
-            <div class="text-sm text-surface-400">Référence: <span class="font-mono bg-surface-100 px-2 py-1 rounded">{{ product()?.inventory?.sku || 'N/A' }}</span></div>
+            <div class="text-xs sm:text-sm text-surface-400">Référence: <span class="font-mono bg-surface-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">{{ product()?.inventory?.sku || 'N/A' }}</span></div>
           </div>
         </div>
+
+        <div class="mt-8 sm:mt-10 border-t border-surface-200 pt-6 sm:pt-8">
+          <h2 class="text-lg sm:text-xl font-bold mb-5 sm:mb-6 text-surface-800">Avis clients</h2>
+
+          <div class="mb-6 sm:mb-8 p-4 sm:p-6 bg-surface-50 rounded-xl sm:rounded-2xl">
+            <h3 class="font-semibold text-surface-800 mb-4">Laisser un avis</h3>
+            @if (isLoggedIn) {
+              @if (userAlreadyReviewed()) {
+                <div class="text-center py-3 sm:py-4">
+                  <svg class="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-emerald-500 mb-2.5 sm:mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <p class="text-emerald-700 font-medium text-sm sm:text-base">Merci ! Vous avez déjà laissé un avis pour ce produit.</p>
+                </div>
+              } @else {
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-surface-700 mb-2">Votre note *</label>
+                  <div class="flex gap-1.5 sm:gap-2">
+                    @for (star of [1,2,3,4,5]; track star) {
+                      <button (click)="setRating(star)" type="button" class="transition-transform hover:scale-110">
+                        <svg class="w-7 h-7 sm:w-8 sm:h-8" [class.text-yellow-400]="star <= newReviewRating()" [class.text-surface-200]="star > newReviewRating()" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                      </button>
+                    }
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-surface-700 mb-1.5 sm:mb-2">Titre de l'avis *</label>
+                  <input type="text" [(ngModel)]="newReviewTitle" placeholder="En quelques mots..." class="w-full border border-surface-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-surface-700 mb-1.5 sm:mb-2">Votre avis *</label>
+                  <textarea [(ngModel)]="newReviewComment" rows="4" placeholder="Décrivez votre expérience avec ce produit..." class="w-full border border-surface-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all resize-none"></textarea>
+                </div>
+                <button (click)="submitReview()" [disabled]="submittingReview() || !newReviewRating() || !newReviewTitle || !newReviewComment" class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">
+                  @if (submittingReview()) { Envoi en cours... } @else { Publier mon avis }
+                </button>
+              </div>
+              }
+            } @else {
+              <div class="text-center py-3 sm:py-4">
+                <p class="text-surface-600 text-sm sm:text-base mb-3">Vous devez être connecté pour laisser un avis.</p>
+                <a routerLink="/auth/login" class="btn-primary inline-block text-sm sm:text-base">Se connecter</a>
+              </div>
+            }
+          </div>
+
+          @if (reviews().length > 0) {
+            <div class="space-y-4 sm:space-y-5">
+              @for (review of reviews(); track review._id) {
+                <div class="bg-white border border-surface-200 rounded-xl sm:rounded-2xl p-4 sm:p-5">
+                  <div class="flex items-start justify-between gap-3 mb-2.5 sm:mb-3">
+                    <div class="flex items-center gap-2.5 sm:gap-3">
+                      <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-sm sm:text-base">
+                        {{ (review.userId?.name || 'A')[0].toUpperCase() }}
+                      </div>
+                      <div>
+                        <div class="font-semibold text-surface-800 text-sm sm:text-base">{{ review.userId?.name || 'Client' }}</div>
+                        <div class="text-xs text-surface-400">{{ review.createdAt | date:'d MMM y, HH:mm' }}</div>
+                      </div>
+                    </div>
+                    <div class="flex gap-0.5 flex-shrink-0">
+                      @for (star of [1,2,3,4,5]; track star) {
+                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" [class.text-yellow-400]="star <= (review.rating || 0)" [class.text-surface-200]="star > (review.rating || 0)" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                      }
+                    </div>
+                  </div>
+                  @if (review.title) {
+                    <h4 class="font-semibold text-surface-800 text-sm sm:text-base mb-1 sm:mb-1.5">{{ review.title }}</h4>
+                  }
+                  <p class="text-surface-600 text-sm sm:text-base leading-relaxed">{{ review.comment }}</p>
+                  @if (review.verified) {
+                    <div class="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-emerald-600 text-xs sm:text-sm">
+                      <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                      Achat vérifié
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="text-center py-8 sm:py-10 bg-surface-50 rounded-xl sm:rounded-2xl">
+              <svg class="w-12 h-12 sm:w-14 sm:h-14 mx-auto text-surface-300 mb-3 sm:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+              <p class="text-surface-500 text-sm sm:text-base">Aucun avis pour ce produit. Soyez le premier à laisser un avis !</p>
+            </div>
+          }
+        </div>
+
         @if (relatedProducts().length > 0) {
-          <div class="mt-10">
-            <h2 class="text-xl font-bold mb-5 text-surface-800">Produits similaires</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+          <div class="mt-8 sm:mt-10">
+            <h2 class="text-lg sm:text-xl font-bold mb-4 sm:mb-5 text-surface-800">Produits similaires</h2>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-5">
               @for (prod of relatedProducts(); track prod._id) {
                 <app-product-card [product]="prod"/>
               }
@@ -162,6 +252,7 @@ export class ProductDetailComponent implements OnInit {
   newReviewTitle = '';
   newReviewComment = '';
   submittingReview = signal(false);
+  userAlreadyReviewed = signal(false);
   zoomEnabled = signal(false);
   zoomPosition = signal({ x: 0, y: 0 });
 
@@ -199,7 +290,12 @@ export class ProductDetailComponent implements OnInit {
   }
 
   loadReviews(slug: string) {
-    this.productService.getProductReviews(slug).subscribe({ next: (res) => this.reviews.set(res.reviews || []) });
+    this.productService.getProductReviews(slug).subscribe({ next: (res) => {
+      this.reviews.set(res.reviews || []);
+      const currentUserId = this.authService.currentUser()?.id;
+      const hasReviewed = res.reviews?.some((r: any) => r.userId?._id === currentUserId);
+      this.userAlreadyReviewed.set(hasReviewed);
+    }});
   }
 
   setImage(img: string) { this.selectedImage.set(img); }

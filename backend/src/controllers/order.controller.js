@@ -122,19 +122,19 @@ exports.createOrder = async (req, res) => {
     }
     
     // Calculate shipping
-    const freeShipping = discount === -1 || (appliedCoupon?.type === 'FREE_SHIPPING') || subtotal >= FREE_SHIPPING_THRESHOLD;
+    const freeShipping = (appliedCoupon?.type === 'FREE_SHIPPING') || subtotal >= FREE_SHIPPING_THRESHOLD;
     const shippingCost = freeShipping ? 0 : SHIPPING_RATE;
 
-    let total = subtotal + shippingCost;
-    if (discount > 0) {
-      total = total - discount;
-    }
-
+    // Professional calculation:
+    // HT = discounted product subtotal + shipping
+    // TVA = 19% × HT
+    // TTC = HT + TVA + timbre
     const TVA_RATE = 0.19;
     const TIMBRE = paymentMethod === 'CASH_ON_DELIVERY' ? 1 : 0;
-    const ht = total;
-    const tva = Math.round(ht * TVA_RATE * 1000) / 1000;
-    const totalWithTaxes = ht + tva + TIMBRE;
+    const effectiveDiscount = discount > 0 ? discount : 0;
+    const ht = (subtotal - effectiveDiscount) + shippingCost;
+    const tva = Math.round(ht * TVA_RATE * 100) / 100;
+    const totalWithTaxes = Math.round((ht + tva + TIMBRE) * 100) / 100;
 
     // Create order - always use authenticated user when logged in
     const orderUserId = req.user?.id || userId;

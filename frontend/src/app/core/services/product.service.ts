@@ -84,6 +84,12 @@ export class ProductService {
     return new HttpHeaders({ 'x-device-id': this.deviceId });
   }
 
+  autocomplete(query: string): Observable<{ success: boolean; results: Partial<Product>[] }> {
+    return this.http.get<any>(`${this.apiUrl}/autocomplete`, {
+      params: new HttpParams().set('q', query)
+    });
+  }
+
   getProducts(filters: ProductFilters = {}): Observable<{
     success: boolean;
     products: Product[];
@@ -107,6 +113,7 @@ export class ProductService {
   getProductReviews(slug: string): Observable<{
     success: boolean;
     reviews: Array<{
+      userId: { name: string };
       rating: number;
       title: string;
       comment: string;

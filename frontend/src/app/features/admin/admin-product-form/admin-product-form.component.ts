@@ -289,7 +289,8 @@ export class AdminProductFormComponent implements OnInit, OnDestroy {
   getImageUrl(path: string): string {
     if (!path) return '';
     if (path.startsWith('http')) return path;
-    return `${environment.apiUrl.replace('/api', '')}${path}`;
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    return path.startsWith('/') ? `${baseUrl}${path}` : `${baseUrl}/${path}`;
   }
 
   onFilesSelected(event: Event) {

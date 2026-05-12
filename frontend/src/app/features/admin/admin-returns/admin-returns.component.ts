@@ -349,6 +349,7 @@ export class AdminReturnsComponent implements OnInit {
   getImageUrl(path: string): string {
     if (!path) return 'https://placehold.co/48x48?text=?';
     if (path.startsWith('http')) return path;
-    return `${this.adminService['apiUrl'].replace('/api', '')}${path}`;
+    const baseUrl = this.adminService['apiUrl'].replace('/api', '');
+    return path.startsWith('/') ? `${baseUrl}${path}` : `${baseUrl}/${path}`;
   }
 }

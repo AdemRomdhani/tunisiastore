@@ -15,20 +15,20 @@ export const retryInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, n
       retryWhen(errors =>
         errors.pipe(
           mergeMap((error, index) => {
+            console.log(`[Retry] Request failed: ${req.url}, status: ${error.status}, attempt ${index + 1}`);
             if (index >= RETRY_COUNT || error.status === 0) {
               return throwError(() => error);
             }
             if (!networkService.isOnline()) {
               return throwError(() => error);
             }
-            console.log(`Retrying request ${index + 1}/${RETRY_COUNT}:`, req.url);
             return timer(RETRY_DELAY * Math.pow(2, index));
           }),
           take(RETRY_COUNT + 1)
         )
       ),
       catchError((error: HttpErrorResponse) => {
-        console.error('Request failed:', error.message);
+        console.error('[Retry] All retries failed for:', req.url, error);
         return throwError(() => error);
       })
     );

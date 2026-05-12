@@ -9,16 +9,16 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
-    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-8 sm:py-12 px-3 sm:px-4">
       <div class="max-w-md w-full">
-        <div class="text-center mb-8">
-          <h1 class="text-3xl font-bold text-gray-900">Créer un compte</h1>
+        <div class="text-center mb-6 sm:mb-8">
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Créer un compte</h1>
           <p class="text-gray-500 mt-2">Rejoignez Tunisia Store</p>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm p-8">
+        <div class="bg-white rounded-xl shadow-sm p-5 sm:p-8">
           <form (ngSubmit)="register()" class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
                 <input type="text" [(ngModel)]="user.firstName" name="firstName" required class="input-field">
