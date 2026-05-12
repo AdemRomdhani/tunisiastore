@@ -1,13 +1,9 @@
-build:
-  command: npm install && npm run build
-  publish: dist/tunisia-store/browser
-
 services:
   - type: web
     name: tunisiastore-api
     env: node
     region: frankfurt
-    buildCommand: npm install
+    buildCommand: cd ../frontend && npm install && npm run build && mkdir -p ../dist/tunisia-store && cp -r dist/tunisia-store/browser ../dist/tunisia-store/
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
