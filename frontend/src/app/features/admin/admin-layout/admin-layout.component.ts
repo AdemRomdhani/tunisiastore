@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -44,9 +44,9 @@ interface NotificationItem {
     <div class="min-h-screen bg-gray-50 flex">
       <!-- Sidebar -->
       <aside
-        class="fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-300"
-        [class.-translate-x-full]="!sidebarOpen()"
-        [class.translate-x-0]="sidebarOpen()"
+        class="fixed lg:static inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-300 lg:transform-none"
+        [class.-translate-x-full]="!sidebarOpen() && isMobile"
+        [class.translate-x-0]="sidebarOpen() || !isMobile"
       >
         <div class="flex flex-col h-full">
           <!-- Logo -->
@@ -110,7 +110,7 @@ interface NotificationItem {
           <div class="px-6 py-4 flex items-center justify-between">
             <!-- Left: Mobile menu + Breadcrumbs -->
 <div class="flex items-center gap-4">
-               <button (click)="toggleSidebar()" class="lg:hidden p-2 text-gray-500 hover:text-gray-700">
+               <button (click)="toggleSidebar()" class="p-2 text-gray-500 hover:text-gray-700">
                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                  </svg>
@@ -293,10 +293,13 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   notifications = signal<NotificationItem[]>([]);
   showNotifications = signal<boolean>(false);
   sidebarOpen = signal(false);
+  isMobile = false;
   private routerSubscription?: Subscription;
   private pollingInterval?: ReturnType<typeof setInterval>;
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.isMobile = window.innerWidth < 1024;
+  }
 
   ngOnDestroy() {
     this.routerSubscription?.unsubscribe();
@@ -376,6 +379,11 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   closeSidebar() {
     this.sidebarOpen.set(false);
     document.body.style.overflow = '';
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.isMobile = window.innerWidth < 1024;
   }
 
   clearNotifications() {
