@@ -20,6 +20,7 @@ router.post('/', async (req, res) => {
 
     const EmailService = require('../services/email.service');
     try {
+      await EmailService.sendContactNotification(contact);
       await EmailService.sendContactConfirmation(contact);
     } catch (emailErr) {
       console.error('Contact confirmation email failed:', emailErr.message);

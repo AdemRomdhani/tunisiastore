@@ -485,6 +485,60 @@ class EmailService {
     }
   }
 
+  async sendContactConfirmation(contact) {
+    if (!transporter) return;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Message reçu - ${BRAND.name}</title>
+      </head>
+      <body style="${styles.base}">
+        <div style="${styles.container}">
+          ${getHeader()}
+          <div style="${styles.content}">
+            <h1 style="${styles.h1}">Nous avons reçu votre message !</h1>
+            <p style="${styles.p}">Bonjour <strong>${contact.name}</strong>,</p>
+            <p style="${styles.p}">Merci de nous avoir contactés. Nous avons bien reçu votre message et nous vous répondrons dans les plus brefs délais.</p>
+            
+            <div style="${styles.box}">
+              <p style="${styles.p}; margin-bottom: 10px;"><strong>Sujet :</strong> ${contact.subject}</p>
+              <p style="${styles.p}; margin: 0;"><strong>Message :</strong></p>
+              <p style="${styles.p}; margin: 10px 0 0 0; white-space: pre-wrap;">${contact.message}</p>
+            </div>
+
+            <p style="${styles.p}">Notre équipe vous contactera bientôt à l'adresse <strong>${contact.email}</strong>.</p>
+
+            <div style="${styles.divider}"></div>
+
+            <p style="${styles.p}; text-align: center;">
+              <a href="${BRAND.website}" style="${styles.button}">
+                Découvrir nos produits
+              </a>
+            </p>
+          </div>
+          ${getFooter()}
+        </div>
+      </body>
+      </html>
+    `;
+
+    try {
+      const info = await transporter.sendMail({
+        from: useSMTP ? process.env.SMTP_USER : `${BRAND.name} <${BRAND.email}>`,
+        to: contact.email,
+        subject: 'Nous avons reçu votre message - ' + BRAND.name,
+        html
+      });
+      console.log('📧 [Email] Contact confirmation sent to:', contact.email, info.messageId);
+    } catch (err) {
+      console.error('📧 [Email] Contact confirmation failed:', err.message);
+    }
+  }
+
   async sendNewsletterWelcome(email) {
     if (!transporter) return;
 
