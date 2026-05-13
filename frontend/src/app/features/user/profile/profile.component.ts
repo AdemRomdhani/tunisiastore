@@ -8,15 +8,16 @@ import { OrderService } from '../../../core/services/order.service';
 import { ReturnService } from '../../../core/services/return.service';
 import { AddressService } from '../../../core/services/address.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe],
   template: `
     <div class="max-w-4xl mx-auto px-4 py-8">
-      <h1 class="text-2xl font-bold mb-6">Mon compte</h1>
+      <h1 class="text-2xl font-bold mb-6">{{ 'nav.account' | t }}</h1>
       
       @if (!isVerified) {
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
@@ -25,9 +26,9 @@ import { environment } from '../../../../environments/environment';
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
             </svg>
             <div class="flex-1">
-              <p class="font-medium text-yellow-800">Email non vérifié</p>
+              <p class="font-medium text-yellow-800">{{ 'profile.emailNotVerified' | t }}</p>
               <p class="text-sm text-yellow-700 mt-1">
-                Veuillez vérifier votre email pour accéder à toutes les fonctionnalités.
+                {{ 'profile.verifyEmailDesc' | t }}
               </p>
               <button (click)="resendVerification()" [disabled]="resending()" 
                       class="mt-2 text-sm text-yellow-800 underline hover:text-yellow-900">

@@ -3,30 +3,31 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { OrderService } from '../../../core/services/order.service';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-order-tracking',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   template: `
     <div class="tracking-page">
       <div class="tracking-container">
-        <h1>Suivre ma commande</h1>
-        <p class="subtitle">Entrez votre numéro de commande et email pour suivre votre livraison</p>
+        <h1>{{ 'tracking.title' | t }}</h1>
+        <p class="subtitle">{{ 'tracking.subtitle' | t }}</p>
         
         <div class="tracking-form">
           <div class="form-group">
-            <label>Numéro de commande</label>
-            <input type="text" [(ngModel)]="orderNumber" placeholder="Ex: TN-20260424-87037" class="form-control">
+            <label>{{ 'tracking.orderNumber' | t }}</label>
+            <input type="text" [(ngModel)]="orderNumber" [placeholder]="'tracking.orderPlaceholder' | t" class="form-control">
           </div>
           
           <div class="form-group">
-            <label>Email</label>
-            <input type="email" [(ngModel)]="email" placeholder="votre@email.com" class="form-control">
+            <label>{{ 'common.email' | t }}</label>
+            <input type="email" [(ngModel)]="email" [placeholder]="'auth.emailPlaceholder' | t" class="form-control">
           </div>
           
           <button (click)="trackOrder()" [disabled]="loading || !orderNumber || !email" class="btn-track">
-            {{ loading ? 'Chargement...' : 'Suivre ma commande' }}
+            {{ loading ? 'common.loading' : 'tracking.trackButton' | t }}
           </button>
         </div>
         
@@ -34,7 +35,7 @@ import { OrderService } from '../../../core/services/order.service';
         
         <div *ngIf="order && !error" class="order-details">
           <div class="order-header">
-            <h2>Commande #{{ order.orderNumber }}</h2>
+            <h2>{{ 'orders.order' | t }} #{{ order.orderNumber }}</h2>
             <span class="status-badge" [class]="order.status?.toLowerCase()">{{ order.status }}</span>
           </div>
           
@@ -42,7 +43,7 @@ import { OrderService } from '../../../core/services/order.service';
             <div class="timeline-item completed">
               <div class="timeline-dot"></div>
               <div class="timeline-content">
-                <h4>Commande passée</h4>
+                <h4>{{ 'tracking.orderPlaced' | t }}</h4>
                 <p>{{ order.createdAt | date:'dd/MM/yyyy' }}</p>
               </div>
             </div>

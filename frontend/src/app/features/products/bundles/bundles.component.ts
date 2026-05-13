@@ -8,6 +8,7 @@ import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.
 import { CartService } from '../../../core/services/cart.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 interface BundleProduct {
   product: {
@@ -36,11 +37,11 @@ interface Bundle {
 @Component({
   selector: 'app-bundles',
   standalone: true,
-  imports: [CommonModule, RouterModule, ImageUrlPipe, SkeletonComponent],
+  imports: [CommonModule, RouterModule, ImageUrlPipe, SkeletonComponent, TranslatePipe],
   template: `
     <div class="container mx-auto px-4 py-8">
-      <h1 class="text-2xl font-bold text-gray-900 mb-2">Packs & Bundles</h1>
-      <p class="text-gray-500 mb-8">Économisez plus avec nos packages produits</p>
+      <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ 'bundles.title' | t }}</h1>
+      <p class="text-gray-500 mb-8">{{ 'bundles.saveMore' | t }}</p>
       
       @if (loading()) {
         <div class="space-y-6">

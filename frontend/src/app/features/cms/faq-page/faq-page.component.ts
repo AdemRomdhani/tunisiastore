@@ -1,19 +1,20 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-faq-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   template: `
     <div class="max-w-4xl mx-auto px-4 py-8">
-      <h1 class="text-4xl font-bold text-gray-900 mb-8 text-center">Foire Aux Questions</h1>
+      <h1 class="text-4xl font-bold text-gray-900 mb-8 text-center">{{ 'faq.title' | t }}</h1>
       
       @if (loading()) {
         <div class="text-center py-12">
-          <p class="text-gray-500">Chargement...</p>
+          <p class="text-gray-500">{{ 'common.loading' | t }}</p>
         </div>
       } @else {
         <div class="space-y-4">
@@ -42,7 +43,7 @@ import { environment } from '../../../../environments/environment';
       
       @if (faqs().length === 0 && !loading()) {
         <div class="text-center py-12">
-          <p class="text-gray-500">Aucune question pour le moment.</p>
+          <p class="text-gray-500">{{ 'faq.noQuestions' | t }}</p>
         </div>
       }
     </div>

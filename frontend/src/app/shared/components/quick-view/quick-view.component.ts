@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
 import { ImageUrlPipe } from '../../pipes/image-url.pipe';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 import { QuickViewService } from '../../../core/services/quick-view.service';
 
 @Component({
   selector: 'app-quick-view',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, ImageUrlPipe],
+  imports: [CommonModule, RouterModule, ImageUrlPipe, TranslatePipe],
   template: `
     @if (quickViewService.isOpen()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -51,7 +52,7 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
                         </svg>
                       }
                     </div>
-                    <span class="text-sm text-slate-500">({{ p.ratings?.count }} avis)</span>
+                    <span class="text-sm text-slate-500">({{ p.ratings?.count }} {{ 'product.reviews' | t }})</span>
                   </div>
                 }
 
@@ -66,15 +67,15 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
                   @if (isInStock(p)) {
                     <span class="flex items-center gap-2 text-emerald-600 font-medium text-sm">
                       <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                      En stock
+                      {{ 'product.inStock' | t }}
                     </span>
                     @if (getAvailable(p) <= 5) {
-                      <span class="text-sm text-orange-600">Plus que {{ getAvailable(p) }}</span>
+                      <span class="text-sm text-orange-600">{{ 'product.lowStock' | t:{count: getAvailable(p)} }}</span>
                     }
                   } @else {
                     <span class="flex items-center gap-2 text-red-500 font-medium text-sm">
                       <span class="w-2.5 h-2.5 bg-red-500 rounded-full"></span>
-                      Rupture de stock
+                      {{ 'product.outOfStock' | t }}
                     </span>
                   }
                 </div>

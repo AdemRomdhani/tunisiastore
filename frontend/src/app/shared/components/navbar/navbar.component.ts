@@ -6,16 +6,19 @@ import { CartService } from '../../../core/services/cart.service';
 import { CompareService } from '../../../core/services/compare.service';
 import { CategoryService, Category } from '../../../core/services/category.service';
 import { ProductService } from '../../../core/services/product.service';
+import { I18nService } from '../../../core/services/i18n.service';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../../../environments/environment';
 import { ImageUrlPipe } from '../../pipes/image-url.pipe';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { LanguageSwitcherComponent } from '../language-switcher/language-switcher.component';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ImageUrlPipe],
+  imports: [CommonModule, RouterModule, FormsModule, ImageUrlPipe, TranslatePipe, LanguageSwitcherComponent],
   template: `
     <nav class="bg-white shadow-card sticky top-0 z-50">
       <!-- Top bar -->
@@ -29,26 +32,27 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
               <span class="hidden xs:inline">+216 55226228</span>
             </span>
             <span class="hidden sm:inline text-primary-200">•</span>
-            <span class="hidden sm:inline text-xs">Livraison gratuite dès 200 DT</span>
+            <span class="hidden sm:inline text-xs">{{ 'nav.freeShipping' | t }}</span>
           </div>
           <div class="flex items-center gap-3 sm:gap-5">
+            <app-language-switcher />
             @if (authService.isAuthenticated()) {
               <a routerLink="/profile" class="hover:text-primary-200 flex items-center gap-1.5 sm:gap-2 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
-                <span class="hidden lg:inline">Mon compte</span>
+                <span class="hidden lg:inline">{{ 'nav.account' | t }}</span>
               </a>
               <a routerLink="/wishlist" class="hover:text-primary-200 flex items-center gap-1.5 sm:gap-2 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                 </svg>
-                <span class="hidden lg:inline">Favoris</span>
+                <span class="hidden lg:inline">{{ 'nav.wishlist' | t }}</span>
               </a>
-              <button (click)="logout()" class="hover:text-primary-200 transition-colors text-xs sm:text-sm">Déconnexion</button>
+              <button (click)="logout()" class="hover:text-primary-200 transition-colors text-xs sm:text-sm">{{ 'nav.logout' | t }}</button>
             } @else {
-              <a routerLink="/login" class="hover:text-primary-200 transition-colors text-xs sm:text-sm">Connexion</a>
-              <a routerLink="/register" class="hover:text-primary-200 transition-colors text-xs sm:text-sm">S'inscrire</a>
+              <a routerLink="/login" class="hover:text-primary-200 transition-colors text-xs sm:text-sm">{{ 'nav.login' | t }}</a>
+              <a routerLink="/register" class="hover:text-primary-200 transition-colors text-xs sm:text-sm">{{ 'nav.register' | t }}</a>
             }
           </div>
         </div>
@@ -93,7 +97,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                 (keydown.arrowUp)="navigateUp($event)"
                 (keydown.enter)="selectHighlighted()"
                 (focus)="showDropdown = true"
-                placeholder="Rechercher un produit..."
+                [placeholder]="i18n.t('common.search')"
                 class="w-full pl-5 pr-14 py-2.5 sm:py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all text-sm sm:text-base"
                 autocomplete="off"
               >
@@ -291,25 +295,25 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                     </svg>
                   </div>
                   <div>
-                    <p class="font-medium text-surface-800 text-sm">Mon Compte</p>
-                    <a routerLink="/profile" (click)="mobileMenuOpen.set(false)" class="text-xs text-primary-600 hover:underline">Voir profil</a>
+                    <p class="font-medium text-surface-800 text-sm">{{ 'nav.account' | t }}</p>
+                    <a routerLink="/profile" (click)="mobileMenuOpen.set(false)" class="text-xs text-primary-600 hover:underline">{{ 'nav.profile' | t }}</a>
                   </div>
                 </div>
                 <div class="flex gap-2">
                   <a routerLink="/wishlist" (click)="mobileMenuOpen.set(false)" class="flex-1 py-2 text-center text-sm text-surface-600 hover:text-primary-600 border border-surface-200 rounded-lg transition-colors">
-                    Favoris
+                    {{ 'nav.wishlist' | t }}
                   </a>
                   <button (click)="logout(); mobileMenuOpen.set(false)" class="flex-1 py-2 text-center text-sm text-red-600 hover:bg-red-50 border border-red-200 rounded-lg transition-colors">
-                    Déconnexion
+                    {{ 'nav.logout' | t }}
                   </button>
                 </div>
               } @else {
                 <div class="flex gap-2">
                   <a routerLink="/login" (click)="mobileMenuOpen.set(false)" class="flex-1 py-2.5 text-center text-sm font-medium text-primary-600 bg-primary-50 border border-primary-200 rounded-lg transition-colors">
-                    Connexion
+                    {{ 'nav.login' | t }}
                   </a>
                   <a routerLink="/register" (click)="mobileMenuOpen.set(false)" class="flex-1 py-2.5 text-center text-sm font-medium text-white bg-primary-600 rounded-lg transition-colors">
-                    S'inscrire
+                    {{ 'nav.register' | t }}
                   </a>
                 </div>
               }
@@ -319,14 +323,14 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                   </svg>
-                  Espace Admin
+                  {{ 'nav.admin' | t }}
                 </a>
               }
             </div>
 
             <!-- Categories -->
             <div class="p-4">
-              <h3 class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Catégories</h3>
+              <h3 class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">{{ 'nav.categories' | t }}</h3>
               <div class="space-y-1">
                 @for (cat of categories(); track cat._id) {
                   <a 
@@ -345,10 +349,10 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
             <div class="p-4 border-t border-surface-100">
               <div class="space-y-1">
                 <a routerLink="/products" (click)="mobileMenuOpen.set(false)" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-surface-700 hover:text-primary-600 hover:bg-surface-50 rounded-lg transition-colors">
-                  Tous les produits
+                  {{ 'nav.products' | t }}
                 </a>
                 <a routerLink="/bundles" (click)="mobileMenuOpen.set(false)" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-surface-700 hover:text-primary-600 hover:bg-surface-50 rounded-lg transition-colors">
-                  Packs & Bundles
+                  {{ 'nav.bundles' | t }}
                 </a>
               </div>
             </div>
@@ -377,6 +381,7 @@ export class NavbarComponent implements OnInit {
   private productService = inject(ProductService);
   private router = inject(Router);
   private el = inject(ElementRef);
+  i18n = inject(I18nService);
 
   categories = signal<Category[]>([]);
   searchResults = signal<any[]>([]);
@@ -426,6 +431,7 @@ export class NavbarComponent implements OnInit {
     if (!this.el.nativeElement.contains(event.target)) {
       this.showDropdown = false;
       this.mobileSearchOpen.set(false);
+      this.mobileMenuOpen.set(false);
     }
   }
 

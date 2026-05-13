@@ -5,23 +5,24 @@ import { OrderService, Order } from '../../core/services/order.service';
 import { ToastService } from '../../core/services/toast.service';
 import { FormsModule } from '@angular/forms';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, SkeletonComponent],
+  imports: [CommonModule, RouterModule, FormsModule, SkeletonComponent, TranslatePipe],
   template: `
     <div class="container mx-auto px-4 py-8 min-h-screen">
-      <h1 class="text-3xl font-bold text-gray-900 mb-8">Mes commandes</h1>
+      <h1 class="text-3xl font-bold text-gray-900 mb-8">{{ 'orders.title' | t }}</h1>
 
       @if (successMessage()) {
         <div class="bg-green-100 border-2 border-green-400 text-green-800 p-6 rounded-xl mb-6 text-center">
           <svg class="w-12 h-12 mx-auto mb-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <h2 class="text-xl font-bold mb-1">Commande confirmée !</h2>
+          <h2 class="text-xl font-bold mb-1">{{ 'checkout.thankYou' | t }}</h2>
           <p class="text-lg">{{ successMessage() }}</p>
-          <p class="text-sm mt-2 text-green-700">Merci pour votre commande. Vous recevrez un email de confirmation.</p>
+          <p class="text-sm mt-2 text-green-700">{{ 'orders.confirmationEmail' | t }}</p>
         </div>
       }
 
@@ -29,8 +30,8 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
         <app-skeleton type="table" [count]="3"/>
       } @else if (orders().length === 0) {
         <div class="bg-white rounded-xl shadow-sm p-16 text-center">
-          <p class="text-gray-500 text-lg mb-4">Vous n'avez pas encore de commande</p>
-          <a routerLink="/products" class="btn-primary inline-block">Commencer les achats</a>
+          <p class="text-gray-500 text-lg mb-4">{{ 'orders.noOrdersText' | t }}</p>
+          <a routerLink="/products" class="btn-primary inline-block">{{ 'orders.shopNow' | t }}</a>
         </div>
       } @else {
         <div class="space-y-4">
@@ -38,7 +39,7 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
             <div class="bg-white rounded-xl shadow-sm p-6">
               <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
                 <div>
-                  <span class="text-sm text-gray-500">Commande</span>
+                  <span class="text-sm text-gray-500">{{ 'orders.order' | t }}</span>
                   <p class="font-bold text-lg">{{ order.orderNumber }}</p>
                 </div>
                 <div class="text-right">
@@ -53,11 +54,11 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
 
               <div class="grid md:grid-cols-3 gap-4 text-sm border-t pt-4">
                 <div>
-                  <span class="text-gray-500">Date</span>
+                  <span class="text-gray-500">{{ 'orders.date' | t }}</span>
                   <p class="font-medium">{{ order.createdAt | date:'dd/MM/yyyy' }}</p>
                 </div>
                 <div>
-                  <span class="text-gray-500">Total</span>
+                  <span class="text-gray-500">{{ 'orders.total' | t }}</span>
                   <p class="font-bold text-primary-600">{{ order.pricing.total | number:'1.3' }} DT</p>
                 </div>
                 <div>

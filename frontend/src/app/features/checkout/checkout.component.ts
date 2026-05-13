@@ -9,16 +9,18 @@ import { AddressService, Address } from '../../core/services/address.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ShippingService } from '../../core/services/shipping.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ImageUrlPipe],
+  imports: [CommonModule, RouterModule, FormsModule, ImageUrlPipe, TranslatePipe],
   template: `
     <div class="container mx-auto px-4 py-8 min-h-screen">
-      <h1 class="text-3xl font-bold text-surface-900 mb-8">Finaliser la commande</h1>
+      <h1 class="text-3xl font-bold text-surface-900 mb-8">{{ 'checkout.title' | t }}</h1>
 
       <div class="lg:grid lg:grid-cols-3 gap-8">
         <!-- Checkout Form -->
@@ -27,7 +29,7 @@ import { environment } from '../../../environments/environment';
           <div class="bg-surface-50 rounded-2xl shadow-card p-6">
             <h2 class="text-lg font-bold mb-5 flex items-center gap-3 text-surface-800">
               <span class="w-8 h-8 bg-primary-100 text-primary-600 rounded-xl flex items-center justify-center text-sm font-bold">1</span>
-              Adresse de livraison
+              {{ 'checkout.deliveryAddress' | t }}
             </h2>
             
             @if (addresses().length > 0) {
@@ -314,6 +316,7 @@ export class CheckoutComponent implements OnInit {
   private router = inject(Router);
   private shippingService = inject(ShippingService);
   private http = inject(HttpClient);
+  i18n = inject(I18nService);
 
   cartItems = this.cartService.cartItems;
   subtotal = this.cartService.subtotal;

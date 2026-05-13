@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NewsletterService } from '../../../core/services/newsletter.service';
+import { I18nService } from '../../../core/services/i18n.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, TranslatePipe],
   template: `
     <footer class="bg-surface-900 text-surface-300 mt-16">
       <div class="container mx-auto px-4 py-12">
@@ -21,8 +23,7 @@ import { NewsletterService } from '../../../core/services/newsletter.service';
               <span class="text-white text-xl font-bold">Tunisia Store</span>
             </div>
             <p class="text-sm leading-relaxed mb-6 text-surface-400">
-              Votre destination privilégiée pour l'électronique en Tunisie. 
-              Prix compétitifs, livraison rapide et service client exceptionnel.
+              {{ 'footer.aboutDesc' | t }}
             </p>
             <div class="flex gap-3">
               <a href="https://facebook.com" target="_blank" class="w-10 h-10 bg-surface-800 rounded-xl flex items-center justify-center hover:bg-primary-600 transition-all duration-200">
@@ -42,10 +43,10 @@ import { NewsletterService } from '../../../core/services/newsletter.service';
               </a>
             </div>
             <div class="mt-6">
-              <h4 class="text-white font-semibold mb-3 text-sm">Newsletter</h4>
-              <p class="text-xs text-surface-500 mb-3">Inscrivez-vous pour recevoir nos offres exclusives</p>
+              <h4 class="text-white font-semibold mb-3 text-sm">{{ 'footer.newsletter' | t }}</h4>
+              <p class="text-xs text-surface-500 mb-3">{{ 'footer.subscribeText' | t }}</p>
               <form (ngSubmit)="subscribeNewsletter()" class="flex gap-2">
-                <input type="email" [(ngModel)]="email" name="email" placeholder="Votre email..." 
+                <input type="email" [(ngModel)]="email" name="email" [placeholder]="i18n.t('common.email')" 
                        class="flex-1 px-4 py-2.5 bg-surface-800 border border-surface-700 rounded-xl text-sm focus:outline-none focus:border-primary-500 transition-colors">
                 <button type="submit" [disabled]="subscribing()" 
                         class="px-5 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all duration-200 text-sm disabled:opacity-50">
@@ -157,6 +158,7 @@ import { NewsletterService } from '../../../core/services/newsletter.service';
 })
 export class FooterComponent {
   private newsletterService = inject(NewsletterService);
+  i18n = inject(I18nService);
   
   email = '';
   subscribing = signal(false);

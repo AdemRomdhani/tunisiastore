@@ -9,16 +9,18 @@ import { ProductService, Product, ProductFilters } from '../../core/services/pro
 import { CategoryService, Category } from '../../core/services/category.service';
 import { CartService } from '../../core/services/cart.service';
 import { SeoService } from '../../core/services/seo.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-products',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, ProductCardComponent, SkeletonComponent, EmptyStateComponent],
+  imports: [CommonModule, RouterModule, FormsModule, ProductCardComponent, SkeletonComponent, EmptyStateComponent, TranslatePipe],
   template: `
     <div class="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
       <!-- Mobile Filter Toggle -->
@@ -32,7 +34,7 @@ import { environment } from '../../../environments/environment';
               (click)="clearFilters()"
               class="text-xs text-primary-600 font-medium hover:underline"
             >
-              Réinitialiser
+              {{ 'products.reset' | t }}
             </button>
           }
           <button 
@@ -42,7 +44,7 @@ import { environment } from '../../../environments/environment';
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
             </svg>
-            Filtres
+            {{ 'products.filters' | t }}
             @if (hasActiveFilters()) {
               <span class="w-2 h-2 bg-primary-600 rounded-full"></span>
             }
@@ -54,16 +56,16 @@ import { environment } from '../../../environments/environment';
         <!-- Sidebar Filters - Desktop -->
         <aside class="hidden lg:block w-64 flex-shrink-0">
           <div class="bg-surface-50 rounded-2xl shadow-card p-6 sticky top-24">
-            <h3 class="font-bold text-lg text-surface-800 mb-5">Filtres</h3>
-            
+<h3 class="font-bold text-lg text-surface-800 mb-5">{{ 'products.filters' | t }}</h3>
+             
             <div class="mb-6">
-              <label class="block text-sm font-medium text-surface-700 mb-2">Rechercher</label>
+              <label class="block text-sm font-medium text-surface-700 mb-2">{{ 'products.search' | t }}</label>
               <div class="relative">
                 <input 
                   type="text" 
                   [ngModel]="searchQuery()"
                   (ngModelChange)="onSearchChange($event)"
-                  placeholder="Nom du produit..."
+                  [placeholder]="i18n.t('products.searchPlaceholder')"
                   class="input-field pr-10 text-sm"
                 >
                 @if (searchQuery()) {
@@ -81,7 +83,7 @@ import { environment } from '../../../environments/environment';
               <div class="space-y-1 max-h-52 overflow-y-auto py-1">
                 <label class="flex items-center gap-3 cursor-pointer px-2 py-2 rounded-lg hover:bg-surface-100 transition-colors">
                   <input type="radio" name="category" value="" [checked]="selectedCategory() === ''" (change)="selectCategory('')" class="w-4 h-4 text-primary-600 rounded-full border-surface-300 focus:ring-primary-500">
-                  <span class="text-sm text-surface-600">Toutes</span>
+                  <span class="text-sm text-surface-600">{{ 'products.allCategories' | t }}</span>
                 </label>
                 @for (cat of categories(); track cat._id) {
                   <label class="flex items-center gap-3 cursor-pointer px-2 py-2 rounded-lg hover:bg-surface-100 transition-colors">
@@ -93,27 +95,27 @@ import { environment } from '../../../environments/environment';
             </div>
 
             <div class="mb-6">
-              <h4 class="font-medium mb-3 text-surface-800">Prix (TND)</h4>
+              <h4 class="font-medium mb-3 text-surface-800">{{ 'products.priceRange' | t }}</h4>
               <div class="flex gap-2">
-                <input type="number" [(ngModel)]="minPrice" placeholder="Min" class="input-field text-sm flex-1">
-                <input type="number" [(ngModel)]="maxPrice" placeholder="Max" class="input-field text-sm flex-1">
+                <input type="number" [(ngModel)]="minPrice" [placeholder]="i18n.t('products.min')" class="input-field text-sm flex-1">
+                <input type="number" [(ngModel)]="maxPrice" [placeholder]="i18n.t('products.max')" class="input-field text-sm flex-1">
               </div>
-              <button (click)="applyPriceFilter()" class="btn-secondary w-full mt-3 text-sm">Appliquer</button>
+              <button (click)="applyPriceFilter()" class="btn-secondary w-full mt-3 text-sm">{{ 'products.apply' | t }}</button>
             </div>
 
             <div>
-              <h4 class="font-medium mb-3 text-surface-800">Trier par</h4>
+              <h4 class="font-medium mb-3 text-surface-800">{{ 'products.sortBy' | t }}</h4>
               <select [(ngModel)]="sortOrder" (change)="updateSort($event)" class="input-field text-sm">
-                <option value="-createdAt">Nouveautés</option>
-                <option value="price-asc">Prix: Croissant</option>
-                <option value="price-desc">Prix: Décroissant</option>
-                <option value="rating">Mieux notés</option>
+                <option value="-createdAt">{{ 'products.newest' | t }}</option>
+                <option value="price-asc">{{ 'products.priceAsc' | t }}</option>
+                <option value="price-desc">{{ 'products.priceDesc' | t }}</option>
+                <option value="rating">{{ 'products.topRated' | t }}</option>
               </select>
             </div>
 
             @if (hasActiveFilters()) {
               <button (click)="clearFilters()" class="w-full mt-6 text-primary-600 text-sm font-medium hover:text-primary-700 transition-colors">
-                Réinitialiser les filtres
+                {{ 'products.resetFilters' | t }}
               </button>
             }
           </div>
@@ -124,7 +126,7 @@ import { environment } from '../../../environments/environment';
           <div class="lg:hidden fixed inset-0 z-40 bg-black/50" (click)="filterOpen.set(false)">
             <div class="absolute right-0 top-0 bottom-0 w-80 max-w-full bg-white shadow-xl overflow-y-auto" (click)="$event.stopPropagation()">
               <div class="sticky top-0 bg-white border-b border-surface-200 px-4 py-3 flex items-center justify-between">
-                <h3 class="font-bold text-lg text-surface-800">Filtres</h3>
+                <h3 class="font-bold text-lg text-surface-800">{{ 'products.filters' | t }}</h3>
                 <button (click)="filterOpen.set(false)" class="p-2 text-surface-400 hover:text-surface-600 transition-colors">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -133,9 +135,9 @@ import { environment } from '../../../environments/environment';
               </div>
               <div class="p-4">
                 <div class="mb-5">
-                  <label class="block text-sm font-medium text-surface-700 mb-2">Rechercher</label>
+                  <label class="block text-sm font-medium text-surface-700 mb-2">{{ 'products.search' | t }}</label>
                   <div class="relative">
-                    <input type="text" [ngModel]="searchQuery()" (ngModelChange)="onSearchChange($event)" placeholder="Nom du produit..." class="input-field pr-10 text-sm">
+                    <input type="text" [ngModel]="searchQuery()" (ngModelChange)="onSearchChange($event)" [placeholder]="i18n.t('products.searchPlaceholder')" class="input-field pr-10 text-sm">
                     @if (searchQuery()) {
                       <button (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,11 +149,11 @@ import { environment } from '../../../environments/environment';
                 </div>
 
                 <div class="mb-5">
-                  <h4 class="font-medium mb-3 text-surface-800">Catégories</h4>
+                  <h4 class="font-medium mb-3 text-surface-800">{{ 'nav.categories' | t }}</h4>
                   <div class="space-y-1">
                     <label class="flex items-center gap-3 cursor-pointer px-2 py-2 rounded-lg hover:bg-surface-100 transition-colors">
                       <input type="radio" name="cat-mobile" value="" [checked]="selectedCategory() === ''" (change)="selectCategory('')" class="w-4 h-4 text-primary-600 rounded-full">
-                      <span class="text-sm text-surface-600">Toutes</span>
+                      <span class="text-sm text-surface-600">{{ 'products.allCategories' | t }}</span>
                     </label>
                     @for (cat of categories(); track cat._id) {
                       <label class="flex items-center gap-3 cursor-pointer px-2 py-2 rounded-lg hover:bg-surface-100 transition-colors">
@@ -163,32 +165,32 @@ import { environment } from '../../../environments/environment';
                 </div>
 
                 <div class="mb-5">
-                  <h4 class="font-medium mb-3 text-surface-800">Prix (TND)</h4>
+                  <h4 class="font-medium mb-3 text-surface-800">{{ 'products.priceRange' | t }}</h4>
                   <div class="flex gap-2">
-                    <input type="number" [(ngModel)]="minPrice" placeholder="Min" class="input-field text-sm flex-1">
-                    <input type="number" [(ngModel)]="maxPrice" placeholder="Max" class="input-field text-sm flex-1">
+                    <input type="number" [(ngModel)]="minPrice" [placeholder]="i18n.t('products.min')" class="input-field text-sm flex-1">
+                    <input type="number" [(ngModel)]="maxPrice" [placeholder]="i18n.t('products.max')" class="input-field text-sm flex-1">
                   </div>
-                  <button (click)="applyPriceFilter()" class="btn-secondary w-full mt-3 text-sm">Appliquer</button>
+                  <button (click)="applyPriceFilter()" class="btn-secondary w-full mt-3 text-sm">{{ 'products.apply' | t }}</button>
                 </div>
 
                 <div class="mb-5">
-                  <h4 class="font-medium mb-3 text-surface-800">Trier par</h4>
+                  <h4 class="font-medium mb-3 text-surface-800">{{ 'products.sortBy' | t }}</h4>
                   <select [(ngModel)]="sortOrder" (change)="updateSort($event)" class="input-field text-sm">
-                    <option value="-createdAt">Nouveautés</option>
-                    <option value="price-asc">Prix: Croissant</option>
-                    <option value="price-desc">Prix: Décroissant</option>
-                    <option value="rating">Mieux notés</option>
+                    <option value="-createdAt">{{ 'products.newest' | t }}</option>
+                    <option value="price-asc">{{ 'products.priceAsc' | t }}</option>
+                    <option value="price-desc">{{ 'products.priceDesc' | t }}</option>
+                    <option value="rating">{{ 'products.topRated' | t }}</option>
                   </select>
                 </div>
 
                 @if (hasActiveFilters()) {
                   <button (click)="clearFilters()" class="w-full py-2.5 text-sm font-medium text-primary-600 border border-primary-200 rounded-xl hover:bg-primary-50 transition-colors">
-                    Réinitialiser les filtres
+                    {{ 'products.resetFilters' | t }}
                   </button>
                 }
 
                 <button (click)="filterOpen.set(false)" class="w-full mt-3 py-2.5 text-sm font-medium text-white bg-primary-600 rounded-xl hover:bg-primary-700 transition-colors">
-                  Voir les résultats
+                  {{ 'products.viewResults' | t }}
                 </button>
               </div>
             </div>
@@ -202,11 +204,11 @@ import { environment } from '../../../environments/environment';
               <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-card">
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
-                    <h2 class="text-lg sm:text-xl font-bold text-white mb-0.5 sm:mb-1">Packs & Bundles</h2>
-                    <p class="text-indigo-100 text-xs sm:text-sm">Économisez plus avec nos packages!</p>
+                    <h2 class="text-lg sm:text-xl font-bold text-white mb-0.5 sm:mb-1">{{ 'products.packsBundles' | t }}</h2>
+                    <p class="text-indigo-100 text-xs sm:text-sm">{{ 'products.saveMore' | t }}</p>
                   </div>
                   <a routerLink="/bundles" class="bg-white text-indigo-600 px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl text-sm font-medium hover:bg-indigo-50 transition-all duration-200 whitespace-nowrap">
-                    Voir les packs
+                    {{ 'products.viewPacks' | t }}
                   </a>
                 </div>
                 <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mt-3 sm:mt-5">
@@ -229,17 +231,17 @@ import { environment } from '../../../environments/environment';
           <!-- Header - Desktop -->
           <div class="hidden lg:flex items-center justify-between mb-6">
             <h1 class="text-xl font-bold text-surface-800">{{ getPageTitle() }}</h1>
-            <span class="text-sm text-surface-500">{{ pagination().total || 0 }} produit(s)</span>
+            <span class="text-sm text-surface-500">{{ i18n.t('products.productsCount', { count: pagination().total || 0 }) }}</span>
           </div>
 
           @if (loading()) {
             <app-skeleton type="product-list" [count]="8" gridClass="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6"/>
           } @else if (products().length === 0) {
             <app-empty-state
-              title="Aucun produit trouvé"
-              [description]="searchQuery() ? 'Essayez un autre terme de recherche' : 'Nous navons pas encore de produits'"
+              [title]="i18n.t('products.noProducts')"
+              [description]="searchQuery() ? i18n.t('products.tryOtherSearch') : i18n.t('products.noProductsYet')"
               icon="products"
-              actionLabel="Réinitialiser les filtres"
+              [actionLabel]="i18n.t('products.resetFilters')"
               (actionClick)="clearFilters()"
             />
           } @else {
@@ -252,7 +254,7 @@ import { environment } from '../../../environments/environment';
             @if (pagination().pages > 1) {
               <div class="flex flex-wrap justify-center mt-8 sm:mt-12 gap-1.5 sm:gap-2">
                 <button (click)="changePage(pagination().current - 1)" [disabled]="pagination().current === 1" class="px-3 sm:px-4 py-2 text-xs sm:text-sm border border-surface-200 rounded-lg sm:rounded-xl hover:bg-surface-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                  Précédent
+                  {{ 'products.previous' | t }}
                 </button>
                 @for (page of getPageNumbers(); track page) {
                   <button (click)="changePage(page)" [class.bg-primary-600]="page === pagination().current" [class.text-white]="page === pagination().current" [class.border-primary-600]="page === pagination().current" class="w-9 h-9 sm:w-10 sm:h-10 text-xs sm:text-sm border border-surface-200 rounded-lg sm:rounded-xl hover:bg-surface-50 font-medium transition-colors">
@@ -260,7 +262,7 @@ import { environment } from '../../../environments/environment';
                   </button>
                 }
                 <button (click)="changePage(pagination().current + 1)" [disabled]="pagination().current === pagination().pages" class="px-3 sm:px-4 py-2 text-xs sm:text-sm border border-surface-200 rounded-lg sm:rounded-xl hover:bg-surface-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                  Suivant
+                  {{ 'products.next' | t }}
                 </button>
               </div>
             }
@@ -278,6 +280,7 @@ export class ProductsComponent implements OnInit {
   private http = inject(HttpClient);
   private cd = inject(ChangeDetectorRef);
   private ngZone = inject(NgZone);
+  i18n = inject(I18nService);
 
   products = signal<Product[]>([]);
   categories = signal<Category[]>([]);

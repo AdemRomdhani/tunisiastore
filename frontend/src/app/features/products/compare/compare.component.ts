@@ -3,21 +3,22 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { CompareService } from '../../../core/services/compare.service';
 import { ImageUrlPipe } from '../../../shared/pipes/image-url.pipe';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-compare',
   standalone: true,
-  imports: [CommonModule, RouterModule, ImageUrlPipe],
+  imports: [CommonModule, RouterModule, ImageUrlPipe, TranslatePipe],
   template: `
     <div class="container mx-auto px-4 py-8 min-h-screen">
       <div class="flex items-center justify-between mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Comparer les produits</h1>
+        <h1 class="text-3xl font-bold text-gray-900">{{ 'compare.title' | t }}</h1>
         @if (compareService.count() > 0) {
           <button 
             (click)="clearCompare()"
             class="text-sm text-red-600 hover:text-red-800"
           >
-            Tout effacer
+            {{ 'common.clear' | t }}
           </button>
         }
       </div>

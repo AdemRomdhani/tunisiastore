@@ -5,68 +5,69 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
 import { ToastService } from '../../core/services/toast.service';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   template: `
     <div class="max-w-2xl mx-auto px-4 py-12">
-      <h1 class="text-3xl font-bold text-center mb-2">Contactez-nous</h1>
-      <p class="text-gray-600 text-center mb-8">Nous sommes disponibles pour répondre à vos questions</p>
+      <h1 class="text-3xl font-bold text-center mb-2">{{ 'contact.title' | t }}</h1>
+      <p class="text-gray-600 text-center mb-8">{{ 'contact.subtitle' | t }}</p>
 
       @if (success()) {
         <div class="bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-xl mb-6">
-          <p class="font-medium">Message envoyé avec succès!</p>
-          <p class="text-sm">Nous vous répondrons dans les plus brefs délais.</p>
+          <p class="font-medium">{{ 'contact.success' | t }}</p>
+          <p class="text-sm">{{ 'contact.wecl' | t }}</p>
         </div>
       }
 
       <form (ngSubmit)="sendMessage()" class="bg-white rounded-xl shadow-sm p-6 space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nom complet *</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'contact.name' | t }} *</label>
             <input type="text" [(ngModel)]="form.name" name="name" required
                    class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
-                   placeholder="Votre nom">
+                   [placeholder]="'contact.namePlaceholder' | t">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'common.email' | t }} *</label>
             <input type="email" [(ngModel)]="form.email" name="email" required
                    class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
-                   placeholder="votre@email.com">
+                   [placeholder]="'auth.emailPlaceholder' | t">
           </div>
         </div>
         
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'auth.phone' | t }}</label>
           <input type="tel" [(ngModel)]="form.phone" name="phone"
                  class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
-                 placeholder="+216 XX XXX XXX">
+                 [placeholder]="'auth.phonePlaceholder' | t">
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Sujet *</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'contact.subject' | t }} *</label>
           <select [(ngModel)]="form.subject" name="subject" required
                   class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none">
-            <option value="">Choisir un sujet</option>
-            <option value="order">Question sur une commande</option>
-            <option value="product">Question sur un produit</option>
-            <option value="return">Retour &amp; Remboursement</option>
-            <option value="partnership">Partenariat</option>
-            <option value="other">Autre</option>
+            <option value="">{{ 'contact.selectSubject' | t }}</option>
+            <option value="order">{{ 'contact.orderQuestion' | t }}</option>
+            <option value="product">{{ 'contact.productQuestion' | t }}</option>
+            <option value="return">{{ 'contact.returnRefund' | t }}</option>
+            <option value="partnership">{{ 'contact.partnership' | t }}</option>
+            <option value="other">{{ 'common.other' | t }}</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Message *</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'contact.message' | t }} *</label>
           <textarea [(ngModel)]="form.message" name="message" rows="5" required
                     class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none resize-none"
-                    placeholder="Décrivez votre demande..."></textarea>
+                    [placeholder]="'contact.messagePlaceholder' | t"></textarea>
         </div>
 
         <button type="submit" [disabled]="sending()" 
                 class="w-full bg-primary-600 text-white py-3 rounded-lg hover:bg-primary-700 transition font-medium disabled:opacity-50">
-          {{ sending() ? 'Envoi en cours...' : 'Envoyer le message' }}
+          {{ sending() ? 'common.loading' : 'contact.send' | t }}
         </button>
       </form>
 
@@ -79,7 +80,7 @@ import { ToastService } from '../../core/services/toast.service';
             </svg>
           </div>
           <p class="font-medium">+21655226228</p>
-          <p class="text-sm text-gray-500">Téléphone</p>
+          <p class="text-sm text-gray-500">{{ 'contact.phone' | t }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm p-4 text-center">
           <div class="w-12 h-12 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -88,7 +89,7 @@ import { ToastService } from '../../core/services/toast.service';
             </svg>
           </div>
           <p class="font-medium">adem.micro13&#64;gmail.com</p>
-          <p class="text-sm text-gray-500">Email</p>
+          <p class="text-sm text-gray-500">{{ 'common.email' | t }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm p-4 text-center">
           <div class="w-12 h-12 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -98,7 +99,7 @@ import { ToastService } from '../../core/services/toast.service';
             </svg>
           </div>
           <p class="font-medium">Rue hammamet douar hicher Manouba 2086</p>
-          <p class="text-sm text-gray-500">Adresse</p>
+          <p class="text-sm text-gray-500">{{ 'contact.address' | t }}</p>
         </div>
       </div>
     </div>

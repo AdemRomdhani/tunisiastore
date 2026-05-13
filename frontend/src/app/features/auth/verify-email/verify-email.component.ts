@@ -3,19 +3,20 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-verify-email',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   template: `
     <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
       <div class="max-w-md w-full text-center">
         @if (loading()) {
           <div class="bg-white rounded-xl shadow-sm p-8">
             <div class="animate-spin rounded-full h-12 w-12 border-4 border-primary-600 border-t-transparent mx-auto mb-4"></div>
-            <p class="text-gray-600">Vérification en cours...</p>
+            <p class="text-gray-600">{{ 'verifyEmail.verifying' | t }}</p>
           </div>
         } @else if (success()) {
           <div class="bg-white rounded-xl shadow-sm p-8">
@@ -24,10 +25,10 @@ import { environment } from '../../../../environments/environment';
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
             </div>
-            <h1 class="text-2xl font-bold text-green-600 mb-2">Email vérifié !</h1>
-            <p class="text-gray-600 mb-6">Votre email a été vérifié avec succès.</p>
+            <h1 class="text-2xl font-bold text-green-600 mb-2">{{ 'verifyEmail.verified' | t }}</h1>
+            <p class="text-gray-600 mb-6">{{ 'verifyEmail.successMessage' | t }}</p>
             <button (click)="goHome()" class="btn-primary">
-              Retour à l'accueil
+              {{ 'verifyEmail.goHome' | t }}
             </button>
           </div>
         } @else {
@@ -37,10 +38,10 @@ import { environment } from '../../../../environments/environment';
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </div>
-            <h1 class="text-2xl font-bold text-red-600 mb-2">Erreur</h1>
+            <h1 class="text-2xl font-bold text-red-600 mb-2">{{ 'common.error' | t }}</h1>
             <p class="text-gray-600 mb-6">{{ error() }}</p>
             <button (click)="goHome()" class="btn-primary">
-              Retour à l'accueil
+              {{ 'verifyEmail.goHome' | t }}
             </button>
           </div>
         }

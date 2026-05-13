@@ -7,6 +7,7 @@ import { ToastComponent } from './shared/components/toast/toast.component';
 import { WhatsAppChatComponent } from './shared/components/whatsapp-chat/whatsapp-chat.component';
 import { OfflineBannerComponent } from './shared/components/offline-banner/offline-banner.component';
 import { QuickViewComponent } from './shared/components/quick-view/quick-view.component';
+import { I18nService } from './core/services/i18n.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -27,6 +28,7 @@ import { filter } from 'rxjs/operators';
 })
 export class AppComponent {
   private router = inject(Router);
+  private i18n = inject(I18nService);
   private currentUrl = '/';
 
   constructor() {

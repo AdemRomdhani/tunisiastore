@@ -11,12 +11,13 @@ import { JsonLdComponent } from '../../shared/components/json-ld/json-ld.compone
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
 import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, JsonLdComponent, ImageUrlPipe, ProductCardComponent, SkeletonComponent, DatePipe],
+  imports: [CommonModule, RouterModule, FormsModule, JsonLdComponent, ImageUrlPipe, ProductCardComponent, SkeletonComponent, DatePipe, TranslatePipe],
   styles: [`
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -32,16 +33,16 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
             <svg class="w-16 h-16 mx-auto text-surface-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
             </svg>
-            <h2 class="text-xl font-bold text-surface-700 mb-2">Produit non trouvé</h2>
+            <h2 class="text-xl font-bold text-surface-700 mb-2">{{ 'productDetail.productNotFound' | t }}</h2>
             <p class="text-surface-500 mb-4">{{ error() }}</p>
-            <a routerLink="/products" class="btn-primary">Voir les produits</a>
+            <a routerLink="/products" class="btn-primary">{{ 'common.viewAll' | t }}</a>
           </div>
         </div>
       } @else if (product()) {
         <nav class="text-xs sm:text-sm text-surface-500 mb-4 sm:mb-6 flex flex-wrap items-center gap-1 sm:gap-2">
-          <a routerLink="/" class="hover:text-primary-600">Accueil</a>
+          <a routerLink="/" class="hover:text-primary-600">{{ 'nav.home' | t }}</a>
           <span class="text-surface-300">/</span>
-          <a routerLink="/products" class="hover:text-primary-600">Produits</a>
+          <a routerLink="/products" class="hover:text-primary-600">{{ 'nav.products' | t }}</a>
           @if (product()?.category) {
             <span class="text-surface-300">/</span>
             <a [routerLink]="['/products']" [queryParams]="{category: product()?.category?.slug}" class="hover:text-primary-600">{{ product()?.category?.name }}</a>
@@ -56,7 +57,7 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
               <div class="relative cursor-zoom-in" (click)="toggleZoom()" (mousemove)="onImageMouseMove($event, mainImage)" #imageContainer>
                 <img #mainImage [src]="selectedImage() | imageUrl" [alt]="product()?.name" class="w-full max-w-md sm:max-w-lg mx-auto h-auto transition-transform duration-300" [class.scale-150]="zoomEnabled()" [style.transform-origin]="zoomEnabled() ? zoomPosition().x + '% ' + zoomPosition().y + '%' : 'center center'" width="500" height="500" loading="eager">
                 @if (!zoomEnabled()) {
-                  <div class="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-black/60 text-white text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex">Zoom</div>
+                  <div class="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-black/60 text-white text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex">{{ 'productDetail.zoom' | t }}</div>
                 }
               </div>
             </div>
@@ -71,7 +72,7 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
           <div>
             <div class="flex items-center gap-2 mb-2 sm:mb-3">
               @if (product()?.badges?.includes('NEW')) {
-                <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 sm:px-2.5 py-1 rounded-lg">NOUVEAU</span>
+                <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 sm:px-2.5 py-1 rounded-lg">{{ 'product.new' | t }}</span>
               }
               @if (discount() > 0) {
                 <span class="bg-red-100 text-red-700 text-xs font-bold px-2 sm:px-2.5 py-1 rounded-lg">-{{ discount() }}%</span>
@@ -87,7 +88,7 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
                     </svg>
                   }
                 </div>
-                <span class="text-xs sm:text-sm text-surface-500">{{ product()?.ratings?.count }} avis</span>
+                <span class="text-xs sm:text-sm text-surface-500">{{ product()?.ratings?.count }} {{ 'product.reviews' | t }}</span>
               </div>
             }
             <div class="flex items-baseline gap-2 sm:gap-3 mb-4 sm:mb-5">
@@ -101,10 +102,10 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
               @if (availableStock() > 0) {
                 <span class="flex items-center gap-1.5 sm:gap-2 text-emerald-600 text-xs sm:text-sm font-medium">
                   <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                  En stock ({{ availableStock() }})
+                  {{ 'product.inStock' | t }} ({{ availableStock() }})
                 </span>
               } @else {
-                <span class="flex items-center gap-2 text-red-500 text-sm font-medium">Rupture de stock</span>
+                <span class="flex items-center gap-2 text-red-500 text-sm font-medium">{{ 'product.outOfStock' | t }}</span>
               }
             </div>
             <div class="flex gap-2 sm:gap-3 mb-5 sm:mb-6">
@@ -114,36 +115,36 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
                 <button (click)="increaseQty()" [disabled]="quantity() >= availableStock()" class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center hover:bg-surface-100 rounded-r-lg sm:rounded-r-xl disabled:opacity-50 text-lg sm:text-base">+</button>
               </div>
               <button (click)="addToCart()" [disabled]="availableStock() === 0 || addingToCart()" class="flex-1 btn-primary text-sm sm:text-base">
-                @if (addingToCart()) { <span>Ajout...</span> } @else { Ajouter au panier }
+                @if (addingToCart()) { <span>{{ 'productDetail.adding' | t }}</span> } @else { {{ 'product.addToCart' | t }} }
               </button>
             </div>
             @if (product()?.warranty) {
               <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4 mb-4 sm:mb-5">
                 <div class="flex items-center gap-2 text-blue-800 text-xs sm:text-sm">
                   <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                  <span class="font-semibold">Garantie {{ product()?.warranty?.duration }} mois</span>
+                  <span class="font-semibold">{{ 'product.warranty' | t }} {{ product()?.warranty?.duration }} {{ 'product.months' | t }}</span>
                 </div>
               </div>
             }
-            <div class="text-xs sm:text-sm text-surface-400">Référence: <span class="font-mono bg-surface-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">{{ product()?.inventory?.sku || 'N/A' }}</span></div>
+            <div class="text-xs sm:text-sm text-surface-400">{{ 'product.sku' | t }}: <span class="font-mono bg-surface-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">{{ product()?.inventory?.sku || 'N/A' }}</span></div>
           </div>
         </div>
 
         <div class="mt-8 sm:mt-10 border-t border-surface-200 pt-6 sm:pt-8">
-          <h2 class="text-lg sm:text-xl font-bold mb-5 sm:mb-6 text-surface-800">Avis clients</h2>
+          <h2 class="text-lg sm:text-xl font-bold mb-5 sm:mb-6 text-surface-800">{{ 'product.reviews' | t }}</h2>
 
           <div class="mb-6 sm:mb-8 p-4 sm:p-6 bg-surface-50 rounded-xl sm:rounded-2xl">
-            <h3 class="font-semibold text-surface-800 mb-4">Laisser un avis</h3>
+            <h3 class="font-semibold text-surface-800 mb-4">{{ 'productDetail.leaveReview' | t }}</h3>
             @if (isLoggedIn) {
               @if (userAlreadyReviewed()) {
                 <div class="text-center py-3 sm:py-4">
                   <svg class="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-emerald-500 mb-2.5 sm:mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  <p class="text-emerald-700 font-medium text-sm sm:text-base">Merci ! Vous avez déjà laissé un avis pour ce produit.</p>
+                  <p class="text-emerald-700 font-medium text-sm sm:text-base">{{ 'productDetail.thankYouReview' | t }}</p>
                 </div>
               } @else {
               <div class="space-y-4">
                 <div>
-                  <label class="block text-sm font-medium text-surface-700 mb-2">Votre note *</label>
+                  <label class="block text-sm font-medium text-surface-700 mb-2">{{ 'productDetail.yourRating' | t }} *</label>
                   <div class="flex gap-1.5 sm:gap-2">
                     @for (star of [1,2,3,4,5]; track star) {
                       <button (click)="setRating(star)" type="button" class="transition-transform hover:scale-110">
@@ -155,22 +156,22 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
                   </div>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-surface-700 mb-1.5 sm:mb-2">Titre de l'avis *</label>
-                  <input type="text" [(ngModel)]="newReviewTitle" placeholder="En quelques mots..." class="w-full border border-surface-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all">
+                  <label class="block text-sm font-medium text-surface-700 mb-1.5 sm:mb-2">{{ 'productDetail.reviewTitle' | t }} *</label>
+                  <input type="text" [(ngModel)]="newReviewTitle" [placeholder]="'productDetail.titlePlaceholder' | t" class="w-full border border-surface-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all">
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-surface-700 mb-1.5 sm:mb-2">Votre avis *</label>
-                  <textarea [(ngModel)]="newReviewComment" rows="4" placeholder="Décrivez votre expérience avec ce produit..." class="w-full border border-surface-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all resize-none"></textarea>
+                  <label class="block text-sm font-medium text-surface-700 mb-1.5 sm:mb-2">{{ 'productDetail.yourReview' | t }} *</label>
+                  <textarea [(ngModel)]="newReviewComment" rows="4" [placeholder]="'productDetail.reviewPlaceholder' | t" class="w-full border border-surface-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all resize-none"></textarea>
                 </div>
                 <button (click)="submitReview()" [disabled]="submittingReview() || !newReviewRating() || !newReviewTitle || !newReviewComment" class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">
-                  @if (submittingReview()) { Envoi en cours... } @else { Publier mon avis }
+                  @if (submittingReview()) { {{ 'productDetail.submitting' | t }} } @else { {{ 'productDetail.submitReview' | t }} }
                 </button>
               </div>
               }
             } @else {
               <div class="text-center py-3 sm:py-4">
-                <p class="text-surface-600 text-sm sm:text-base mb-3">Vous devez être connecté pour laisser un avis.</p>
-                <a routerLink="/auth/login" class="btn-primary inline-block text-sm sm:text-base">Se connecter</a>
+                <p class="text-surface-600 text-sm sm:text-base mb-3">{{ 'productDetail.loginToReview' | t }}</p>
+                <a routerLink="/auth/login" class="btn-primary inline-block text-sm sm:text-base">{{ 'auth.login' | t }}</a>
               </div>
             }
           </div>
@@ -204,7 +205,7 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
                   @if (review.verified) {
                     <div class="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-emerald-600 text-xs sm:text-sm">
                       <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                      Achat vérifié
+                      {{ 'productDetail.verifiedPurchase' | t }}
                     </div>
                   }
                 </div>
@@ -213,14 +214,14 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
           } @else {
             <div class="text-center py-8 sm:py-10 bg-surface-50 rounded-xl sm:rounded-2xl">
               <svg class="w-12 h-12 sm:w-14 sm:h-14 mx-auto text-surface-300 mb-3 sm:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-              <p class="text-surface-500 text-sm sm:text-base">Aucun avis pour ce produit. Soyez le premier à laisser un avis !</p>
+              <p class="text-surface-500 text-sm sm:text-base">{{ 'product.noReviews' | t }}</p>
             </div>
           }
         </div>
 
         @if (relatedProducts().length > 0) {
           <div class="mt-8 sm:mt-10">
-            <h2 class="text-lg sm:text-xl font-bold mb-4 sm:mb-5 text-surface-800">Produits similaires</h2>
+            <h2 class="text-lg sm:text-xl font-bold mb-4 sm:mb-5 text-surface-800">{{ 'product.relatedProducts' | t }}</h2>
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-5">
               @for (prod of relatedProducts(); track prod._id) {
                 <app-product-card [product]="prod"/>

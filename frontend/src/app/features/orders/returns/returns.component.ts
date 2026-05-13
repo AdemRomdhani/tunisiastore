@@ -6,17 +6,18 @@ import { OrderService } from '../../../core/services/order.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { FormsModule } from '@angular/forms';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-returns',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, SkeletonComponent],
+  imports: [CommonModule, RouterModule, FormsModule, SkeletonComponent, TranslatePipe],
   template: `
     <div class="container mx-auto px-4 py-8 min-h-screen">
       <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Mes retours</h1>
+        <h1 class="text-3xl font-bold text-gray-900">{{ 'returns.title' | t }}</h1>
         <button (click)="showForm.set(true)" class="btn-primary">
-          Demander un retour
+          {{ 'returns.requestReturn' | t }}
         </button>
       </div>
 
@@ -24,9 +25,9 @@ import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.
         <app-skeleton type="table" [count]="3"/>
       } @else if (returns().length === 0) {
         <div class="bg-white rounded-xl shadow-sm p-16 text-center">
-          <p class="text-gray-500 text-lg mb-4">Vous n'avez pas de demande de retour</p>
+          <p class="text-gray-500 text-lg mb-4">{{ 'returns.noReturnsText' | t }}</p>
           <button (click)="showForm.set(true)" class="btn-primary inline-block">
-            Demander un retour
+            {{ 'returns.requestReturn' | t }}
           </button>
         </div>
       } @else {

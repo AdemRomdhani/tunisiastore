@@ -2,22 +2,24 @@ import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { CartService, CartItem } from '../../core/services/cart.service';
+import { I18nService } from '../../core/services/i18n.service';
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, RouterModule, ImageUrlPipe, EmptyStateComponent],
+  imports: [CommonModule, RouterModule, ImageUrlPipe, TranslatePipe, EmptyStateComponent],
   template: `
     <div class="container mx-auto px-3 sm:px-4 py-6 sm:py-8 min-h-screen">
-      <h1 class="text-2xl sm:text-3xl font-bold text-surface-900 mb-6 sm:mb-8">Mon panier</h1>
+      <h1 class="text-2xl sm:text-3xl font-bold text-surface-900 mb-6 sm:mb-8">{{ 'cart.title' | t }}</h1>
 
       @if (cartItems().length === 0) {
         <div class="bg-surface-50 rounded-2xl shadow-card p-8 sm:p-16 text-center animate-fade-in">
           <app-empty-state
-            title="Votre panier est vide"
-            description="Votre panier est vide. Ajoutez des produits pour continuer vos achats!"
+            [title]="i18n.t('cart.empty')"
+            [description]="i18n.t('cart.emptyText')"
             icon="cart"
             link="/products"
           />
@@ -140,6 +142,7 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 export class CartComponent {
   private cartService = inject(CartService);
   private router = inject(Router);
+  i18n = inject(I18nService);
 
   cartItems = this.cartService.cartItems;
   subtotal = this.cartService.subtotal;

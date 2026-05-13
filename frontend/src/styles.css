@@ -217,6 +217,11 @@
 /* RTL Support */
 [dir="rtl"] {
   text-align: right;
+  font-family: 'Noto Sans Arabic', 'Tajawal', 'Inter', system-ui, sans-serif;
+}
+
+[lang="ar"] {
+  font-family: 'Noto Sans Arabic', 'Tajawal', 'Inter', system-ui, sans-serif;
 }
 
 [dir="rtl"] .flex-row {

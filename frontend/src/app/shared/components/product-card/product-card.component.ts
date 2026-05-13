@@ -7,13 +7,14 @@ import { CompareService } from '../../../core/services/compare.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ImageUrlPipe } from '../../pipes/image-url.pipe';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 import { QuickViewService } from '../../../core/services/quick-view.service';
 
 @Component({
   selector: 'app-product-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, ImageUrlPipe],
+  imports: [CommonModule, RouterModule, ImageUrlPipe, TranslatePipe],
   template: `
     <div class="group bg-surface-50 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-350 ease-smooth border border-surface-100 overflow-hidden h-full flex flex-col animate-fade-in">
       <!-- Image Container -->
@@ -27,7 +28,7 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
           }
           @if (product.badges.includes('NEW')) {
             <span class="bg-emerald-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md">
-              Nouveau
+              {{ 'product.new' | t }}
             </span>
           }
         </div>
