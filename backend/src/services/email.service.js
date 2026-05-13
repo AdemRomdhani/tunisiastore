@@ -437,7 +437,7 @@ class EmailService {
   }
 
   async sendContactNotification(contact) {
-    if (!transervisor) return;
+    if (!transporter) return;
 
     const html = `
       <!DOCTYPE html>
