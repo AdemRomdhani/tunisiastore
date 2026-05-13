@@ -5,17 +5,18 @@ import { AddressService, Address } from '../../../core/services/address.service'
 import { ToastService } from '../../../core/services/toast.service';
 import { FormsModule } from '@angular/forms';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-addresses',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, SkeletonComponent],
+  imports: [CommonModule, RouterModule, FormsModule, SkeletonComponent, TranslatePipe],
   template: `
     <div class="container mx-auto px-4 py-8 min-h-screen">
       <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Mes adresses</h1>
+        <h1 class="text-3xl font-bold text-gray-900">{{ 'addresses.title' | t }}</h1>
         <button (click)="openForm()" class="btn-primary">
-          Ajouter une adresse
+          {{ 'addresses.addAddress' | t }}
         </button>
       </div>
 
@@ -23,9 +24,9 @@ import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.
         <app-skeleton type="card" [count]="4"/>
       } @else if (addresses().length === 0) {
         <div class="bg-white rounded-xl shadow-sm p-16 text-center">
-          <p class="text-gray-500 text-lg mb-4">Aucune adresse enregistrée</p>
+          <p class="text-gray-500 text-lg mb-4">{{ 'addresses.noAddresses' | t }}</p>
           <button (click)="openForm()" class="btn-primary inline-block">
-            Ajouter une adresse
+            {{ 'addresses.addAddress' | t }}
           </button>
         </div>
       } @else {

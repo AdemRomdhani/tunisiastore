@@ -6,13 +6,15 @@ import { HttpClient } from '@angular/common/http';
 import { ProductService, Product } from '../../core/services/product.service';
 import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
 import { SeoService } from '../../core/services/seo.service';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { I18nService } from '../../core/services/i18n.service';
 import { environment } from '../../../environments/environment';
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, ProductCardComponent, FormsModule],
+  imports: [CommonModule, RouterModule, ProductCardComponent, FormsModule, TranslatePipe],
   template: `
     <div class="min-h-screen">
       <!-- Hero Section - Enhanced -->
@@ -28,17 +30,17 @@ import { environment } from '../../../environments/environment';
             <div class="max-w-2xl">
               <span class="inline-flex items-center gap-2 bg-white/10 text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 rounded-full mb-4 sm:mb-6">
                 <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                Nouvelle collection 2026
+                {{ 'home.newCollection' | t }}
               </span>
               <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
-                La technologie<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-primary-200">à votre portée</span>
+                {{ 'home.technologyTitle' | t }}<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-primary-200">{{ 'home.atYourFingertips' | t }}</span>
               </h1>
               <p class="text-sm sm:text-base lg:text-lg text-primary-100 mb-6 sm:mb-8 leading-relaxed">
-               Découvrez notre sélection exclusive de smartphones, ordinateurs et accessoires aux meilleurs prix en Tunisie. Livraison rapide et garantie authentique.
+                {{ 'home.heroDescription' | t }}
               </p>
               <div class="flex flex-col sm:flex-row gap-3">
                 <a routerLink="/products" class="group bg-white text-primary-600 px-5 sm:px-6 lg:px-8 py-3 sm:py-3.5 lg:py-4 rounded-xl font-semibold hover:bg-gray-100 transition shadow-lg hover:shadow-xl text-center text-sm sm:text-base">
-                  Découvrir
+                  {{ 'home.discover' | t }}
                   <svg class="inline-block ml-2 w-4 h-4 sm:w-5 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                   </svg>
@@ -47,7 +49,7 @@ import { environment } from '../../../environments/environment';
                   <svg class="w-4 h-4 sm:w-5 text-yellow-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                   </svg>
-                  Promotions
+                  {{ 'home.promotions' | t }}
                 </a>
               </div>
             </div>
@@ -57,19 +59,19 @@ import { environment } from '../../../environments/environment';
                 <div class="grid grid-cols-2 gap-6">
                   <div class="text-center">
                     <div class="text-4xl font-bold">10K+</div>
-                    <div class="text-primary-200 text-sm">Clients satisfaits</div>
+                    <div class="text-primary-200 text-sm">{{ 'home.satisfiedClients' | t }}</div>
                   </div>
                   <div class="text-center">
                     <div class="text-4xl font-bold">500+</div>
-                    <div class="text-primary-200 text-sm">Produits</div>
+                    <div class="text-primary-200 text-sm">{{ 'home.products' | t }}</div>
                   </div>
                   <div class="text-center">
                     <div class="text-4xl font-bold">24h</div>
-                    <div class="text-primary-200 text-sm">Livraison</div>
+                    <div class="text-primary-200 text-sm">{{ 'home.delivery' | t }}</div>
                   </div>
                   <div class="text-center">
                     <div class="text-4xl font-bold">4.9</div>
-                    <div class="text-primary-200 text-sm">Note moyenne</div>
+                    <div class="text-primary-200 text-sm">{{ 'home.averageRating' | t }}</div>
                   </div>
                 </div>
               </div>
@@ -100,7 +102,7 @@ import { environment } from '../../../environments/environment';
       <!-- Categories Quick Access -->
       <section class="py-10 sm:py-16 bg-gray-50">
         <div class="container mx-auto px-3 sm:px-4">
-          <h2 class="text-lg sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-8">Catégories</h2>
+          <h2 class="text-lg sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-8">{{ 'nav.categories' | t }}</h2>
           <div class="flex sm:grid overflow-x-auto sm:overflow-visible pb-2 sm:pb-0 gap-2 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             @for (cat of categories; track cat.name) {
               <a [routerLink]="['/products']" [queryParams]="{category: cat.slug}" 
@@ -118,11 +120,11 @@ import { environment } from '../../../environments/environment';
         <div class="container mx-auto px-3 sm:px-4">
           <div class="flex items-center justify-between mb-4 sm:mb-8">
             <div>
-              <h2 class="text-lg sm:text-2xl font-bold text-gray-900">Produits en vedette</h2>
-              <p class="text-gray-500 mt-0.5 text-xs sm:text-sm hidden sm:block">Les meilleures selections de nos clients</p>
+              <h2 class="text-lg sm:text-2xl font-bold text-gray-900">{{ 'home.featuredProducts' | t }}</h2>
+              <p class="text-gray-500 mt-0.5 text-xs sm:text-sm hidden sm:block">{{ 'home.bestSelections' | t }}</p>
             </div>
             <a routerLink="/products" class="text-primary-600 font-medium hover:underline flex items-center gap-1 text-sm">
-              Voir tout
+              {{ 'common.viewAll' | t }}
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
               </svg>
@@ -144,9 +146,9 @@ import { environment } from '../../../environments/environment';
           <a routerLink="/products" [queryParams]="{onSale: true}" class="block relative rounded-2xl sm:rounded-3xl overflow-hidden group">
             <div class="bg-gradient-to-r from-red-600 to-red-700 px-5 sm:px-8 py-8 sm:py-12 flex items-center justify-between">
               <div>
-                <span class="inline-block bg-white/20 text-white text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full mb-2 sm:mb-4">OFFRE LIMITÉE</span>
-                <h2 class="text-xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">Hasta -50%</h2>
-                <p class="text-red-100 text-xs sm:text-base">Sur une sélection de produits</p>
+                <span class="inline-block bg-white/20 text-white text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full mb-2 sm:mb-4">{{ 'home.limitedOffer' | t }}</span>
+                <h2 class="text-xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">{{ 'home.upTo50' | t }}</h2>
+                <p class="text-red-100 text-xs sm:text-base">{{ 'home.onSelection' | t }}</p>
               </div>
               <div class="hidden sm:block">
                 <div class="text-4xl lg:text-6xl font-bold text-white/20">SALE</div>
@@ -162,7 +164,7 @@ import { environment } from '../../../environments/environment';
       </section>
 
       <!-- Flash Deals Section - Premium Redesign -->
-      @if (flashDeals().length > 0) {
+      @if (hasFlashDeals()) {
         <section class="py-12 sm:py-20 bg-surface-950 relative overflow-hidden">
           <!-- Ambient Background Effects -->
           <div class="absolute inset-0 pointer-events-none">
@@ -178,22 +180,22 @@ import { environment } from '../../../environments/environment';
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
                   </span>
-                  <span class="text-primary-400 text-xs font-bold uppercase tracking-widest">Offres Limitées</span>
+                  <span class="text-primary-400 text-xs font-bold uppercase tracking-widest">{{ 'home.limitedOffers' | t }}</span>
                 </div>
-                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-4">Offres <span class="text-primary-500">Flash</span></h2>
-                <p class="text-surface-400 max-w-md">Profitez de réductions exceptionnelles sur une sélection de produits. Ne tardez pas, le temps presse !</p>
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-4">{{ 'home.flash' | t }} <span class="text-primary-500">{{ 'home.offers' | t }}</span></h2>
+                <p class="text-surface-400 max-w-md">{{ 'home.flashDealsDesc' | t }}</p>
               </div>
 
-              @if (getSoonestExpiringDeal(); as timer) {
+              @if (globalHasTimer && getSoonestExpiringDeal(); as timer) {
                 <div class="flex flex-col items-center gap-4 bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-2xl">
-                  <span class="text-surface-400 text-xs font-medium uppercase tracking-wider">La promo se termine dans</span>
+                  <span class="text-surface-400 text-xs font-medium uppercase tracking-wider">{{ 'home.promoEndsIn' | t }}</span>
                   <div class="flex items-center gap-3">
                     @if (timer.days > 0) {
                       <div class="flex flex-col items-center">
                         <div class="bg-primary-600 text-white w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black shadow-lg shadow-primary-600/20 mb-1">
                           {{ timer.days }}
                         </div>
-                        <span class="text-[10px] text-surface-500 uppercase font-bold">Jours</span>
+                        <span class="text-[10px] text-surface-500 uppercase font-bold">{{ 'home.days' | t }}</span>
                       </div>
                       <span class="text-2xl font-bold text-white mb-6">:</span>
                     }
@@ -201,21 +203,21 @@ import { environment } from '../../../environments/environment';
                       <div class="bg-primary-600 text-white w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black shadow-lg shadow-primary-600/20 mb-1">
                         {{ formatTime(timer.hours) }}
                       </div>
-                      <span class="text-[10px] text-surface-500 uppercase font-bold">Heures</span>
+                      <span class="text-[10px] text-surface-500 uppercase font-bold">{{ 'home.hours' | t }}</span>
                     </div>
                     <span class="text-2xl font-bold text-white mb-6">:</span>
                     <div class="flex flex-col items-center">
                       <div class="bg-primary-600 text-white w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black shadow-lg shadow-primary-600/20 mb-1">
                         {{ formatTime(timer.minutes) }}
                       </div>
-                      <span class="text-[10px] text-surface-500 uppercase font-bold">Minutes</span>
+                      <span class="text-[10px] text-surface-500 uppercase font-bold">{{ 'home.minutes' | t }}</span>
                     </div>
                     <span class="text-2xl font-bold text-white mb-6">:</span>
                     <div class="flex flex-col items-center">
                       <div class="bg-primary-600 text-white w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black shadow-lg shadow-primary-600/20 mb-1">
                         {{ formatTime(timer.seconds) }}
                       </div>
-                      <span class="text-[10px] text-surface-500 uppercase font-bold">Secondes</span>
+                      <span class="text-[10px] text-surface-500 uppercase font-bold">{{ 'home.seconds' | t }}</span>
                     </div>
                   </div>
                 </div>
@@ -247,7 +249,7 @@ import { environment } from '../../../environments/environment';
 
             <div class="text-center mt-12">
               <a routerLink="/products" [queryParams]="{onSale: true}" class="group inline-flex items-center gap-3 bg-white/10 hover:bg-primary-600 border border-white/10 hover:border-primary-500 text-white px-8 py-4 rounded-2xl font-bold transition-all duration-300 shadow-xl backdrop-blur-md">
-                Explorer toutes les promotions
+                {{ 'home.explorePromotions' | t }}
                 <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                 </svg>
@@ -262,11 +264,11 @@ import { environment } from '../../../environments/environment';
         <div class="container mx-auto px-3 sm:px-4">
           <div class="flex items-center justify-between mb-4 sm:mb-8">
             <div>
-              <h2 class="text-lg sm:text-2xl font-bold text-gray-900">Nouveautés</h2>
-              <p class="text-gray-500 mt-0.5 text-xs sm:text-sm hidden sm:block">Les derniers ajouts à notre collection</p>
+              <h2 class="text-lg sm:text-2xl font-bold text-gray-900">{{ 'home.newArrivals' | t }}</h2>
+              <p class="text-gray-500 mt-0.5 text-xs sm:text-sm hidden sm:block">{{ 'home.latestAdditions' | t }}</p>
             </div>
             <a routerLink="/products" [queryParams]="{sort: '-createdAt'}" class="text-primary-600 font-medium hover:underline flex items-center gap-1 text-sm">
-              Voir tout
+              {{ 'common.viewAll' | t }}
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
               </svg>
@@ -288,11 +290,11 @@ import { environment } from '../../../environments/environment';
         <div class="container mx-auto px-3 sm:px-4">
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-8">
             <div>
-              <h2 class="text-lg sm:text-2xl font-bold text-white">Packs & Bundles</h2>
-              <p class="text-indigo-100 mt-0.5 text-xs sm:text-base">Économisez plus avec nos packages</p>
+              <h2 class="text-lg sm:text-2xl font-bold text-white">{{ 'home.packsBundles' | t }}</h2>
+              <p class="text-indigo-100 mt-0.5 text-xs sm:text-base">{{ 'home.saveMorePackages' | t }}</p>
             </div>
             <a routerLink="/bundles" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-indigo-50 transition text-sm whitespace-nowrap">
-              Voir tout
+              {{ 'common.viewAll' | t }}
             </a>
           </div>
           <div class="flex overflow-x-auto pb-2 gap-3 sm:gap-6 md:grid md:grid-cols-3 md:overflow-visible snap-x">
@@ -308,7 +310,7 @@ import { environment } from '../../../environments/environment';
                   }
                 </div>
                 <a [routerLink]="['/bundles']" class="block w-full text-center bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
-                  Voir le pack
+                  {{ 'home.viewPack' | t }}
                 </a>
               </div>
             }
@@ -321,7 +323,7 @@ import { environment } from '../../../environments/environment';
         <div class="container mx-auto px-3 sm:px-4">
           <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div>
-              <h2 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">Pourquoi choisir Tunisia Store?</h2>
+              <h2 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">{{ 'home.whyChooseUs' | t }}</h2>
               <div class="space-y-4 sm:space-y-6">
                 @for (item of whyUs; track item.title) {
                   <div class="flex gap-3 sm:gap-4">
@@ -349,8 +351,8 @@ import { environment } from '../../../environments/environment';
                       </svg>
                     }
                   </div>
-                  <div class="text-sm sm:text-lg font-medium">Note moyenne</div>
-                  <div class="text-primary-200 text-xs sm:text-base">Basé sur 500+ avis</div>
+                  <div class="text-sm sm:text-lg font-medium">{{ 'home.averageRating' | t }}</div>
+                  <div class="text-primary-200 text-xs sm:text-base">{{ 'home.basedOnReviews' | t }}</div>
                 </div>
               </div>
             </div>
@@ -366,12 +368,12 @@ import { environment } from '../../../environments/environment';
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
               </svg>
             </div>
-            <h2 class="text-xl sm:text-2xl lg:text-4xl font-bold mb-2 sm:mb-4">Besoin d'aide ?</h2>
+            <h2 class="text-xl sm:text-2xl lg:text-4xl font-bold mb-2 sm:mb-4">{{ 'home.needHelp' | t }}</h2>
             <p class="text-primary-100 mb-6 sm:mb-8 max-w-2xl mx-auto text-sm sm:text-lg">
-              Notre équipe de service client est à votre disposition pour répondre à toutes vos questions, vous conseiller ou vous accompagner dans vos achats.
+              {{ 'home.customerSupportDesc' | t }}
             </p>
             <a routerLink="/contact" class="inline-flex items-center gap-2 bg-white text-primary-600 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-bold hover:bg-gray-100 transition shadow-lg text-sm sm:text-base">
-              Nous contacter
+              {{ 'home.contactUs' | t }}
               <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
               </svg>
@@ -391,6 +393,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private seo = inject(SeoService);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  i18n = inject(I18nService);
   
   featuredProducts = signal<Product[]>([]);
   newProducts = signal<Product[]>([]);
@@ -398,7 +401,19 @@ export class HomeComponent implements OnInit, OnDestroy {
   flashDeals = signal<Product[]>([]);
 
   productTimers = new Map<string, { days: number; hours: number; minutes: number; seconds: number }>();
+  globalHasTimer = false;
   private countdownInterval: any[] = [];
+  
+  hasFlashDeals(): boolean {
+    return this.flashDeals().some(p => this.isFlashDeal(p));
+  }
+  
+  private isFlashDeal(product: Product): boolean {
+    if (!product.saleEndsAt) return false;
+    const endDate = new Date(product.saleEndsAt).getTime();
+    const now = new Date().getTime();
+    return endDate > now && this.isProductOnSale(product);
+  }
 
   ngOnDestroy() {
     if (this.countdownInterval.length > 0) {
@@ -490,15 +505,21 @@ private loadFlashDeals() {
 
     private updateProductTimers() {
       const activeProducts: Product[] = [];
+      let hasActiveTimer = false;
       
       this.flashDeals().forEach(product => {
+        const isOnSale = this.isProductOnSale(product);
+        
+        if (!isOnSale) {
+          return;
+        }
+        
         if (product.saleEndsAt) {
           const endDate = new Date(product.saleEndsAt).getTime();
           const now = new Date().getTime();
           const distance = endDate - now;
           
           if (distance > 0) {
-            // Calculate components
             const d = Math.floor(distance / (1000 * 60 * 60 * 24));
             const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -506,21 +527,20 @@ private loadFlashDeals() {
 
             this.productTimers.set(product._id, {
               days: d,
-              // If we have days, we might want to show them or add them to hours
-              // Let's keep them separate in the object but handle display in template or here
               hours: h, 
               minutes: m,
               seconds: s
             });
+            hasActiveTimer = true;
             activeProducts.push(product);
           } else {
             this.productTimers.delete(product._id);
+            if (product.badges?.includes('PROMO')) {
+              activeProducts.push(product);
+            }
           }
         } else {
-          // Keep product in list even if it has no timer or badge
-          if (product.badges?.includes('PROMO')) {
-            this.productTimers.set(product._id, { days: 0, hours: 0, minutes: 0, seconds: 0 });
-          }
+          this.productTimers.set(product._id, { days: 0, hours: 0, minutes: 0, seconds: 0 });
           activeProducts.push(product);
         }
       });
@@ -528,7 +548,17 @@ private loadFlashDeals() {
       if (activeProducts.length !== this.flashDeals().length) {
         this.flashDeals.set(activeProducts);
       }
+      
+      this.globalHasTimer = hasActiveTimer;
       this.cdr.markForCheck();
+    }
+    
+    private isProductOnSale(product: Product): boolean {
+      if (product.onSale === true) return true;
+      if (product.pricing?.originalPrice && product.pricing?.price) {
+        return product.pricing.originalPrice > product.pricing.price;
+      }
+      return false;
     }
 
     getSoonestExpiringDeal(): { days: number; hours: number; minutes: number; seconds: number } | null {
