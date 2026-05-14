@@ -74,9 +74,5 @@ ngOnInit() {
       });
     }
   }
-        },
-        error: () => this.router.navigate(['/'])
-      });
-    }
   }
 }
