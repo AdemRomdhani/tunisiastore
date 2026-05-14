@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: '/api',
+  apiUrl: 'https://tunisiastore-5twr.onrender.com/api',
   appName: 'Tunisia Store',
   currency: 'TND',
   currencySymbol: 'DT',
