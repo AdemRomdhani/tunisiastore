@@ -154,25 +154,45 @@ async function seedCategories() {
 }
 
 // Routes
+console.log('🔄 Loading routes...');
 app.use('/api/auth', require('./src/routes/auth.routes'));
+console.log('✓ Auth routes loaded');
 app.use('/api/products', require('./src/routes/product.routes'));
+console.log('✓ Products routes loaded');
 app.use('/api/categories', require('./src/routes/category.routes'));
+console.log('✓ Categories routes loaded');
 app.use('/api/cart', require('./src/routes/cart.routes'));
+console.log('✓ Cart routes loaded');
 app.use('/api/orders', require('./src/routes/order.routes'));
+console.log('✓ Orders routes loaded');
 app.use('/api/admin', require('./src/routes/admin.routes'));
+console.log('✓ Admin routes loaded');
 app.use('/api/coupons', require('./src/routes/coupon.routes'));
+console.log('✓ Coupons routes loaded');
 app.use('/api/wishlist', require('./src/routes/wishlist.routes'));
+console.log('✓ Wishlist routes loaded');
 app.use('/api/newsletter', require('./src/routes/newsletter.routes'));
+console.log('✓ Newsletter routes loaded');
 app.use('/api/recently-viewed', require('./src/routes/recentlyViewed.routes'));
+console.log('✓ Recently-viewed routes loaded');
 app.use('/api/cms', require('./src/routes/cms.routes'));
+console.log('✓ CMS routes loaded');
 app.use('/api/bundles', require('./src/routes/bundle.routes'));
+console.log('✓ Bundles routes loaded');
 app.use('/api/contact', require('./src/routes/contact.routes'));
+console.log('✓ Contact routes loaded');
 app.use('/api/reviews', require('./src/routes/review.routes'));
+console.log('✓ Reviews routes loaded');
 app.use('/api/returns', require('./src/routes/return.routes'));
+console.log('✓ Returns routes loaded');
 app.use('/api/audit', require('./src/routes/audit.routes'));
+console.log('✓ Audit routes loaded');
 app.use('/api/addresses', require('./src/routes/address.routes'));
+console.log('✓ Addresses routes loaded');
 app.use('/api/shipping', require('./src/routes/shipping.routes'));
+console.log('✓ Shipping routes loaded');
 app.use('/api/payments', require('./src/routes/payment.routes'));
+console.log('✓ Payments routes loaded');
 
 // Public health check — MUST be before protected routes or outside auth middleware
 app.get('/api/health', (req, res) => res.json({ status: 'OK', timestamp: new Date().toISOString() }));
