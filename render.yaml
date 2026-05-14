@@ -1,13 +1,10 @@
 services:
   - type: web
-    name: tunisiastore
-    rootDir: backend
+    name: tunisiastore-api
     env: node
     region: frankfurt
-    buildCommand: npm install && echo "Backend deps installed" && cd ../frontend && npm install && npm run build && echo "Frontend built" && mkdir -p ../../dist/tunisia-store && cp -r dist/tunisia-store/browser ../../dist/tunisia-store/browser && echo "Files copied" && ls -la ../../dist/tunisia-store/browser/
+    buildCommand: npm install
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production
-      - key: FRONTEND_URL
-        value: https://tunisiastore-5twr.onrender.com
