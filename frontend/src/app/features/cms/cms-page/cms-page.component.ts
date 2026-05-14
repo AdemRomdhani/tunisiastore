@@ -58,16 +58,22 @@ export class CmsPageComponent implements OnInit {
   
   page = signal<any>(null);
   
-  ngOnInit() {
+ngOnInit() {
     const slug = this.route.snapshot.paramMap.get('slug');
     if (slug) {
-      this.http.get<any>(`${environment.apiUrl}/cms/page/${slug}`).subscribe({
+      const cleanSlug = slug.startsWith('/') ? slug : '/' + slug;
+      this.http.get<any>(`${environment.apiUrl}/cms/page${cleanSlug}`).subscribe({
         next: (res) => {
           if (res.success) {
             this.page.set(res.page);
           } else {
             this.router.navigate(['/']);
           }
+        },
+        error: () => this.router.navigate(['/'])
+      });
+    }
+  }
         },
         error: () => this.router.navigate(['/'])
       });
