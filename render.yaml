@@ -4,7 +4,7 @@ services:
     rootDir: backend
     env: node
     region: frankfurt
-    buildCommand: npm install && cd ../frontend && npm ci && npm run build && mkdir -p ../dist/tunisia-store && cp -r dist/tunisia-store/browser ../dist/tunisia-store/
+    buildCommand: npm install && cd ../frontend && npm ci && npm run build && mkdir -p ../dist/tunisia-store/browser && cp -r dist/tunisia-store/browser/* ../dist/tunisia-store/browser/
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
