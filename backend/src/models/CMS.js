@@ -19,6 +19,8 @@ const cmsSchema = new mongoose.Schema({
     keywords: [String]
   },
   
+  showInFooter: { type: Boolean, default: false },
+  
   order: { type: Number, default: 0 },
   
   lastEditedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }

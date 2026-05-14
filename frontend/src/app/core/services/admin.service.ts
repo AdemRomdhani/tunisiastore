@@ -170,6 +170,10 @@ export class AdminService {
     return this.http.get(`${environment.apiUrl}/cms/faqs`);
   }
 
+  getFooterPages(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/cms/footer-pages`);
+  }
+
   private getToken(): string | null {
     return localStorage.getItem('token');
   }

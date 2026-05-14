@@ -1,10 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NewsletterService } from '../../../core/services/newsletter.service';
 import { I18nService } from '../../../core/services/i18n.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
+import { AdminService } from '../../../core/services/admin.service';
 
 @Component({
   selector: 'app-footer',
@@ -108,6 +109,23 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
             </ul>
           </div>
 
+          <!-- Dynamic CMS Pages -->
+          @if (footerPages().length > 0) {
+            <div>
+              <h4 class="text-white font-semibold mb-5">Informations</h4>
+              <ul class="space-y-3 text-sm">
+                @for (page of footerPages(); track page._id) {
+                  <li>
+                    <a [routerLink]="'/page/' + page.slug.replace('/page/', '')" class="hover:text-white hover:translate-x-1 transition-all duration-200 flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      {{ page.title }}
+                    </a>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+
           <!-- Legal -->
           <div>
             <h4 class="text-white font-semibold mb-5">Contact</h4>
@@ -156,14 +174,31 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
     </footer>
   `
 })
-export class FooterComponent {
+export class FooterComponent implements OnInit {
   private newsletterService = inject(NewsletterService);
+  private adminService = inject(AdminService);
   i18n = inject(I18nService);
   
   email = '';
   subscribing = signal(false);
   subscribed = signal(false);
   errorMessage = signal<string | null>(null);
+  footerPages = signal<any[]>([]);
+
+  ngOnInit() {
+    this.loadFooterPages();
+  }
+
+  loadFooterPages() {
+    this.adminService.getFooterPages().subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.footerPages.set(res.pages || []);
+        }
+      },
+      error: () => {}
+    });
+  }
 
   subscribeNewsletter() {
     if (!this.email) return;

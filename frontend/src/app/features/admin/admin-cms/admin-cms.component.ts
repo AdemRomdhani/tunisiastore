@@ -240,6 +240,15 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
                 >
                 <label class="text-sm text-gray-700">Page publiée</label>
               </div>
+              <div class="flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  [(ngModel)]="pageForm.showInFooter" 
+                  name="showInFooter"
+                  class="w-4 h-4 text-indigo-600 rounded border-gray-300"
+                >
+                <label class="text-sm text-gray-700">Afficher dans le footer</label>
+              </div>
             </form>
           </div>
           <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3 rounded-b-xl">
@@ -341,7 +350,7 @@ export class AdminCmsComponent implements OnInit {
   editingPage: any = null;
   editingFaq: any = null;
 
-  pageForm: any = { title: '', slug: '', type: 'PAGE', content: '', order: 0, isActive: true };
+  pageForm: any = { title: '', slug: '', type: 'PAGE', content: '', order: 0, isActive: true, showInFooter: false };
   faqForm: any = { title: '', content: '', order: 0 };
 
   confirmDialogOpen = false;
@@ -386,11 +395,12 @@ export class AdminCmsComponent implements OnInit {
         type: page.type,
         content: page.content || '',
         order: page.order || 0,
-        isActive: page.isActive
+        isActive: page.isActive,
+        showInFooter: page.showInFooter || false
       };
     } else {
       this.editingPage = null;
-      this.pageForm = { title: '', slug: '', type: 'PAGE', content: '', order: 0, isActive: true };
+      this.pageForm = { title: '', slug: '', type: 'PAGE', content: '', order: 0, isActive: true, showInFooter: false };
     }
     this.modalOpen = true;
   }

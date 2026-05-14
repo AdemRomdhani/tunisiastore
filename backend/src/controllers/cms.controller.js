@@ -95,3 +95,15 @@ exports.getFaqs = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+exports.getFooterPages = async (req, res) => {
+  try {
+    const pages = await CMS.find({ showInFooter: true, isActive: true })
+      .select('slug title order')
+      .sort({ order: 1 });
+    
+    res.json({ success: true, pages });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
