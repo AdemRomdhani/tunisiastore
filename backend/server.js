@@ -67,7 +67,7 @@ app.use('/uploads', express.static('uploads'));
 
 // Serve Angular static files
 const rootDir = path.resolve(__dirname, '..');
-const distPath = path.join(rootDir, 'frontend/dist/tunisia-store/browser');
+const distPath = path.join(rootDir, 'dist/tunisia-store/browser');
 console.log('📁 Serving static files from:', distPath);
 app.use(express.static(distPath));
 
