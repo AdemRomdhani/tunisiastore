@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, HostListener, ElementRef } from '@angular/core';
+import { Component, OnInit, inject, signal, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -426,12 +426,21 @@ export class NavbarComponent implements OnInit {
     });
   }
 
+  @ViewChild('mobileSearchInput') mobileSearchInputEl?: ElementRef<HTMLInputElement>;
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event) {
     const target = event.target as HTMLElement;
     const isHamburgerBtn = target.closest('button')?.classList.contains('lg:hidden');
     
     if (!this.el.nativeElement.contains(target) || isHamburgerBtn) {
+      return;
+    }
+    
+    const inMobileSearch = this.mobileSearchInputEl?.nativeElement && 
+      (target === this.mobileSearchInputEl.nativeElement || 
+       this.mobileSearchInputEl.nativeElement.contains(target));
+    if (inMobileSearch) {
       return;
     }
     
