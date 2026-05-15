@@ -20,9 +20,9 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
       <!-- Image Container -->
       <div class="relative overflow-hidden bg-gradient-to-b from-surface-100 to-surface-50 aspect-square">
         <!-- Badges -->
-        <div class="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
+        <div class="absolute top-2 left-2 z-10 flex flex-wrap gap-1 max-w-[60%]">
           @if (hasActiveSale) {
-            <span class="bg-primary-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md">
+            <span class="bg-primary-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-md">
               -{{ discountPercentage }}%
             </span>
           }
@@ -33,8 +33,8 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
           }
         </div>
 
-        <!-- Action Buttons -->
-        <div class="absolute top-3 right-3 z-10 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-250">
+        <!-- Action Buttons - Always visible on mobile -->
+        <div class="absolute top-2 right-2 z-10 flex flex-col gap-1.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-250">
           <!-- Wishlist -->
           <button 
             (click)="toggleWishlist($event)"
@@ -112,24 +112,24 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
       </div>
 
       <!-- Content -->
-      <div class="p-4 flex-1 flex flex-col">
+      <div class="p-3 sm:p-4 flex-1 flex flex-col">
         <!-- Category -->
         @if (product.category) {
-          <span class="text-xs font-medium text-primary-600 mb-1.5 uppercase tracking-wider">
+          <span class="text-[10px] sm:text-xs font-medium text-primary-600 mb-1 uppercase tracking-wider">
             {{ product.category.name }}
           </span>
         }
 
         <!-- Title -->
         <a [routerLink]="['/product', product.slug]" class="block flex-1">
-          <h3 class="text-sm font-semibold text-surface-800 line-clamp-2 hover:text-primary-600 transition-colors duration-200 mb-3">
+          <h3 class="text-sm font-semibold text-surface-800 line-clamp-2 hover:text-primary-600 transition-colors duration-200 mb-2 sm:mb-3">
             {{ product.name }}
           </h3>
         </a>
 
         <!-- Rating -->
         @if (product.ratings?.count && product.ratings.count > 0) {
-          <div class="flex items-center gap-2 mb-3">
+          <div class="flex items-center gap-2 mb-2 sm:mb-3">
             <div class="flex items-center gap-0.5">
               @for (star of [1,2,3,4,5]; track star) {
                 <svg 
@@ -149,12 +149,12 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
 
         <!-- Price Section -->
         <div class="mt-auto">
-          <div class="flex items-baseline gap-2 mb-2">
-            <span class="text-xl font-bold text-surface-900">
+          <div class="flex items-baseline gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+            <span class="text-lg sm:text-xl font-bold text-surface-900">
               {{ product.pricing.price | number:'1.3' }} DT
             </span>
             @if (product.pricing.originalPrice) {
-              <span class="text-sm text-surface-400 line-through">
+              <span class="text-xs sm:text-sm text-surface-400 line-through">
                 {{ product.pricing.originalPrice | number:'1.3' }} DT
               </span>
             }
@@ -182,10 +182,10 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
           </button>
 
           <!-- Stock Status -->
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 text-xs sm:text-sm">
             @if (isInStock) {
-              <span class="flex items-center gap-1.5 text-sm text-emerald-600">
-                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse-slow"></span>
+              <span class="flex items-center gap-1 text-emerald-600">
+                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
                 En stock
               </span>
               @if (availableStock <= 5) {
@@ -268,13 +268,13 @@ export class ProductCardComponent {
 
   getBadgeClass(badge: string): string {
     const classes: Record<string, string> = {
-      'NEW': 'bg-emerald-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md',
-      'BESTSELLER': 'bg-violet-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md',
-      'STOCK_LIMITED': 'bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md',
-      'FREE_SHIPPING': 'bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md',
-      'EXCLUSIVE': 'bg-amber-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md'
+      'NEW': 'bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-md',
+      'BESTSELLER': 'bg-violet-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-md',
+      'STOCK_LIMITED': 'bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-md',
+      'FREE_SHIPPING': 'bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-md',
+      'EXCLUSIVE': 'bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-md'
     };
-    return classes[badge] || 'bg-surface-700 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md';
+    return classes[badge] || 'bg-surface-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-md';
   }
 
   getBadgeLabel(badge: string): string {
