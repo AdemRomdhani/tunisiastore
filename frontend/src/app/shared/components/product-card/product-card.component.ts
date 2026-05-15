@@ -33,8 +33,8 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
           }
         </div>
 
-        <!-- Action Buttons - Always visible on mobile -->
-        <div class="absolute top-2 right-2 z-10 flex flex-col gap-1.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-250">
+        <!-- Action Buttons - Only visible on desktop -->
+        <div class="hidden sm:flex absolute top-2 right-2 z-10 flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-250">
           <!-- Wishlist -->
           <button 
             (click)="toggleWishlist($event)"
