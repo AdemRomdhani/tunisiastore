@@ -131,10 +131,16 @@ productSchema.virtual('isOnSale').get(function() {
   return (this.onSale && hasActiveTimer) || (hasPromoBadge && this.onSale !== false);
 });
 
-// Indexes
+// Indexes - optimized for frequently queried fields
 productSchema.index({ name: 'text', description: 'text', shortDescription: 'text' });
 productSchema.index({ category: 1, 'pricing.price': 1 });
 productSchema.index({ featured: 1, isActive: 1 });
 productSchema.index({ createdAt: -1 });
+productSchema.index({ slug: 1 });
+productSchema.index({ isActive: 1, onSale: 1, saleEndsAt: 1 });
+productSchema.index({ isActive: 1, category: 1, 'pricing.price': 1 });
+productSchema.index({ 'pricing.price': 1 });
+productSchema.index({ badges: 1 });
+productSchema.index({ 'ratings.average': -1 });
 
 module.exports = mongoose.model('Product', productSchema);

@@ -1,6 +1,21 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
 
+// Cache for categories to avoid repeated DB calls
+let categoryCache = null;
+let categoryCacheTime = 0;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+async function getCategories() {
+  const now = Date.now();
+  if (!categoryCache || (now - categoryCacheTime) > CACHE_TTL) {
+    const cats = await Category.find({}).lean();
+    categoryCache = new Map(cats.map(c => [c.slug, c]));
+    categoryCacheTime = now;
+  }
+  return categoryCache;
+}
+
 exports.autocomplete = async (req, res) => {
   try {
     const { q, limit = 8 } = req.query;
@@ -20,7 +35,8 @@ exports.autocomplete = async (req, res) => {
       .populate('category', 'name')
       .sort({ name: 1 })
       .limit(safeLimit)
-      .lean();
+      .lean()
+      .maxTimeMS(3000);
 
     res.json({ success: true, results: products });
   } catch (error) {
@@ -50,8 +66,10 @@ exports.getProducts = async (req, res) => {
 
     const query = { isActive: true };
 
+    // Use cached categories
     if (category) {
-      const categoryDoc = await Category.findOne({ slug: category.toLowerCase().trim() });
+      const categories = await getCategories();
+      const categoryDoc = categories.get(category.toLowerCase().trim());
       if (categoryDoc) {
         query.category = categoryDoc._id;
       }

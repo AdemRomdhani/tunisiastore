@@ -10,4 +10,7 @@ const categorySchema = new mongoose.Schema({
   order: { type: Number, default: 0 }
 }, { timestamps: true });
 
+categorySchema.index({ slug: 1 });
+categorySchema.index({ isActive: 1, order: 1 });
+
 module.exports = mongoose.model('Category', categorySchema);
