@@ -64,7 +64,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
           <!-- Hamburger + Logo -->
           <div class="flex items-center gap-2">
             <button 
-              (click)="toggleMobileMenu()"
+              (click)="toggleMobileMenu($event)"
               class="lg:hidden p-2 -ml-2 text-surface-700 hover:bg-surface-100 rounded-lg transition-colors"
             >
               @if (mobileMenuOpen()) {
@@ -428,14 +428,25 @@ export class NavbarComponent implements OnInit {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event) {
-    if (!this.el.nativeElement.contains(event.target)) {
+    const target = event.target as HTMLElement;
+    const isHamburgerBtn = target.closest('button')?.classList.contains('lg:hidden');
+    
+    if (!this.el.nativeElement.contains(target) || isHamburgerBtn) {
+      return;
+    }
+    
+    const inMobileMenu = target.closest('.lg\\:hidden.fixed');
+    if (!inMobileMenu) {
       this.showDropdown = false;
       this.mobileSearchOpen.set(false);
-      this.mobileMenuOpen.set(false);
     }
   }
 
-  toggleMobileMenu() {
+  toggleMobileMenu(event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     this.mobileMenuOpen.update(v => !v);
     if (this.mobileMenuOpen()) {
       this.mobileSearchOpen.set(false);
