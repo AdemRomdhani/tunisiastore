@@ -7,21 +7,23 @@ import { ToastComponent } from './shared/components/toast/toast.component';
 import { WhatsAppChatComponent } from './shared/components/whatsapp-chat/whatsapp-chat.component';
 import { OfflineBannerComponent } from './shared/components/offline-banner/offline-banner.component';
 import { QuickViewComponent } from './shared/components/quick-view/quick-view.component';
+import { BottomNavComponent } from './shared/components/bottom-nav/bottom-nav.component';
 import { I18nService } from './core/services/i18n.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, NavbarComponent, FooterComponent, ToastComponent, WhatsAppChatComponent, OfflineBannerComponent, QuickViewComponent],
+  imports: [CommonModule, RouterOutlet, NavbarComponent, FooterComponent, ToastComponent, WhatsAppChatComponent, OfflineBannerComponent, QuickViewComponent, BottomNavComponent],
   template: `
     <app-toast />
     <app-navbar *ngIf="!isAdminRoute()"/>
-    <main class="min-h-screen" [ngClass]="isAdminRoute() ? 'py-0' : ''">
+    <main class="min-h-screen pb-20 lg:pb-0" [ngClass]="isAdminRoute() ? 'py-0' : ''">
       <router-outlet/>
     </main>
-    <app-footer *ngIf="!isAdminRoute()"/>
-    <app-whatsapp-chat *ngIf="!isAdminRoute()" />
+    <app-footer *ngIf="!isAdminRoute() && !isMobile()"/>
+    <app-bottom-nav *ngIf="!isAdminRoute() && isMobile()" />
+    <app-whatsapp-chat *ngIf="!isAdminRoute() && !isMobile()" />
     <app-offline-banner />
     <app-quick-view />
   `
@@ -41,5 +43,9 @@ export class AppComponent {
 
   isAdminRoute(): boolean {
     return this.currentUrl.startsWith('/admin');
+  }
+
+  isMobile(): boolean {
+    return window.innerWidth < 1024;
   }
 }
