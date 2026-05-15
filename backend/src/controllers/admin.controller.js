@@ -87,6 +87,25 @@ exports.createProductAdmin = async (req, res) => {
       }
     }
 
+    // Automatic badge logic
+    const stock = parseInt(body.stock) || 0;
+    const lowStockThreshold = 5;
+    
+    // Add STOCK_LIMITED badge automatically if stock is low
+    if (stock > 0 && stock <= lowStockThreshold && !badges.includes('STOCK_LIMITED')) {
+      badges.push('STOCK_LIMITED');
+    }
+    
+    // Remove STOCK_LIMITED badge if stock is increased above threshold
+    if (stock > lowStockThreshold && badges.includes('STOCK_LIMITED')) {
+      badges = badges.filter(b => b !== 'STOCK_LIMITED');
+    }
+    
+    // Add PROMO badge automatically if product is on sale
+    if ((body.onSale === 'true' || body.onSale === true) && !badges.includes('PROMO')) {
+      badges.push('PROMO');
+    }
+
     // Handle featured boolean
     const featured = body.featured === 'true' || body.featured === true;
 

@@ -104,6 +104,10 @@ import { environment } from '../../../../environments/environment';
                 <input type="checkbox" [(ngModel)]="product.badgeFreeShipping" name="badgeFreeShipping" class="w-4 h-4 text-primary-600 rounded">
                 <span class="text-sm text-gray-700">Livraison gratuite</span>
               </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" [(ngModel)]="product.badgeStockLimited" name="badgeStockLimited" class="w-4 h-4 text-primary-600 rounded">
+                <span class="text-sm text-gray-700">Stock limité</span>
+              </label>
             </div>
           </div>
 
@@ -223,6 +227,7 @@ export class AdminProductFormComponent implements OnInit, OnDestroy {
     badgeBestseller: false,
     badgeExclusive: false,
     badgeFreeShipping: false,
+    badgeStockLimited: false,
     onSale: false,
     saleEndsAt: ''
   };
@@ -285,6 +290,7 @@ export class AdminProductFormComponent implements OnInit, OnDestroy {
           badgeBestseller: badges.includes('BESTSELLER'),
           badgeExclusive: badges.includes('EXCLUSIVE'),
           badgeFreeShipping: badges.includes('FREE_SHIPPING'),
+          badgeStockLimited: badges.includes('STOCK_LIMITED'),
           onSale: p.onSale || (p.saleEndsAt && new Date(p.saleEndsAt) > new Date()),
           saleEndsAt: p.saleEndsAt ? this.formatDateForInput(new Date(p.saleEndsAt)) : ''
         };
@@ -366,6 +372,7 @@ export class AdminProductFormComponent implements OnInit, OnDestroy {
     if (this.product.badgeBestseller) badges.push('BESTSELLER');
     if (this.product.badgeExclusive) badges.push('EXCLUSIVE');
     if (this.product.badgeFreeShipping) badges.push('FREE_SHIPPING');
+    if (this.product.badgeStockLimited) badges.push('STOCK_LIMITED');
     formData.append('badges', JSON.stringify(badges));
 
     // Sale timer - send raw values from form

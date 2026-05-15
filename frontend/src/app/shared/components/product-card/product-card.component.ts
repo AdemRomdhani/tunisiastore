@@ -21,14 +21,14 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
       <div class="relative overflow-hidden bg-gradient-to-b from-surface-100 to-surface-50 aspect-square">
         <!-- Badges -->
         <div class="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
-          @if (product.pricing.originalPrice) {
+          @if (hasActiveSale) {
             <span class="bg-primary-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md">
               -{{ discountPercentage }}%
             </span>
           }
-          @if (product.badges.includes('NEW')) {
-            <span class="bg-emerald-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md">
-              {{ 'product.new' | t }}
+          @for (badge of activeBadges; track badge) {
+            <span [class]="getBadgeClass(badge)">
+              {{ getBadgeLabel(badge) }}
             </span>
           }
         </div>
@@ -228,6 +228,43 @@ export class ProductCardComponent {
     return Math.round(
       ((this.product.pricing.originalPrice - this.product.pricing.price) / this.product.pricing.originalPrice) * 100
     );
+  }
+
+  get hasActiveSale(): boolean {
+    if (this.product.onSale && this.product.saleEndsAt) {
+      return new Date(this.product.saleEndsAt) > new Date();
+    }
+    if (this.product.pricing?.originalPrice && this.product.pricing?.price) {
+      return this.product.pricing.originalPrice > this.product.pricing.price;
+    }
+    return false;
+  }
+
+  get activeBadges(): string[] {
+    const badges = this.product.badges || [];
+    return badges.filter(b => b !== 'PROMO');
+  }
+
+  getBadgeClass(badge: string): string {
+    const classes: Record<string, string> = {
+      'NEW': 'bg-emerald-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md',
+      'BESTSELLER': 'bg-violet-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md',
+      'STOCK_LIMITED': 'bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md',
+      'FREE_SHIPPING': 'bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md',
+      'EXCLUSIVE': 'bg-amber-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md'
+    };
+    return classes[badge] || 'bg-surface-700 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-md';
+  }
+
+  getBadgeLabel(badge: string): string {
+    const labels: Record<string, string> = {
+      'NEW': 'Nouveau',
+      'BESTSELLER': 'Best-seller',
+      'STOCK_LIMITED': 'Stock limité',
+      'FREE_SHIPPING': 'Livraison gratuite',
+      'EXCLUSIVE': 'Exclusif'
+    };
+    return labels[badge] || badge;
   }
 
   addToCart() {
