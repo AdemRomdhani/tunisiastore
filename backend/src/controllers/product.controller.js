@@ -177,7 +177,9 @@ exports.createProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   try {
+    console.log('UPDATE PRODUCT - Raw body:', req.body);
     const data = mapFormData(req.body);
+    console.log('UPDATE PRODUCT - Mapped data:', data);
     const product = await Product.findByIdAndUpdate(req.params.id, data, {
       new: true,
       runValidators: true
