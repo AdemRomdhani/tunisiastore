@@ -126,7 +126,9 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
                 </div>
               </div>
             }
-            <div class="text-xs sm:text-sm text-surface-400">{{ 'product.sku' | t }}: <span class="font-mono bg-surface-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">{{ product()?.inventory?.sku || 'N/A' }}</span></div>
+            @if (product()?.inventory?.sku) {
+              <div class="text-xs sm:text-sm text-surface-400">{{ 'product.sku' | t }}: <span class="font-mono bg-surface-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">{{ product()?.inventory?.sku }}</span></div>
+            }
           </div>
         </div>
 
