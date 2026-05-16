@@ -239,7 +239,6 @@ export class AdminProductFormComponent implements OnInit, OnDestroy {
       this.isEdit.set(true);
       this.productId = id;
       this.loadProduct(id);
-      this.startRefreshInterval();
     }
   }
 
@@ -247,14 +246,6 @@ export class AdminProductFormComponent implements OnInit, OnDestroy {
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
     }
-  }
-
-  private startRefreshInterval() {
-    this.refreshInterval = setInterval(() => {
-      if (this.productId) {
-        this.loadProduct(this.productId, true);
-      }
-    }, 10000);
   }
 
   loadCategories() {
