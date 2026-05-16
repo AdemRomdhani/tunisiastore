@@ -305,46 +305,7 @@ import { environment } from '../../../environments/environment';
       }
 
       <!-- Why Choose Us -->
-      <section class="py-10 sm:py-16 bg-white">
-        <div class="container mx-auto px-3 sm:px-4">
-          <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div>
-              <h2 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">{{ 'home.whyChooseUs' | t }}</h2>
-              <div class="space-y-4 sm:space-y-6">
-                @for (item of whyUs; track item.title) {
-                  <div class="flex gap-3 sm:gap-4">
-                    <div class="w-8 h-8 sm:w-10 sm:h-10 bg-primary-100 rounded-lg sm:rounded-xl flex items-center justify-center text-primary-600 flex-shrink-0">
-                      <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 class="font-semibold text-gray-900 text-sm sm:text-base">{{ item.title }}</h3>
-                      <p class="text-gray-500 text-xs sm:text-sm">{{ item.desc }}</p>
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
-            <div class="relative">
-              <div class="bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-white">
-                <div class="text-center">
-                  <div class="text-4xl sm:text-5xl lg:text-6xl font-bold mb-1 sm:mb-2">4.9</div>
-                  <div class="flex justify-center gap-1 mb-2 sm:mb-4">
-                    @for (star of [1,2,3,4,5]; track star) {
-                      <svg class="w-4 h-4 sm:w-6 sm:h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                      </svg>
-                    }
-                  </div>
-                  <div class="text-sm sm:text-lg font-medium">{{ 'home.averageRating' | t }}</div>
-                  <div class="text-primary-200 text-xs sm:text-base">{{ 'home.basedOnReviews' | t }}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      
       <!-- Contact CTA -->
       <section class="py-10 sm:py-16 bg-gray-900">
         <div class="container mx-auto px-3 sm:px-4">
