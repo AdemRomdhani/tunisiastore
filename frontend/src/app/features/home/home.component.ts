@@ -81,7 +81,7 @@ import { environment } from '../../../environments/environment';
       </section>
 
       <!-- Features - Enhanced -->
-      <section class="py-10 sm:py-16 bg-white border-b">
+      <section class="py-10 sm:py-16 bg-white border-b hidden sm:block">
         <div class="container mx-auto px-3 sm:px-4">
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             @for (feature of features; track feature.title) {
