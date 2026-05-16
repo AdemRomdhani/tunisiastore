@@ -167,7 +167,8 @@ exports.getProduct = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
   try {
-    const product = await Product.create(req.body);
+    const data = mapFormData(req.body);
+    const product = await Product.create(data);
     res.status(201).json({ success: true, product });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -176,7 +177,8 @@ exports.createProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    const data = mapFormData(req.body);
+    const product = await Product.findByIdAndUpdate(req.params.id, data, {
       new: true,
       runValidators: true
     });
@@ -188,6 +190,43 @@ exports.updateProduct = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+function mapFormData(body) {
+  if (!body || Object.keys(body).length === 0) return body;
+  const mapped = {};
+  if (body.name) mapped.name = body.name;
+  if (body.description) mapped.description = body.description;
+  if (body.slug) mapped.slug = body.slug;
+  if (body.shortDescription) mapped.shortDescription = body.shortDescription;
+  if (body.category) mapped.category = body.category;
+  if (body.featured !== undefined) mapped.featured = body.featured === 'true';
+  if (body.isActive !== undefined) mapped.isActive = body.isActive === 'true';
+  if (body.onSale !== undefined) mapped.onSale = body.onSale === 'true';
+  if (body.saleEndsAt) mapped.saleEndsAt = body.saleEndsAt;
+  if (body.badges) {
+    try { mapped.badges = typeof body.badges === 'string' ? JSON.parse(body.badges) : body.badges; }
+    catch { mapped.badges = []; }
+  }
+  if (body.warranty) mapped.warranty = body.warranty;
+  if (body.weight) mapped.weight = body.weight;
+  if (body.dimensions) mapped.dimensions = body.dimensions;
+  if (body.subcategory) mapped.subcategory = body.subcategory;
+  if (body.specifications) {
+    try { mapped.specifications = typeof body.specifications === 'string' ? JSON.parse(body.specifications) : body.specifications; }
+    catch { mapped.specifications = []; }
+  }
+  if (body.attributes) {
+    try { mapped.attributes = typeof body.attributes === 'string' ? JSON.parse(body.attributes) : body.attributes; }
+    catch { mapped.attributes = []; }
+  }
+  if (body.price !== undefined) mapped.pricing = { price: parseFloat(body.price) };
+  if (body.originalPrice !== undefined) mapped.pricing = { ...mapped.pricing, originalPrice: parseFloat(body.originalPrice) };
+  if (body.cost !== undefined) mapped.pricing = { ...mapped.pricing, cost: parseFloat(body.cost) };
+  if (body.stock !== undefined) mapped.inventory = { quantity: parseInt(body.stock) };
+  if (body.sku) mapped.inventory = { ...mapped.inventory, sku: body.sku };
+  if (body.lowStockThreshold !== undefined) mapped.inventory = { ...mapped.inventory, lowStockThreshold: parseInt(body.lowStockThreshold) };
+  return mapped;
+}
 
 exports.deleteProduct = async (req, res) => {
   try {
