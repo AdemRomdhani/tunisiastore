@@ -337,10 +337,10 @@ export class ProductDetailComponent implements OnInit {
   submitReview() {
     if (!this.newReviewRating() || !this.newReviewTitle || !this.newReviewComment) return;
     this.submittingReview.set(true);
-    const productId = this.product()?._id;
-    if (!productId) return;
-    this.productService.addReview(productId, { rating: this.newReviewRating(), title: this.newReviewTitle, comment: this.newReviewComment }).subscribe({
-      next: () => { this.loadReviews(productId); this.submittingReview.set(false); this.newReviewRating.set(0); this.newReviewTitle = ''; this.newReviewComment = ''; },
+    const slug = this.product()?.slug;
+    if (!slug) return;
+    this.productService.addReview(slug, { rating: this.newReviewRating(), title: this.newReviewTitle, comment: this.newReviewComment }).subscribe({
+      next: () => { this.loadReviews(slug); this.submittingReview.set(false); this.newReviewRating.set(0); this.newReviewTitle = ''; this.newReviewComment = ''; },
       error: () => this.submittingReview.set(false)
     });
   }
