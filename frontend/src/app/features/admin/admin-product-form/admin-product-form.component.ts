@@ -28,7 +28,7 @@ import { environment } from '../../../../environments/environment';
           </div>
         </div>
       } @else {
-        <form (ngSubmit)="saveProduct()" class="bg-white rounded-xl shadow-sm p-6 space-y-6">
+        <form (ngSubmit)="saveProduct()" autocomplete="off" class="bg-white rounded-xl shadow-sm p-6 space-y-6">
           <!-- Name -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Nom du produit *</label>
@@ -235,7 +235,7 @@ export class AdminProductFormComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadCategories();
     const id = this.route.snapshot.params['id'];
-    if (id) {
+    if (id && !this.productId) {
       this.isEdit.set(true);
       this.productId = id;
       this.loadProduct(id);
