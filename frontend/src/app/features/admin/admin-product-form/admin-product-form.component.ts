@@ -255,6 +255,7 @@ export class AdminProductFormComponent implements OnInit, OnDestroy {
   }
 
   loadProduct(id: string, silent: boolean = false) {
+    console.log('loadProduct called', id, 'silent:', silent);
     if (!silent) {
       this.loading.set(true);
     }
