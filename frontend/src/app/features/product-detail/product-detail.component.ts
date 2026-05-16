@@ -97,7 +97,7 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
                 <span class="text-base sm:text-lg text-surface-400 line-through">{{ product()?.pricing?.originalPrice | number:'1.3' }} DT</span>
               }
             </div>
-            <p class="text-surface-600 text-sm sm:text-base mb-5 sm:mb-6 leading-relaxed">{{ product()?.shortDescription || product()?.description }}</p>
+            <p class="text-surface-600 text-sm sm:text-base mb-5 sm:mb-6 leading-relaxed whitespace-pre-wrap">{{ product()?.description }}</p>
             <div class="flex items-center gap-3 mb-5 sm:mb-6">
               @if (availableStock() > 0) {
                 <span class="flex items-center gap-1.5 sm:gap-2 text-emerald-600 text-xs sm:text-sm font-medium">
