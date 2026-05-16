@@ -125,27 +125,7 @@ import { environment } from '../../../environments/environment';
       }
 
       <!-- Promo Banner -->
-      <section class="py-6 sm:py-8">
-        <div class="container mx-auto px-3 sm:px-4">
-          <a routerLink="/products" [queryParams]="{onSale: true}" class="block relative rounded-2xl sm:rounded-3xl overflow-hidden group">
-            <div class="bg-gradient-to-r from-red-600 to-red-700 px-5 sm:px-8 py-8 sm:py-12 flex items-center justify-between">
-              <div>
-                <span class="inline-block bg-white/20 text-white text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full mb-2 sm:mb-4">{{ 'home.limitedOffer' | t }}</span>
-                <h2 class="text-xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">{{ 'home.upTo50' | t }}</h2>
-                <p class="text-red-100 text-xs sm:text-base">{{ 'home.onSelection' | t }}</p>
-              </div>
-              <div class="hidden sm:block">
-                <div class="text-4xl lg:text-6xl font-bold text-white/20">SALE</div>
-              </div>
-            </div>
-            <div class="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center group-hover:translate-x-2 transition flex-shrink-0">
-              <svg class="w-4 h-4 sm:w-6 sm:h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-              </svg>
-            </div>
-          </a>
-        </div>
-      </section>
+      
 
       <!-- Flash Deals Section - Premium Redesign -->
       @if (hasFlashDeals()) {
@@ -302,32 +282,7 @@ import { environment } from '../../../environments/environment';
           </div>
         </div>
       </section>
-      }
-
-      <!-- Why Choose Us -->
-      
-      <!-- Contact CTA -->
-      <section class="py-10 sm:py-16 bg-gray-900">
-        <div class="container mx-auto px-3 sm:px-4">
-          <div class="bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 text-center text-white flex flex-col items-center">
-            <div class="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 backdrop-blur-sm">
-              <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-              </svg>
-            </div>
-            <h2 class="text-xl sm:text-2xl lg:text-4xl font-bold mb-2 sm:mb-4">{{ 'home.needHelp' | t }}</h2>
-            <p class="text-primary-100 mb-6 sm:mb-8 max-w-2xl mx-auto text-sm sm:text-lg">
-              {{ 'home.customerSupportDesc' | t }}
-            </p>
-            <a routerLink="/contact" class="inline-flex items-center gap-2 bg-white text-primary-600 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-bold hover:bg-gray-100 transition shadow-lg text-sm sm:text-base">
-              {{ 'home.contactUs' | t }}
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-              </svg>
-            </a>
-          </div>
-        </div>
-      </section>
+}
 
     </div>
   `,
