@@ -99,22 +99,7 @@ import { environment } from '../../../environments/environment';
         </div>
       </section>
 
-      <!-- Categories Quick Access -->
-      <section class="py-10 sm:py-16 bg-gray-50">
-        <div class="container mx-auto px-3 sm:px-4">
-          <h2 class="text-lg sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-8">{{ 'nav.categories' | t }}</h2>
-          <div class="flex sm:grid overflow-x-auto sm:overflow-visible pb-2 sm:pb-0 gap-2 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            @for (cat of categories; track cat.name) {
-              <a [routerLink]="['/products']" [queryParams]="{category: cat.slug}" 
-                 class="group bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl text-center hover:shadow-lg transition border border-gray-100 flex-shrink-0 w-24 sm:w-auto">
-                <div class="text-3xl sm:text-4xl mb-1 sm:mb-3 group-hover:scale-125 transition">{{ cat.icon }}</div>
-                <div class="font-medium text-gray-900 group-hover:text-primary-600 transition text-xs sm:text-sm">{{ cat.name }}</div>
-              </a>
-            }
-          </div>
-        </div>
-      </section>
-
+      @if (featuredProducts().length > 0) {
       <!-- Featured Products -->
       <section class="py-10 sm:py-16">
         <div class="container mx-auto px-3 sm:px-4">
@@ -130,15 +115,14 @@ import { environment } from '../../../environments/environment';
               </svg>
             </a>
           </div>
-          @if (featuredProducts().length > 0) {
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-6">
-              @for (product of featuredProducts(); track product._id) {
-                <app-product-card [product]="product"/>
-              }
-            </div>
-          }
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-6">
+            @for (product of featuredProducts(); track product._id) {
+              <app-product-card [product]="product"/>
+            }
+          </div>
         </div>
       </section>
+      }
 
       <!-- Promo Banner -->
       <section class="py-6 sm:py-8">
