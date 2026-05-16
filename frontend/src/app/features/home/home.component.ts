@@ -285,6 +285,7 @@ import { environment } from '../../../environments/environment';
         </div>
       </section>
 
+      @if (bundles().length > 0) {
       <!-- Bundles Section -->
       <section class="py-10 sm:py-16 bg-gradient-to-r from-indigo-600 to-purple-600">
         <div class="container mx-auto px-3 sm:px-4">
@@ -317,6 +318,7 @@ import { environment } from '../../../environments/environment';
           </div>
         </div>
       </section>
+      }
 
       <!-- Why Choose Us -->
       <section class="py-10 sm:py-16 bg-white">
