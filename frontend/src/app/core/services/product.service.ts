@@ -136,12 +136,8 @@ export class ProductService {
     return this.http.get<{ success: boolean; results: Product[] }>(`${this.apiUrl}/autocomplete?q=${encodeURIComponent(query)}&limit=5`);
   }
 
-  // === REVIEWS - Use the proper /api/reviews endpoint ===
+  // === REVIEWS ===
   
-  /**
-   * @deprecated Use ReviewService.getProductReviews() instead
-   * This method is kept for backward compatibility
-   */
   getProductReviews(slug: string): Observable<{
     success: boolean;
     reviews: Array<{
@@ -159,10 +155,6 @@ export class ProductService {
     return this.http.get<any>(`${environment.apiUrl}/reviews/product/${slug}`);
   }
 
-  /**
-   * @deprecated Use ReviewService.createReview() instead  
-   * This method is kept for backward compatibility but routes to /api/reviews
-   */
   addReview(slug: string, data: { rating: number; title?: string; comment?: string; productId?: string }, images?: File[]): Observable<any> {
     // Build the correct review data
     const reviewData = {
