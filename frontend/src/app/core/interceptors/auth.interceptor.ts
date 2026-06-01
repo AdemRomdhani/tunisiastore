@@ -1,5 +1,5 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
@@ -15,6 +15,9 @@ function isTokenExpired(token: string): boolean {
 }
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const router = inject(Router);
+  const injector = inject(Injector);
+
   const token = localStorage.getItem('token');
 
   if (token && !isTokenExpired(token)) {
@@ -25,16 +28,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError(err => {
-      const router = inject(Router);
-      const authService = inject(AuthService);
-      
       if (err.status === 0) {
+        const authService = injector.get(AuthService);
         authService.clearAuth();
         router.navigate(['/login']);
         return throwError(() => err);
       }
 
       if (err.status === 401 && !router.url.startsWith('/admin')) {
+        const authService = injector.get(AuthService);
         authService.clearAuth();
         router.navigate(['/login']);
       }

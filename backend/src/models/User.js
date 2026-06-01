@@ -5,10 +5,22 @@ const userSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true },
-  password: { type: String, required: true, minlength: 6, select: false },
-  phone: { type: String, required: true },
+  password: { type: String, minlength: 6, select: false }, // Not required for social login
+  phone: { type: String },
   role: { type: String, enum: ['customer', 'admin', 'supervisor'], default: 'customer' },
   isActive: { type: Boolean, default: true },
+  
+  // Social Login (Google)
+  googleId: { type: String, unique: true, sparse: true },
+  googleProfile: {
+    name: String,
+    picture: String
+  },
+  facebookId: { type: String, unique: true, sparse: true },
+  facebookProfile: {
+    name: String,
+    picture: String
+  },
   
   isVerified: { type: Boolean, default: false },
   verifyToken: String,
@@ -17,6 +29,13 @@ const userSchema = new mongoose.Schema({
   lastLoginIp: String,
   loginCount: { type: Number, default: 0 },
   firstLoginAt: Date,
+  
+  // Availability alerts (when product is back in stock)
+  availabilityAlerts: [{
+    product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+    createdAt: { type: Date, default: Date.now },
+    notified: { type: Boolean, default: false }
+  }],
 
   address: {
     fullName: String,

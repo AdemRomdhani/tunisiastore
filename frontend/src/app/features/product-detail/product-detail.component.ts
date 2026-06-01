@@ -43,9 +43,9 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
           <a routerLink="/" class="hover:text-primary-600">{{ 'nav.home' | t }}</a>
           <span class="text-surface-300">/</span>
           <a routerLink="/products" class="hover:text-primary-600">{{ 'nav.products' | t }}</a>
-          @if (product()?.category) {
+          @if (product(); as p) {
             <span class="text-surface-300">/</span>
-            <a [routerLink]="['/products']" [queryParams]="{category: product()?.category?.slug}" class="hover:text-primary-600">{{ product()?.category?.name }}</a>
+            <a [routerLink]="['/products']" [queryParams]="{category: p.category.slug}" class="hover:text-primary-600">{{ p.category.name }}</a>
           }
           <span class="text-surface-300">/</span>
           <span class="text-surface-800 truncate max-w-[150px] sm:max-w-[200px] font-medium">{{ product()?.name }}</span>
@@ -165,6 +165,26 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
                   <label class="block text-sm font-medium text-surface-700 mb-1.5 sm:mb-2">{{ 'productDetail.yourReview' | t }} *</label>
                   <textarea [(ngModel)]="newReviewComment" rows="4" [placeholder]="'productDetail.reviewPlaceholder' | t" class="w-full border border-surface-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all resize-none"></textarea>
                 </div>
+                <div>
+                  <label class="block text-sm font-medium text-surface-700 mb-1.5 sm:mb-2">Photos (optionnel)</label>
+                  <div class="flex flex-wrap gap-2 mb-2">
+                    @for (image of reviewImages; track image; let i = $index) {
+                      <div class="relative w-16 h-16 rounded-lg overflow-hidden border border-surface-200">
+                        <img [src]="getImageUrl(image)" class="w-full h-full object-cover">
+                        <button (click)="removeReviewImage(i)" class="absolute top-0 right-0 bg-red-500 text-white w-5 h-5 flex items-center justify-center text-xs rounded-bl-lg">×</button>
+                      </div>
+                    }
+                  </div>
+                  @if (reviewImages.length < 5) {
+                    <label class="inline-flex items-center gap-2 px-3 py-2 border border-dashed border-surface-300 rounded-lg cursor-pointer hover:bg-surface-50 transition-colors">
+                      <svg class="w-5 h-5 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                      </svg>
+                      <span class="text-sm text-surface-500">Ajouter photo</span>
+                      <input type="file" accept="image/*" multiple (change)="onReviewImageSelect($event)" class="hidden">
+                    </label>
+                  }
+                </div>
                 <button (click)="submitReview()" [disabled]="submittingReview() || !newReviewRating() || !newReviewTitle || !newReviewComment" class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">
                   @if (submittingReview()) { {{ 'productDetail.submitting' | t }} } @else { {{ 'productDetail.submitReview' | t }} }
                 </button>
@@ -173,7 +193,7 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
             } @else {
               <div class="text-center py-3 sm:py-4">
                 <p class="text-surface-600 text-sm sm:text-base mb-3">{{ 'productDetail.loginToReview' | t }}</p>
-                <a routerLink="/auth/login" class="btn-primary inline-block text-sm sm:text-base">{{ 'auth.login' | t }}</a>
+                <a routerLink="/login" class="btn-primary inline-block text-sm sm:text-base">{{ 'auth.login' | t }}</a>
               </div>
             }
           </div>
@@ -296,7 +316,7 @@ export class ProductDetailComponent implements OnInit {
     this.productService.getProductReviews(slug).subscribe({ next: (res) => {
       this.reviews.set(res.reviews || []);
       const currentUserId = this.authService.currentUser()?.id;
-      const hasReviewed = res.reviews?.some((r: any) => r.userId?._id === currentUserId);
+      const hasReviewed = res.reviews?.some((r: any) => r.userId?._id?.toString() === currentUserId?.toString());
       this.userAlreadyReviewed.set(hasReviewed);
     }});
   }
@@ -334,14 +354,48 @@ export class ProductDetailComponent implements OnInit {
     return { '@context': 'https://schema.org', '@type': 'Product', name: p.name, description: p.description, image: `https://tunisiastore.tn${p.media.images[0]}`, offers: { '@type': 'Offer', priceCurrency: 'TND', price: p.pricing.price, availability: this.availableStock() > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' } };
   });
 
+  reviewImages: File[] = [];
+
+  onReviewImageSelect(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files) return;
+    const files = Array.from(input.files);
+    if (this.reviewImages.length + files.length > 5) {
+      alert('Maximum 5 images allowed');
+      return;
+    }
+    this.reviewImages = [...this.reviewImages, ...files];
+    input.value = '';
+  }
+
+  removeReviewImage(index: number) {
+    this.reviewImages = this.reviewImages.filter((_, i) => i !== index);
+  }
+
+  getImageUrl(file: File): string {
+    return URL.createObjectURL(file);
+  }
+
   submitReview() {
     if (!this.newReviewRating() || !this.newReviewTitle || !this.newReviewComment) return;
     this.submittingReview.set(true);
     const slug = this.product()?.slug;
     if (!slug) return;
-    this.productService.addReview(slug, { rating: this.newReviewRating(), title: this.newReviewTitle, comment: this.newReviewComment }).subscribe({
-      next: () => { this.loadReviews(slug); this.submittingReview.set(false); this.newReviewRating.set(0); this.newReviewTitle = ''; this.newReviewComment = ''; },
-      error: () => this.submittingReview.set(false)
+    this.productService.addReview(slug, { rating: this.newReviewRating(), title: this.newReviewTitle, comment: this.newReviewComment }, this.reviewImages).subscribe({
+      next: () => { 
+        this.loadReviews(slug); 
+        this.submittingReview.set(false); 
+        this.newReviewRating.set(0); 
+        this.newReviewTitle = ''; 
+        this.newReviewComment = ''; 
+        this.reviewImages = [];
+      },
+      error: (err) => { 
+        this.submittingReview.set(false);
+        console.error('[Review] Submit error:', err);
+        const message = err?.error?.message || "Une erreur s'est produite lors de l'envoi de votre avis. Veuillez réessayer.";
+        this.toast.error('Erreur d\u0027évaluation', message);
+      }
     });
   }
 }

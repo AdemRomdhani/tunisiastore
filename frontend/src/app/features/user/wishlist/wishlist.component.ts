@@ -87,7 +87,7 @@ export class WishlistComponent implements OnInit {
   }
 
   addToCart(product: any) {
-    this.cartService.addToCart(product, 1).subscribe({
+    this.cartService.addToCart(product._id, 1).subscribe({
       next: () => this.toast.success('Panier', 'Produit ajouté au panier'),
       error: () => this.toast.error('Erreur', 'Impossible d\'ajouter au panier')
     });

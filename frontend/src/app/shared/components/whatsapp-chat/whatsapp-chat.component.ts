@@ -9,7 +9,7 @@ import { WhatsAppService } from '../../../core/services/whatsapp.service';
   imports: [CommonModule],
   template: `
     @if (isOpen()) {
-      <div class="fixed bottom-20 right-4 bg-white rounded-xl shadow-2xl w-80 overflow-hidden z-50 animate-in">
+      <div class="fixed right-4 bottom-36 lg:bottom-20 bg-white rounded-xl shadow-2xl w-80 overflow-hidden z-50 animate-in">
         <div class="bg-[#25D366] text-white p-4 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -63,7 +63,7 @@ import { WhatsAppService } from '../../../core/services/whatsapp.service';
     
     <button 
       (click)="toggle()"
-      class="fixed bottom-4 right-4 w-14 h-14 bg-[#25D366] text-white rounded-full shadow-lg hover:bg-[#20BD5A] transition flex items-center justify-center z-40"
+      class="fixed right-4 bottom-24 lg:bottom-4 w-14 h-14 bg-[#25D366] text-white rounded-full shadow-lg hover:bg-[#20BD5A] transition flex items-center justify-center z-40"
       [class.animate-bounce]="!isOpen()"
     >
       @if (isOpen()) {

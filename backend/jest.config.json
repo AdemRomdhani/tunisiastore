@@ -1,0 +1,23 @@
+{
+  "testEnvironment": "node",
+  "testTimeout": 30000,
+  "collectCoverageFrom": [
+    "src/**/*.js",
+    "!src/models/**/*.js"
+  ],
+  "coveragePathIgnorePatterns": [
+    "/node_modules/",
+    "/__tests__/"
+  ],
+  "testMatch": [
+    "<rootDir>/__tests__/**/*.test.js"
+  ],
+  "forceExit": true,
+  "transformIgnorePatterns": [
+    "node_modules/(?!(uuid|stripe|pdfkit|qrcode)/)"
+  ],
+  "moduleNameMapper": {
+    "^uuid$": "<rootDir>/__tests__/__mocks__/uuid.js"
+  },
+  "verbose": true
+}

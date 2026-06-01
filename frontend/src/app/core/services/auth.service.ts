@@ -118,4 +118,8 @@ export class AuthService {
       }
     });
   }
+
+  getGoogleConfig() {
+    return this.http.get<{ enabled: boolean }>(`${this.apiUrl}/google/config`);
+  }
 }

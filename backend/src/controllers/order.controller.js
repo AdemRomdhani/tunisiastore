@@ -18,11 +18,7 @@ exports.createOrder = async (req, res) => {
   try {
     const { shippingAddress, paymentMethod, notes, couponCode, guestEmail, guestPhone } = req.body;
 
-    // Get customer info from request
-    const customerEmail = guestEmail || shippingAddress?.email || shippingAddress?.fullName?.includes('@') ? shippingAddress.fullName : null;
-    const customerPhone = guestPhone || shippingAddress?.phone;
-
-    // Determine user - authenticated or guest
+    // Determine user - authenticated or guest (fetch FIRST so we can use user.email as fallback)
     let userId = req.user?.id;
     let user = null;
     
@@ -31,7 +27,15 @@ exports.createOrder = async (req, res) => {
       user = await User.findById(userId);
       console.log('👤 Authenticated user found:', user?.email);
     }
-    
+
+    // Get customer info - for authenticated users fall back to user.email / user.phone
+    // NOTE: parentheses around the ternary condition are required to avoid JS operator precedence bug
+    const customerEmail = guestEmail || user?.email || shippingAddress?.email || (shippingAddress?.fullName?.includes('@') ? shippingAddress.fullName : null);
+    const customerPhone = guestPhone || shippingAddress?.phone || user?.phone;
+
+    console.log('📧 customerEmail resolved:', customerEmail);
+    console.log('📱 customerPhone resolved:', customerPhone);
+
     // If no auth, check for existing user by email in shipping or guestEmail
     if (!userId && customerEmail) {
       user = await User.findOne({ email: customerEmail.toLowerCase() });
@@ -56,8 +60,9 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Votre panier est vide. Ajoutez des produits avant de commander.' });
     }
 
-    if (!customerEmail || !customerPhone) {
-      return res.status(400).json({ success: false, message: 'Email et téléphone requis pour commander.' });
+    if (!customerPhone) {
+      console.error('❌ Missing phone:', { customerEmail, customerPhone, shippingAddress });
+      return res.status(400).json({ success: false, message: 'Numéro de téléphone requis pour commander.' });
     }
 
     // Validate stock and build order items
@@ -289,7 +294,7 @@ exports.getOrder = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
-res.json({ success: true, order });
+    res.json({ success: true, order });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -297,13 +302,32 @@ res.json({ success: true, order });
 
 exports.trackOrder = async (req, res) => {
   try {
-    const { orderNumber, email } = req.body;
+    const { orderNumber, email, phone } = req.body;
     
-    // Try to find by orderNumber + email for guest orders
-    // or by orderNumber + user for authenticated orders
     let order;
     
-    if (email) {
+    if (phone) {
+      // Find by order number AND phone (guest orders without email)
+      order = await Order.findOne({ 
+        orderNumber,
+        $or: [
+          { 'shippingAddress.phone': phone },
+          { guestPhone: phone },
+          { user: { $exists: true } }
+        ]
+      }).populate('items.product', 'name slug media');
+      
+      if (order && order.user) {
+        const user = await User.findById(order.user);
+        if (!user || user.phone !== phone) {
+          order = null;
+        }
+      }
+      
+      if (order && !order.user && order.shippingAddress?.phone !== phone && order.guestPhone !== phone) {
+        order = null;
+      }
+    } else if (email) {
       // Find by order number AND email (supports guest orders)
       order = await Order.findOne({ 
         orderNumber,
@@ -313,7 +337,6 @@ exports.trackOrder = async (req, res) => {
         ]
       }).populate('items.product', 'name slug media');
       
-      // Verify user email matches if order has user
       if (order && order.user) {
         const user = await User.findById(order.user);
         if (!user || user.email.toLowerCase() !== email.toLowerCase()) {
@@ -321,7 +344,6 @@ exports.trackOrder = async (req, res) => {
         }
       }
       
-      // Verify guest email matches
       if (order && !order.user && order.guestEmail?.toLowerCase() !== email.toLowerCase()) {
         order = null;
       }

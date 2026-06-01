@@ -990,3 +990,24 @@ exports.getNewUsersCount = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// Availability Alerts
+exports.getProductAlerts = async (req, res) => {
+  try {
+    const AvailabilityAlertService = require('../services/availability-alert.service');
+    const alerts = await AvailabilityAlertService.getAlertsByProduct(req.params.productId);
+    res.json({ success: true, alerts });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.notifyAvailability = async (req, res) => {
+  try {
+    const AvailabilityAlertService = require('../services/availability-alert.service');
+    const result = await AvailabilityAlertService.notifyUsers(req.params.productId);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

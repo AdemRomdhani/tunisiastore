@@ -321,6 +321,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     { label: 'Newsletter', path: '/admin/newsletter', icon: this.sanitizer.bypassSecurityTrustHtml('<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>') },
     { label: 'Pages & FAQ', path: '/admin/cms', icon: this.sanitizer.bypassSecurityTrustHtml('<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>') },
     { label: 'Suivre les actions', path: '/admin/audit-logs', icon: this.sanitizer.bypassSecurityTrustHtml('<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>') },
+    { label: 'Paniers abandonnés', path: '/admin/abandoned-carts', icon: this.sanitizer.bypassSecurityTrustHtml('<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>') },
   ];
 
   get filteredNavItems(): NavItem[] {
@@ -549,6 +550,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     else if (url.includes('/newsletter')) crumbs.push({ label: 'Newsletter', path: '/admin/newsletter' });
     else if (url.includes('/cms')) crumbs.push({ label: 'Pages & FAQ', path: '/admin/cms' });
     else if (url.includes('/audit-logs')) crumbs.push({ label: 'Suivre les actions', path: '/admin/audit-logs' });
+    else if (url.includes('/abandoned-carts')) crumbs.push({ label: 'Paniers abandonnés', path: '/admin/abandoned-carts' });
     
     if (url.includes('/new') || url.includes('/edit')) {
       crumbs.push({ label: url.includes('/new') ? 'Nouveau' : 'Modifier' });

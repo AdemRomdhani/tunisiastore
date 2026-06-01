@@ -59,17 +59,31 @@ const orderSchema = new mongoose.Schema({
     method: { 
       type: String, 
       required: true,
-      enum: ['CASH_ON_DELIVERY', 'CARD_ONLINE', 'D17', 'FLOUSSI', 'BANK_TRANSFER', 'EDINAR']
+      enum: ['CASH_ON_DELIVERY', 'CARD_ONLINE', 'D17', 'FLOUSSI', 'BANK_TRANSFER', 'EDINAR', 'STRIPE']
     },
     status: { 
       type: String, 
-      enum: ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'REFUNDED', 'CANCELLED'],
+      enum: ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'REFUNDED', 'CANCELLED', 'REFUND_PENDING'],
       default: 'PENDING'
     },
     transactionId: String,
+    stripePaymentIntentId: String,
+    stripeCustomerId: String,
     paidAt: Date,
+    // Refund fields
     refundedAt: Date,
-    refundAmount: Number
+    refundAmount: Number,
+    refundReason: String,
+    refundProcessedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    // Bank transfer fields
+    bankTransferProof: {
+      originalName: String,
+      filename: String,
+      uploadedAt: Date,
+      verifiedAt: Date,
+      verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      verificationNote: String
+    }
   },
   
   shipping: {

@@ -2,13 +2,13 @@ const express = require('express');
 const router = express.Router();
 const recentlyViewedController = require('../controllers/recentlyViewed.controller');
 const RecentlyViewed = require('../models/RecentlyViewed');
-const { optionalAuth } = require('../middleware/auth');
+const { optionalAuth, authenticate, authorize } = require('../middleware/auth');
 
 router.get('/', optionalAuth, recentlyViewedController.getRecentlyViewed);
 router.post('/add', optionalAuth, recentlyViewedController.addRecentlyViewed);
 
-// Cleanup bad docs
-router.post('/cleanup', async (req, res) => {
+// Cleanup bad docs (admin only)
+router.post('/cleanup', authenticate, authorize('admin'), async (req, res) => {
   try {
     const result = await RecentlyViewed.deleteMany({ 
       $or: [{ user: null }, { user: { $exists: false } }] 

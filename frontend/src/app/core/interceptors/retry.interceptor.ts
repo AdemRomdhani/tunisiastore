@@ -16,7 +16,11 @@ export const retryInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, n
         errors.pipe(
           mergeMap((error, index) => {
             console.log(`[Retry] Request failed: ${req.url}, status: ${error.status}, attempt ${index + 1}`);
+            // Don't retry if offline, no connection, or rate limited (429)
             if (index >= RETRY_COUNT || error.status === 0) {
+              return throwError(() => error);
+            }
+            if (error.status === 429) {
               return throwError(() => error);
             }
             if (!networkService.isOnline()) {

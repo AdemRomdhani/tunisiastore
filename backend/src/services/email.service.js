@@ -750,6 +750,370 @@ class EmailService {
     }
     console.log(`📧 [Email] Promo notification sent to ${subscribers.length} subscribers`);
   }
+
+  async sendAbandonedCart(data) {
+    if (!transporter) {
+      console.log('📧 [Email] Abandoned cart skipped - No transporter');
+      return;
+    }
+
+    const { user, cartItems, subtotal, cartUrl, reminderCount, hasDiscount } = data;
+    
+    const itemsHtml = cartItems.map(item => `
+      <tr>
+        <td style="${styles.td}">${item.name}</td>
+        <td style="${styles.td}; text-align: center;">${item.quantity}</td>
+        <td style="${styles.tdPrice}">${(item.price || 0).toFixed(3)} TND</td>
+      </tr>
+    `).join('');
+
+    const discountBanner = hasDiscount ? `
+      <div style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); padding: 15px; text-align: center; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 0; color: #ffffff; font-size: 18px; font-weight: 700;">N'oubliez pas vos articles !</p>
+        <p style="margin: 5px 0 0 0; color: #fecaca; font-size: 14px;">Nous vous offrons une remise exclusive sur ces produits</p>
+      </div>
+    ` : '';
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Votre panier vous attend - ${BRAND.name}</title>
+      </head>
+      <body style="${styles.base}">
+        <div style="${styles.container}">
+          ${getHeader()}
+          <div style="${styles.content}">
+            <h1 style="${styles.h1}">Votre panier vous attend !</h1>
+            <p style="${styles.p}">Bonjour <strong>${user.firstName}</strong>,</p>
+            <p style="${styles.p}">Vous avez laissé des articles dans votre panier. Ne perdez pas cette opportunité !</p>
+
+            ${discountBanner}
+
+            <div style="${styles.box}">
+              <p style="margin: 0 0 10px 0; color: #1e293b; font-size: 18px; font-weight: 700;">
+                Articles dans votre panier (${cartItems.length}):
+              </p>
+              <table style="${styles.table}">
+                <thead>
+                  <tr>
+                    <th style="${styles.th}">Produit</th>
+                    <th style="${styles.th}; text-align: center;">Qté</th>
+                    <th style="${styles.th}; text-align: right;">Prix</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsHtml}
+                </tbody>
+              </table>
+            </div>
+
+            <div style="${styles.box}">
+              <table style="width: 100%;">
+                <tr>
+                  <td style="color: #64748b; font-size: 16px; font-weight: 600;">Sous-total</td>
+                  <td style="text-align: right; font-size: 20px; font-weight: 700; color: #dc2626;">${subtotal.toFixed(2)} TND</td>
+                </tr>
+              </table>
+            </div>
+
+            <div style="text-align: center; margin: 25px 0;">
+              <a href="${cartUrl}" style="${styles.button}">
+                Compléter ma commande
+              </a>
+            </div>
+
+            <p style="${styles.p}; margin-top: 20px; text-align: center; color: #64748b; font-size: 13px;">
+              Ces articles pourraient être en rupture de stock bientôt. Ne perdez pas cette opportunité !
+            </p>
+          </div>
+          ${getFooter()}
+        </div>
+      </body>
+      </html>
+    `;
+
+    try {
+      const info = await transporter.sendMail({
+        from: useSMTP ? process.env.SMTP_USER : `${BRAND.name} <${BRAND.email}>`,
+        to: user.email,
+        subject: `Votre panier vous attend - ${BRAND.name}`,
+        html
+      });
+      console.log('📧 [Email] Abandoned cart reminder sent:', user.email, info.messageId);
+      return info;
+    } catch (err) {
+      console.error('📧 [Email] Abandoned cart failed:', err.message);
+      throw err;
+    }
+  }
+
+  async sendRefundConfirmation(order, user) {
+    if (!transporter) {
+      console.log('📧 [Email] Refund confirmation skipped - No transporter');
+      return;
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Remboursement confirmé - ${BRAND.name}</title>
+      </head>
+      <body style="${styles.base}">
+        <div style="${styles.container}">
+          ${getHeader()}
+          <div style="${styles.content}">
+            <h1 style="${styles.h1}">Remboursement confirmé</h1>
+            <p style="${styles.p}">Bonjour <strong>${user.firstName}</strong>,</p>
+            <p style="${styles.p}">Nous avons traité votre demande de remboursement pour la commande <strong>#${order.orderNumber}</strong>.</p>
+            
+            <div style="${styles.box}">
+              <p style="margin: 0 0 10px 0; font-size: 18px; font-weight: 700; color: #1e293b;">
+                Montant remboursé: ${(order.payment.refundAmount || 0).toFixed(3)} TND
+              </p>
+              <p style="margin: 0; color: #64748b; font-size: 13px;">
+                Le remboursement sera crédité sur votre compte dans un délai de 5 à 10 jours ouvrables.
+              </p>
+            </div>
+
+            ${order.payment.refundReason ? `
+            <div style="${styles.box}">
+              <p style="${styles.p}; margin-bottom: 5px;"><strong>Motif du remboursement :</strong></p>
+              <p style="${styles.p}; margin: 0;">${order.payment.refundReason}</p>
+            </div>
+            ` : ''}
+
+            <div style="text-align: center; margin-top: 25px;">
+              <a href="${process.env.FRONTEND_URL || 'https://tunisiastore.tn'}/orders/${order.orderNumber}" style="${styles.button}">
+                Voir les détails
+              </a>
+            </div>
+
+            <p style="${styles.p}; margin-top: 25px; text-align: center;">
+              Pour toute question, n'hésitez pas à nous contacter.
+            </p>
+          </div>
+          ${getFooter()}
+        </div>
+      </body>
+      </html>
+    `;
+
+    try {
+      const info = await transporter.sendMail({
+        from: useSMTP ? process.env.SMTP_USER : `${BRAND.name} <${BRAND.email}>`,
+        to: user.email,
+        subject: `Remboursement commande #${order.orderNumber} - ${BRAND.name}`,
+        html
+      });
+      console.log('📧 [Email] Refund confirmation sent:', order.orderNumber, info.messageId);
+    } catch (err) {
+      console.error('📧 [Email] Refund confirmation failed:', err.message);
+    }
+  }
+
+  async sendWelcomeEmail(user) {
+    if (!transporter) {
+      console.log('📧 [Email] Welcome email skipped - No transporter');
+      return;
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Bienvenue - ${BRAND.name}</title>
+      </head>
+      <body style="${styles.base}">
+        <div style="${styles.container}">
+          ${getHeader()}
+          <div style="${styles.content}">
+            <h1 style="${styles.h1}">Bienvenue sur ${BRAND.name} !</h1>
+            <p style="${styles.p}">Bonjour <strong>${user.firstName}</strong>,</p>
+            <p style="${styles.p}">Votre email a été vérifié avec succès. Votre compte est maintenant actif.</p>
+            
+            <div style="${styles.box}">
+              <p style="${styles.p}; margin: 0;">Vous pouvez maintenant :</p>
+              <ul style="${styles.p}; margin: 10px 0 0 0; padding-left: 20px;">
+                <li>Passer des commandes</li>
+                <li>Suivre vos commandes</li>
+                <li>Gérer vos retours</li>
+              </ul>
+            </div>
+
+            <div style="text-align: center; margin-top: 25px;">
+              <a href="${process.env.FRONTEND_URL || 'https://tunisiastore.tn'}" style="${styles.button}">
+                Commencer mes achats
+              </a>
+            </div>
+
+            <p style="${styles.p}; margin-top: 25px; text-align: center;">
+              Merci de votre confiance !
+            </p>
+          </div>
+          ${getFooter()}
+        </div>
+      </body>
+      </html>
+    `;
+
+    try {
+      const info = await transporter.sendMail({
+        from: useSMTP ? process.env.SMTP_USER : `${BRAND.name} <${BRAND.email}>`,
+        to: user.email,
+        subject: 'Bienvenue sur ' + BRAND.name + ' !',
+        html
+      });
+      console.log('📧 [Email] Welcome email sent:', user.email, info.messageId);
+    } catch (err) {
+      console.error('📧 [Email] Welcome email failed:', err.message);
+    }
+  }
+
+  async sendLoginConfirmation(user, clientIp, userAgent, isFirstLogin) {
+    if (!transporter) {
+      console.log('📧 [Email] Login confirmation skipped - No transporter');
+      return;
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Nouvelle connexion - ${BRAND.name}</title>
+      </head>
+      <body style="${styles.base}">
+        <div style="${styles.container}">
+          ${getHeader()}
+          <div style="${styles.content}">
+            <h1 style="${styles.h1}">Nouvelle connexion détectée</h1>
+            <p style="${styles.p}">Bonjour <strong>${user.firstName}</strong>,</p>
+            <p style="${styles.p}">Une nouvelle connexion à votre compte a été détectée.</p>
+            
+            <div style="${styles.box}">
+              <p style="${styles.p}; margin-bottom: 5px;"><strong>Détails :</strong></p>
+              <p style="${styles.p}; margin: 0;"><strong>Date :</strong> ${new Date().toLocaleString('fr-FR')}</p>
+              <p style="${styles.p}; margin: 0;"><strong>IP :</strong> ${clientIp || 'Inconnue'}</p>
+              <p style="${styles.p}; margin: 0;"><strong>Navigateur :</strong> ${userAgent || 'Inconnu'}</p>
+            </div>
+
+            ${isFirstLogin ? `<p style="${styles.p}">C'est votre premi re connexion. Bienvenue !</p>` : ''}
+
+            <p style="${styles.p}; color: #dc2626; font-weight: 600;">
+              Si ce n'est pas vous, veuillez changer votre mot de passe imm diatement.
+            </p>
+
+            <div style="text-align: center; margin-top: 25px;">
+              <a href="${process.env.FRONTEND_URL || 'https://tunisiastore.tn'}/account/security" style="${styles.button}">
+                S curiser mon compte
+              </a>
+            </div>
+          </div>
+          ${getFooter()}
+        </div>
+      </body>
+      </html>
+    `;
+
+    try {
+      const info = await transporter.sendMail({
+        from: useSMTP ? process.env.SMTP_USER : `${BRAND.name} <${BRAND.email}>`,
+        to: user.email,
+        subject: 'Nouvelle connexion - ' + BRAND.name,
+        html
+      });
+      console.log('📧 [Email] Login confirmation sent:', user.email, info.messageId);
+    } catch (err) {
+      console.error('📧 [Email] Login confirmation failed:', err.message);
+    }
+  }
+
+  async sendReturnConfirmation(returnRequest, order, user) {
+    if (!transporter) {
+      console.log('📧 [Email] Return confirmation skipped - No transporter');
+      return;
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Demande de retour re ue - ${BRAND.name}</title>
+      </head>
+      <body style="${styles.base}">
+        <div style="${styles.container}">
+          ${getHeader()}
+          <div style="${styles.content}">
+            <h1 style="${styles.h1}">Demande de retour re ue</h1>
+            <p style="${styles.p}">Bonjour <strong>${user.firstName || 'Client'}</strong>,</p>
+            <p style="${styles.p}">Nous avons bien re u votre demande de retour pour la commande <strong>#${order.orderNumber}</strong>.</p>
+            
+            <div style="${styles.box}">
+              <p style="margin: 0 0 10px 0; font-size: 18px; font-weight: 700; color: #1e293b;">
+                Num ro de demande : #${returnRequest._id?.toString().slice(-6) || 'N/A'}
+              </p>
+              <p style="margin: 0; color: #64748b; font-size: 13px;">
+                Date de la demande : ${new Date(returnRequest.createdAt).toLocaleDateString('fr-FR')}
+              </p>
+            </div>
+
+            <div style="${styles.box}">
+              <p style="${styles.p}; margin-bottom: 5px;"><strong>Articles concern s :</strong></p>
+              ${returnRequest.items.map(item => `
+                <p style="${styles.p}; margin: 0;">
+                  ${item.name} - Qt : ${item.quantity} - ${(item.price * item.quantity).toFixed(3)} TND
+                </p>
+              `).join('')}
+            </div>
+
+            <div style="${styles.box}">
+              <p style="${styles.p}; margin-bottom: 5px;"><strong>Montant du remboursement :</strong></p>
+              <p style="margin: 0; font-size: 20px; font-weight: 700; color: #dc2626;">
+                ${returnRequest.refundAmount.toFixed(3)} TND
+              </p>
+            </div>
+
+            <p style="${styles.p}">Notre quipe va examiner votre demande et vous contactera dans les plus brefs d lais.</p>
+
+            <div style="text-align: center; margin-top: 25px;">
+              <a href="${process.env.FRONTEND_URL || 'https://tunisiastore.tn'}/returns" style="${styles.button}">
+                Suivre ma demande
+              </a>
+            </div>
+
+            <p style="${styles.p}; margin-top: 25px; text-align: center;">
+              Une question ? <a href="mailto:${BRAND.email}" style="color: #dc2626;">Contactez-nous</a>
+            </p>
+          </div>
+          ${getFooter()}
+        </div>
+      </body>
+      </html>
+    `;
+
+    try {
+      const info = await transporter.sendMail({
+        from: useSMTP ? process.env.SMTP_USER : `${BRAND.name} <${BRAND.email}>`,
+        to: user.email,
+        subject: `Demande de retour re ue - Commande #${order.orderNumber}`,
+        html
+      });
+      console.log('📧 [Email] Return confirmation sent:', user.email, info.messageId);
+    } catch (err) {
+      console.error('📧 [Email] Return confirmation failed:', err.message);
+    }
+  }
 }
 
 module.exports = new EmailService();

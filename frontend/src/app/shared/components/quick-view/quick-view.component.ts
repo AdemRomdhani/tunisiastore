@@ -27,8 +27,8 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
             <div class="grid md:grid-cols-2">
               <div class="bg-gradient-to-b from-slate-100 to-white p-8 flex items-center justify-center">
                 <div class="relative">
-                  <img [src]="p.media?.images?.[0] | imageUrl" [alt]="p.name" class="max-w-full max-h-80 object-contain">
-                  @if (p.pricing?.originalPrice) {
+                  <img [src]="p.media.images[0] | imageUrl" [alt]="p.name" class="max-w-full max-h-80 object-contain">
+                  @if (p.pricing.originalPrice) {
                     <span class="absolute -top-2 -left-2 bg-red-500 text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-lg">
                       -{{ getDiscount(p) }}%
                     </span>
@@ -37,28 +37,26 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
               </div>
 
               <div class="p-6 overflow-y-auto max-h-[90vh]">
-                @if (p.category) {
-                  <span class="text-sm font-medium text-primary-600 uppercase tracking-wider">{{ p.category.name }}</span>
-                }
+                <span class="text-sm font-medium text-primary-600 uppercase tracking-wider">{{ p.category.name }}</span>
 
                 <h2 class="text-2xl font-bold text-slate-900 mt-2 mb-4">{{ p.name }}</h2>
 
-                @if (p.ratings?.count) {
+                @if (p.ratings.count) {
                   <div class="flex items-center gap-2 mb-4">
                     <div class="flex items-center gap-0.5">
                       @for (star of [1,2,3,4,5]; track star) {
-                        <svg class="w-4 h-4" [class.text-yellow-400]="star <= (p.ratings?.average || 0)" [class.text-slate-200]="star > (p.ratings?.average || 0)" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-4 h-4" [class.text-yellow-400]="star <= (p.ratings.average || 0)" [class.text-slate-200]="star > (p.ratings.average || 0)" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                         </svg>
                       }
                     </div>
-                    <span class="text-sm text-slate-500">({{ p.ratings?.count }} {{ 'product.reviews' | t }})</span>
+                    <span class="text-sm text-slate-500">({{ p.ratings.count }} {{ 'product.reviews' | t }})</span>
                   </div>
                 }
 
                 <div class="flex items-baseline gap-3 mb-5">
-                  <span class="text-3xl font-bold text-slate-900">{{ p.pricing?.price | number:'1.3' }} DT</span>
-                  @if (p.pricing?.originalPrice) {
+                  <span class="text-3xl font-bold text-slate-900">{{ p.pricing.price | number:'1.3' }} DT</span>
+                  @if (p.pricing.originalPrice) {
                     <span class="text-lg text-slate-400 line-through">{{ p.pricing.originalPrice | number:'1.3' }} DT</span>
                   }
                 </div>

@@ -1,5 +1,6 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
+const CacheService = require('../services/cache.service');
 
 // Cache for categories to avoid repeated DB calls
 let categoryCache = null;
@@ -27,6 +28,13 @@ exports.autocomplete = async (req, res) => {
     const safeLimit = Math.min(Number(limit) || 8, 10);
     const escapedQuery = q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+    // Check cache first
+    const cacheKey = `autocomplete:${escapedQuery}:${safeLimit}`;
+    let cached = await CacheService.get('product', cacheKey);
+    if (cached) {
+      return res.json({ success: true, results: cached, cached: true });
+    }
+
     const products = await Product.find({
       isActive: true,
       name: { $regex: `^${escapedQuery}`, $options: 'i' }
@@ -37,6 +45,9 @@ exports.autocomplete = async (req, res) => {
       .limit(safeLimit)
       .lean()
       .maxTimeMS(3000);
+
+    // Cache for 5 minutes
+    await CacheService.set('product', cacheKey, products, 5 * 60 * 1000);
 
     res.json({ success: true, results: products });
   } catch (error) {
@@ -123,6 +134,18 @@ exports.getProducts = async (req, res) => {
     else if (sort === 'rating') sortOptions['ratings.average'] = -1;
     else sortOptions.createdAt = -1;
 
+    // Check cache for paginated query
+    const cacheKey = `list:${JSON.stringify({ page, safeLimit, category, minPrice, maxPrice, sort, search, featured, onSale, badges, inStock })}`;
+    let cached = await CacheService.get('product', cacheKey);
+    if (cached && !req.headers['x-force-refresh']) {
+      return res.json({
+        success: true,
+        products: cached.products,
+        pagination: cached.pagination,
+        cached: true
+      });
+    }
+
     const products = await Product.find(query)
       .populate('category', 'name slug')
       .select('name slug pricing media category badges onSale saleEndsAt ratings inventory')
@@ -133,15 +156,20 @@ exports.getProducts = async (req, res) => {
 
     const count = await Product.countDocuments(query);
 
+    const pagination = {
+      current: Number(page),
+      pages: Math.ceil(count / limit),
+      total: count,
+      limit: Number(limit)
+    };
+
+    // Cache for 5 minutes
+    await CacheService.set('product', cacheKey, { products, pagination }, 5 * 60 * 1000);
+
     res.json({
       success: true,
       products,
-      pagination: {
-        current: Number(page),
-        pages: Math.ceil(count / limit),
-        total: count,
-        limit: Number(limit)
-      }
+      pagination
     });
   } catch (error) {
     console.error('getProducts error:', error);
@@ -151,6 +179,12 @@ exports.getProducts = async (req, res) => {
 
 exports.getProduct = async (req, res) => {
   try {
+    const cacheKey = `slug:${req.params.slug}`;
+    let cached = await CacheService.get('product', cacheKey);
+    if (cached) {
+      return res.json({ success: true, product: cached, cached: true });
+    }
+
     const product = await Product.findOne({ slug: req.params.slug, isActive: true })
       .populate('category')
       .populate('relatedProducts', 'name slug pricing images badges ratings');
@@ -158,6 +192,9 @@ exports.getProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
+
+    // Cache for 10 minutes
+    await CacheService.set('product', cacheKey, product, 10 * 60 * 1000);
 
     res.json({ success: true, product });
   } catch (error) {
@@ -169,6 +206,10 @@ exports.createProduct = async (req, res) => {
   try {
     const data = mapFormData(req.body);
     const product = await Product.create(data);
+    
+    // Invalidate product list cache
+    await CacheService.invalidate('product');
+    
     res.status(201).json({ success: true, product });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -187,6 +228,11 @@ exports.updateProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
+
+    // Invalidate caches
+    await CacheService.invalidateProduct(product._id);
+    await CacheService.invalidate('product');
+    
     res.json({ success: true, product });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -236,6 +282,11 @@ exports.deleteProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
+
+    // Invalidate caches
+    await CacheService.invalidateProduct(product._id);
+    await CacheService.invalidate('product');
+
     res.json({ success: true, message: 'Product deleted' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -318,6 +369,9 @@ exports.addReview = async (req, res) => {
     product.ratings.distribution = distribution;
 
     await product.save();
+
+    // Invalidate product cache since reviews changed
+    await CacheService.invalidateProduct(product._id);
 
     res.json({ success: true, message: 'Avis enregistré' });
   } catch (error) {

@@ -2,6 +2,8 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const crypto = require('crypto');
+const path = require('path');
+const fs = require('fs');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -18,6 +20,18 @@ const safeExtensions = {
 
 let storage;
 const useCloudinary = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY;
+const useImageOptimization = process.env.IMAGE_OPTIMIZATION_ENABLED !== 'false' && !useCloudinary;
+
+// Import image optimizer only when needed
+let imageOptimizer;
+if (useImageOptimization) {
+  try {
+    imageOptimizer = require('../services/image-optimizer.service');
+    console.log('📷 Image optimization enabled');
+  } catch (err) {
+    console.log('⚠️  Image optimizer not available:', err.message);
+  }
+}
 
 if (useCloudinary) {
   console.log('📷 Using Cloudinary for image uploads');
@@ -37,8 +51,6 @@ if (useCloudinary) {
   });
 } else {
   console.log('📷 Using local storage for image uploads (Cloudinary not configured)');
-  const path = require('path');
-  const fs = require('fs');
   
   const uploadDir = path.join(__dirname, '../../uploads/products');
   if (!fs.existsSync(uploadDir)) {
@@ -46,7 +58,7 @@ if (useCloudinary) {
   }
   
   storage = multer.diskStorage({
-    destination: (req, file, cb) => {
+    destination: async (req, file, cb) => {
       cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
@@ -72,6 +84,33 @@ const upload = multer({
     }
   }
 });
+
+// Post-process uploaded images with optimizer
+upload._postProcess = async (files) => {
+  if (!useImageOptimization || !imageOptimizer || useCloudinary) {
+    return files;
+  }
+  
+  if (!Array.isArray(files)) {
+    files = [files];
+  }
+  
+  const results = [];
+  for (const file of files) {
+    if (file && file.path) {
+      try {
+        const optimized = await imageOptimizer.processImage(file.path, 'products');
+        file.optimized = optimized;
+        console.log(`✅ Image optimized: ${file.filename}`);
+      } catch (err) {
+        console.error(`❌ Image optimization failed for ${file.filename}:`, err.message);
+      }
+    }
+    results.push(file);
+  }
+  
+  return results;
+};
 
 // Helper to get full image URL from Cloudinary file object
 upload.getImageUrl = (file) => {

@@ -21,7 +21,8 @@ export const adminRoutes: Routes = [
       { path: 'coupons', loadComponent: () => import('./admin-coupons/admin-coupons.component').then(m => m.AdminCouponsComponent) },
       { path: 'newsletter', loadComponent: () => import('./admin-newsletter/admin-newsletter.component').then(m => m.AdminNewsletterComponent) },
       { path: 'cms', loadComponent: () => import('./admin-cms/admin-cms.component').then(m => m.AdminCmsComponent) },
-      { path: 'audit-logs', loadComponent: () => import('./admin-audit-logs/admin-audit-logs.component').then(m => m.AdminAuditLogsComponent) }
+      { path: 'audit-logs', loadComponent: () => import('./admin-audit-logs/admin-audit-logs.component').then(m => m.AdminAuditLogsComponent) },
+      { path: 'abandoned-carts', loadComponent: () => import('./admin-abandoned-carts/admin-abandoned-carts.component').then(m => m.AdminAbandonedCartsComponent) }
     ]
   }
 ];

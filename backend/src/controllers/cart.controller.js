@@ -1,5 +1,6 @@
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
+const CacheService = require('../services/cache.service');
 
 exports.getCart = async (req, res) => {
   try {
@@ -185,6 +186,9 @@ exports.addToCart = async (req, res) => {
 
     await cart.save();
     
+    // Invalidate cart cache
+    await CacheService.invalidateCart(cart.user?.toString() || null, cart.deviceId);
+    
     const populatedCart = await Cart.findById(cart._id)
       .populate('items.product', 'name slug pricing media inventory badges isActive');
 
@@ -240,6 +244,10 @@ exports.updateQuantity = async (req, res) => {
     }
 
     await cart.save();
+    
+    // Invalidate cart cache
+    await CacheService.invalidateCart(cart.user?.toString() || null, cart.deviceId);
+    
     const populatedCart = await Cart.findById(cart._id)
       .populate('items.product', 'name slug pricing media inventory badges isActive');
 
@@ -276,6 +284,9 @@ exports.removeFromCart = async (req, res) => {
     cart.items = cart.items.filter(item => item._id.toString() !== itemId);
     await cart.save();
 
+    // Invalidate cart cache
+    await CacheService.invalidateCart(cart.user?.toString() || null, cart.deviceId);
+
     const populatedCart = await Cart.findById(cart._id)
       .populate('items.product', 'name slug pricing media inventory badges isActive');
 
@@ -297,7 +308,83 @@ exports.clearCart = async (req, res) => {
       { items: [] },
       { new: true }
     );
+
+    // Invalidate cart cache
+    if (cart) {
+      await CacheService.invalidateCart(cart.user?.toString() || null, cart.deviceId);
+    }
+    
     res.json({ success: true, cart });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Set guest email for checkout tracking and abandoned cart recovery
+exports.setGuestEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email || !email.includes('@')) {
+      return res.status(400).json({ success: false, message: 'Valid email required' });
+    }
+    
+    const userId = req.user?.id || null;
+    const deviceId = req.headers['x-device-id'];
+    
+    let cart;
+    if (userId) {
+      cart = await Cart.findOne({ user: userId });
+      // Update user record too
+      const User = require('../models/User');
+      await User.findByIdAndUpdate(userId, { 'contactInfo.email': email });
+    } else if (deviceId) {
+      cart = await Cart.findOne({ deviceId });
+    }
+    
+    if (cart) {
+      cart.guestEmail = email;
+      await cart.save();
+      
+      // Invalidate cart cache
+      await CacheService.invalidateCart(cart.user?.toString() || null, cart.deviceId);
+    }
+    
+    res.json({ success: true, message: 'Email saved for checkout' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Set guest phone for checkout tracking and SMS notifications
+exports.setGuestPhone = async (req, res) => {
+  try {
+    const { phone } = req.body;
+    
+    if (!phone) {
+      return res.status(400).json({ success: false, message: 'Phone number required' });
+    }
+    
+    const userId = req.user?.id || null;
+    const deviceId = req.headers['x-device-id'];
+    
+    let cart;
+    if (userId) {
+      cart = await Cart.findOne({ user: userId });
+      const User = require('../models/User');
+      await User.findByIdAndUpdate(userId, { 'contactInfo.phone': phone });
+    } else if (deviceId) {
+      cart = await Cart.findOne({ deviceId });
+    }
+    
+    if (cart) {
+      cart.guestPhone = phone;
+      await cart.save();
+      
+      await CacheService.invalidateCart(cart.user?.toString() || null, cart.deviceId);
+    }
+    
+    res.json({ success: true, message: 'Phone saved for checkout' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

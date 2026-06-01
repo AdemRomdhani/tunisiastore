@@ -6,6 +6,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { FormsModule } from '@angular/forms';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-orders',
@@ -82,6 +83,15 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
                     Annuler la commande
                   </button>
                 }
+                <button 
+                  (click)="downloadInvoice(order._id)"
+                  class="text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center gap-1"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                  Télécharger facture
+                </button>
               </div>
             </div>
           }
@@ -194,6 +204,31 @@ export class OrdersComponent implements OnInit {
         this.toast.error('Erreur', err.error?.message || 'Erreur lors de l\'annulation');
         this.cancelling.set(false);
       }
+    });
+  }
+
+  downloadInvoice(orderId: string) {
+    const token = localStorage.getItem('token');
+    const url = `${environment.apiUrl}/payments/invoice/${orderId}`;
+    
+    fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => response.blob())
+    .then(blob => {
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', `invoice-${orderId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    })
+    .catch(err => {
+      this.toast.error('Erreur', 'Impossible de télécharger la facture');
     });
   }
 

@@ -1,0 +1,22 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache \
+    vips-dev \
+    fftw-dev \
+    build-base \
+    python3 \
+    musl-dev \
+    cargo \
+    rust
+
+COPY package*.json ./
+
+RUN npm ci --only=production
+
+COPY . .
+
+RUN mkdir -p uploads/products uploads/reviews uploads/profiles
+
+CMD ["node", "src/services/image-optimizer.js"]

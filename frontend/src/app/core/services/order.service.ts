@@ -55,8 +55,8 @@ export class OrderService {
     return this.http.get<any>(`${this.apiUrl}/my-orders/${id}`, { headers: this.getHeaders() });
   }
 
-  trackOrder(orderNumber: string, email: string): Observable<{ success: boolean; order: any; message?: string }> {
-    return this.http.post<any>(`${this.apiUrl}/track`, { orderNumber, email });
+  trackOrder(orderNumber: string, email?: string, phone?: string): Observable<{ success: boolean; order: any; message?: string }> {
+    return this.http.post<any>(`${this.apiUrl}/track`, { orderNumber, email, phone });
   }
 
   cancelOrder(orderId: string, reason?: string, email?: string): Observable<{ success: boolean; message?: string; order?: any }> {

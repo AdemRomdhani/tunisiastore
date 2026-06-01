@@ -77,7 +77,7 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
         <!-- Product Image -->
         <a [routerLink]="['/product', product.slug]" class="block h-full p-5">
           <img 
-            [src]="(product.media?.images?.[0] || '') | imageUrl" 
+            [src]="(product.media.images[0] || '') | imageUrl" 
             [alt]="product.name" 
             loading="lazy"
             class="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500 ease-smooth"
@@ -114,11 +114,9 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
       <!-- Content -->
       <div class="p-3 sm:p-4 flex-1 flex flex-col">
         <!-- Category -->
-        @if (product.category) {
-          <span class="text-[10px] sm:text-xs font-medium text-primary-600 mb-1 uppercase tracking-wider">
-            {{ product.category.name }}
-          </span>
-        }
+        <span class="text-[10px] sm:text-xs font-medium text-primary-600 mb-1 uppercase tracking-wider">
+          {{ product.category.name }}
+        </span>
 
         <!-- Title -->
         <a [routerLink]="['/product', product.slug]" class="block flex-1">
@@ -128,7 +126,7 @@ import { QuickViewService } from '../../../core/services/quick-view.service';
         </a>
 
         <!-- Rating -->
-        @if (product.ratings?.count && product.ratings.count > 0) {
+        @if (product.ratings.count && product.ratings.count > 0) {
           <div class="flex items-center gap-2 mb-2 sm:mb-3">
             <div class="flex items-center gap-0.5">
               @for (star of [1,2,3,4,5]; track star) {

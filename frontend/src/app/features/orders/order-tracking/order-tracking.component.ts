@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { OrderService } from '../../../core/services/order.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
@@ -22,11 +22,11 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
           </div>
           
           <div class="form-group">
-            <label>{{ 'common.email' | t }}</label>
-            <input type="email" [(ngModel)]="email" [placeholder]="'auth.emailPlaceholder' | t" class="form-control">
+            <label>Téléphone</label>
+            <input type="tel" [(ngModel)]="phone" placeholder="XX XXX XXX" class="form-control">
           </div>
           
-          <button (click)="trackOrder()" [disabled]="loading || !orderNumber || !email" class="btn-track">
+          <button (click)="trackOrder()" [disabled]="loading || !orderNumber || !phone" class="btn-track">
             {{ loading ? 'common.loading' : 'tracking.trackButton' | t }}
           </button>
         </div>
@@ -117,22 +117,40 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
     .summary-row.total { border-top: 1px solid #ddd; margin-top: 8px; padding-top: 16px; font-weight: 600; font-size: 18px; }
   `]
 })
-export class OrderTrackingComponent {
+export class OrderTrackingComponent implements OnInit {
   orderNumber = '';
-  email = '';
+  phone = '';
   loading = false;
   error = '';
   order: any = null;
 
-  constructor(private orderService: OrderService, private router: Router) {}
+  constructor(
+    private orderService: OrderService, 
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      if (params['orderNumber']) {
+        this.orderNumber = params['orderNumber'];
+      }
+      if (params['phone']) {
+        this.phone = params['phone'];
+      }
+      if (this.orderNumber && this.phone) {
+        this.trackOrder();
+      }
+    });
+  }
 
   trackOrder() {
-    if (!this.orderNumber || !this.email) return;
+    if (!this.orderNumber || !this.phone) return;
     this.loading = true;
     this.error = '';
     this.order = null;
     
-    this.orderService.trackOrder(this.orderNumber, this.email).subscribe({
+    this.orderService.trackOrder(this.orderNumber, undefined, this.phone).subscribe({
       next: (res: any) => {
         this.loading = false;
         if (res.success) {

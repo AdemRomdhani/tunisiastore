@@ -88,14 +88,14 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
           <!-- Search - Desktop -->
           <div class="hidden lg:block flex-1 max-w-2xl">
             <div class="relative">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 [(ngModel)]="searchInput"
                 (input)="onSearchInput($event)"
-                (keyup.enter)="doSearch()"
+                (keydown.enter)="selectHighlighted()"
                 (keydown.arrowDown)="navigateDown($event)"
                 (keydown.arrowUp)="navigateUp($event)"
-                (keydown.enter)="selectHighlighted()"
+                (keydown.escape)="showDropdown = false"
                 (focus)="showDropdown = true"
                 [placeholder]="i18n.t('common.search')"
                 class="w-full pl-5 pr-14 py-2.5 sm:py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all text-sm sm:text-base"
@@ -114,7 +114,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                     <div class="px-4 py-3 text-sm text-surface-500">Recherche en cours...</div>
                   } @else {
                     @for (product of searchResults(); track product._id; let i = $index) {
-                      <button 
+                      <button
+                        type="button"
                         (click)="selectProduct(product)"
                         (mouseenter)="highlightedIndex = i"
                         [class.bg-primary-50]="highlightedIndex === i"
@@ -141,7 +142,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                     @if (searchResults().length === 0 && searchInput.length > 0) {
                       <div class="px-4 py-3 text-sm text-surface-500">Aucun produit trouvé</div>
                     }
-                    <button 
+                    <button
+                      type="button"
                       (click)="doSearch()"
                       class="w-full px-4 py-2 text-xs text-center text-primary-600 hover:bg-primary-50 border-t border-surface-100 font-medium transition-colors"
                     >
@@ -197,14 +199,14 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
         @if (mobileSearchOpen()) {
           <div class="lg:hidden mt-3 pb-1">
             <div class="relative">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 [(ngModel)]="searchInput"
                 (input)="onSearchInput($event)"
-                (keyup.enter)="doSearch(); mobileSearchOpen.set(false)"
+                (keydown.enter)="selectHighlighted()"
                 (keydown.arrowDown)="navigateDown($event)"
                 (keydown.arrowUp)="navigateUp($event)"
-                (keydown.enter)="selectHighlighted()"
+                (keydown.escape)="showDropdown = false; mobileSearchInputEl?.nativeElement?.blur()"
                 (focus)="showDropdown = true"
                 placeholder="Rechercher un produit..."
                 class="w-full pl-4 pr-12 py-2.5 text-sm border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
@@ -223,7 +225,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                     <div class="px-4 py-3 text-sm text-surface-500">Recherche en cours...</div>
                   } @else {
                     @for (product of searchResults(); track product._id; let i = $index) {
-                      <button 
+                      <button
+                        type="button"
                         (click)="selectProduct(product); mobileSearchOpen.set(false)"
                         (mouseenter)="highlightedIndex = i"
                         [class.bg-primary-50]="highlightedIndex === i"
@@ -250,11 +253,12 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
                     @if (searchResults().length === 0 && searchInput.length > 0) {
                       <div class="px-4 py-3 text-sm text-surface-500">Aucun produit trouvé</div>
                     }
-                    <button 
+                    <button
+                      type="button"
                       (click)="doSearch(); mobileSearchOpen.set(false)"
                       class="w-full px-4 py-2.5 text-sm text-center text-primary-600 hover:bg-primary-50 border-t border-surface-100 font-medium transition-colors"
                     >
-                      Voir tous les résultats pour "{{ searchInput }}"
+                      Voir tous les resultats pour "{{ searchInput }}"
                     </button>
                   }
                 </div>
@@ -431,23 +435,26 @@ export class NavbarComponent implements OnInit {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event) {
     const target = event.target as HTMLElement;
+
+    const isInsideNav = this.el.nativeElement.contains(target);
     const isHamburgerBtn = target.closest('button')?.classList.contains('lg:hidden');
-    
-    if (!this.el.nativeElement.contains(target) || isHamburgerBtn) {
+
+    if (!isInsideNav || isHamburgerBtn) {
+      this.showDropdown = false;
       return;
     }
-    
-    const inMobileSearch = this.mobileSearchInputEl?.nativeElement && 
-      (target === this.mobileSearchInputEl.nativeElement || 
+
+    const inMobileSearch = this.mobileSearchInputEl?.nativeElement &&
+      (target === this.mobileSearchInputEl.nativeElement ||
        this.mobileSearchInputEl.nativeElement.contains(target));
     if (inMobileSearch) {
       return;
     }
-    
-    const inMobileMenu = target.closest('.lg\\:hidden.fixed');
-    if (!inMobileMenu) {
+
+    const inSearchInput = target.closest('input[type="text"]') !== null;
+    const inDropdown = target.closest('div.absolute') !== null;
+    if (!inSearchInput && !inDropdown) {
       this.showDropdown = false;
-      this.mobileSearchOpen.set(false);
     }
   }
 
@@ -466,6 +473,10 @@ export class NavbarComponent implements OnInit {
     this.mobileSearchOpen.update(v => !v);
     if (this.mobileSearchOpen()) {
       this.mobileMenuOpen.set(false);
+      // Focus mobile search input after a short delay
+      setTimeout(() => {
+        this.mobileSearchInputEl?.nativeElement?.focus();
+      }, 100);
     }
   }
 
@@ -510,11 +521,13 @@ export class NavbarComponent implements OnInit {
 
   doSearch() {
     if (this.searchInput.trim()) {
+      const query = this.searchInput.trim();
       this.showDropdown = false;
       this.mobileSearchOpen.set(false);
       this.searchResults.set([]);
-      this.router.navigate(['/products'], { 
-        queryParams: { search: this.searchInput.trim() } 
+      this.searchInput = '';
+      this.router.navigate(['/products'], {
+        queryParams: { search: query }
       });
     }
   }

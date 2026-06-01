@@ -2,9 +2,13 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { validationResult } = require('express-validator');
+const TokenService = require('../services/token.service');
+const AuditService = require('../services/audit.service');
 
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET || 'fallback-secret-key', { expiresIn: '7d' });
+  // Use the new token service for short-lived access + refresh tokens
+  const tokens = TokenService.generateTokenPair(userId, 'customer');
+  return tokens.accessToken;
 };
 
 const generateResetToken = (userId) => {
@@ -13,6 +17,213 @@ const generateResetToken = (userId) => {
 
 const getClientIp = (req) => {
   return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection?.remoteAddress || req.headers['x-real-ip'] || '';
+};
+
+// Refresh token endpoint
+exports.refreshToken = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    
+    if (!refreshToken) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Refresh token required' 
+      });
+    }
+    
+    // Verify refresh token
+    const decoded = TokenService.verifyRefreshToken(refreshToken);
+    if (!decoded) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid or expired refresh token',
+        code: 'REFRESH_TOKEN_INVALID'
+      });
+    }
+    
+    // Get user
+    const user = await User.findById(decoded.userId);
+    if (!user || !user.isActive) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'User not found or inactive' 
+      });
+    }
+    
+    // Generate new token pair
+    const tokens = TokenService.generateTokenPair(user._id, user.role);
+    
+    // Log the token refresh
+    AuditService.audit.tokenRefresh(user, req);
+    
+    res.json({
+      success: true,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      expiresIn: tokens.expiresIn,
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Token refresh error:', error);
+    res.status(500).json({ success: false, message: 'Error refreshing token' });
+  }
+};
+
+// Logout - invalidate tokens client-side (we don't store tokens in DB)
+exports.logout = async (req, res) => {
+  try {
+    // Log the logout
+    if (req.user) {
+      AuditService.audit.logout(req.user, req);
+    }
+    
+    // Clear the token cookie
+    res.clearCookie('token');
+    res.clearCookie('refreshToken');
+    
+    res.json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error logging out' });
+  }
+};
+
+// Google OAuth Callback
+exports.googleCallback = async (req, res) => {
+  try {
+    const { user, tokens, isNew } = req.user;
+    
+    // Set cookies
+    res.cookie('token', tokens.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000
+    });
+    
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+    
+    // Log the Google login
+    AuditService.audit.login(user, { headers: req.headers, path: '/auth/google' }, true).catch(console.error);
+    
+    // Redirect to frontend with token
+    const redirectUrl = isNew 
+      ? `${process.env.FRONTEND_URL}/auth/welcome?token=${tokens.accessToken}`
+      : `${process.env.FRONTEND_URL}/auth/callback?token=${tokens.accessToken}`;
+    
+    res.redirect(redirectUrl);
+  } catch (error) {
+    console.error('Google callback error:', error);
+    res.redirect(`${process.env.FRONTEND_URL}/auth/login?error=google_auth_failed`);
+  }
+};
+
+// Availability Alert - Subscribe
+exports.subscribeAvailabilityAlert = async (req, res) => {
+  try {
+    const { productId } = req.body;
+    
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
+    }
+    
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    // Check if already subscribed
+    const existingAlert = user.availabilityAlerts?.find(
+      a => a.product.toString() === productId && !a.notified
+    );
+    
+    if (existingAlert) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'You are already subscribed to get notified when this product is back in stock' 
+      });
+    }
+    
+    // Add alert
+    if (!user.availabilityAlerts) {
+      user.availabilityAlerts = [];
+    }
+    
+    user.availabilityAlerts.push({
+      product: productId,
+      createdAt: new Date(),
+      notified: false
+    });
+    
+    await user.save();
+    
+    res.json({ 
+      success: true, 
+      message: 'We will notify you when this product is back in stock' 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Availability Alert - Unsubscribe
+exports.unsubscribeAvailabilityAlert = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
+    }
+    
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    // Remove alert
+    if (user.availabilityAlerts) {
+      user.availabilityAlerts = user.availabilityAlerts.filter(
+        a => a.product.toString() !== productId
+      );
+      await user.save();
+    }
+    
+    res.json({ success: true, message: 'Alert removed' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Get user's availability alerts
+exports.getAvailabilityAlerts = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
+    }
+    
+    const user = await User.findById(req.user._id)
+      .populate('availabilityAlerts.product', 'name slug pricing media');
+    
+    const alerts = user.availabilityAlerts?.map(alert => ({
+      product: alert.product,
+      createdAt: alert.createdAt,
+      notified: alert.notified
+    })) || [];
+    
+    res.json({ success: true, alerts });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 exports.register = async (req, res) => {
@@ -139,20 +350,36 @@ exports.login = async (req, res) => {
       }
     }
 
-    const token = generateToken(user._id);
+    // Generate token pair (access + refresh)
+    const tokens = TokenService.generateTokenPair(user._id, user.role);
 
     // Set JWT in httpOnly cookie (secure)
-    res.cookie('token', token, {
+    res.cookie('token', tokens.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      maxAge: 15 * 60 * 1000 // 15 minutes - access token
     });
+    
+    // Also set refresh token in httpOnly cookie
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days - refresh token
+    });
+
+    // Audit logging for login
+    AuditService.audit.login(user, req, true).catch(err => 
+      console.error('[Audit] Login log error:', err.message)
+    );
 
     // Also return token for backward compatibility
     res.json({
       success: true,
-      token,
+      token: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      expiresIn: tokens.expiresIn,
       user: {
         id: user._id,
         firstName: user.firstName,

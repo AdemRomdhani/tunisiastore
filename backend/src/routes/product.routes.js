@@ -11,7 +11,7 @@ router.get('/', productController.getProducts);
 router.get('/autocomplete', productController.autocomplete);
 router.get('/:slug', productController.getProduct);
 router.get('/:slug/reviews', productController.getProductReviews);
-router.post('/:slug/reviews', authenticate, productController.addReview);
+router.post('/:slug/reviews', upload.array('images', 5), authenticate, productController.addReview);
 router.post('/', upload.none(), authenticate, authorize('admin', 'supervisor', 'moderator'), auditLog('CREATE', 'PRODUCT'), productController.createProduct);
 router.put('/:id', upload.none(), authenticate, authorize('admin', 'supervisor', 'moderator'), auditLog('UPDATE', 'PRODUCT'), productController.updateProduct);
 router.delete('/:id', authenticate, authorize('admin', 'supervisor'), auditLog('DELETE', 'PRODUCT'), productController.deleteProduct);

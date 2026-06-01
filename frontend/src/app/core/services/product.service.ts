@@ -14,6 +14,17 @@ function getOrCreateDeviceId(): string {
   return deviceId;
 }
 
+export interface CategoryRef {
+  _id: string;
+  name: string;
+  slug: string;
+}
+
+export interface ProductMedia {
+  images: string[];
+  videos?: string[];
+}
+
 export interface Product {
   _id: string;
   name: string;
@@ -30,49 +41,36 @@ export interface Product {
     reserved: number;
     sku?: string;
   };
-  media: {
-    images: string[];
-    videos?: string[];
-  };
-  category: {
-    _id: string;
-    name: string;
-    slug: string;
-  };
+  media: ProductMedia;
+  attributes?: { [key: string]: string };
+  tags: string[];
   badges: string[];
-  ratings: {
-    average: number;
-    count: number;
-  };
-  specifications: Array<{
-    group: string;
-    items: Array<{ key: string; value: string }>;
-    expanded?: boolean;
-  }>;
+  specifications?: { [key: string]: string };
+  ratings: { average: number; count: number };
+  category: CategoryRef;
+  brand?: string;
+  isActive: boolean;
+  availableForDelivery: boolean;
+  onSale: boolean;
+  saleEndsAt?: string;
   warranty?: {
     duration: number;
-    type: string;
+    unit: string;
   };
-  onSale?: boolean;
-  saleEndsAt?: string;
-  isActive: boolean;
-  createdAt: string;
 }
 
 export interface ProductFilters {
-  page?: number;
-  limit?: number;
+  search?: string;
   category?: string;
   minPrice?: number;
   maxPrice?: number;
-  sort?: string;
-  search?: string;
-  featured?: boolean;
   onSale?: boolean;
-  inStock?: boolean;
+  sort?: string;
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class ProductService {
   private apiUrl = `${environment.apiUrl}/products`;
   private recentlyViewedApiUrl = `${environment.apiUrl}/recently-viewed`;
@@ -80,36 +78,70 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
-  private getHeaders(): HttpHeaders {
-    return new HttpHeaders({ 'x-device-id': this.deviceId });
+  // Helper method to get device ID headers
+  private getDeviceHeaders(): HttpHeaders {
+    return new HttpHeaders().set('x-device-id', this.deviceId);
   }
 
-  autocomplete(query: string): Observable<{ success: boolean; results: Partial<Product>[] }> {
-    return this.http.get<any>(`${this.apiUrl}/autocomplete`, {
-      params: new HttpParams().set('q', query)
-    });
+  getProducts(params?: any): Observable<{ success: boolean; products: Product[]; pagination: any }> {
+    let httpParams = new HttpParams();
+    if (params) {
+      Object.keys(params).forEach(key => {
+        if (params[key] !== undefined && params[key] !== null) {
+          httpParams = httpParams.set(key, params[key]);
+        }
+      });
+    }
+    return this.http.get<{ success: boolean; products: Product[]; pagination: any }>(this.apiUrl, { params: httpParams });
   }
 
-  getProducts(filters: ProductFilters = {}): Observable<{
-    success: boolean;
-    products: Product[];
-    pagination: any;
-  }> {
-    let params = new HttpParams();
-    
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params = params.set(key, value.toString());
-      }
-    });
+  getProductById(id: string): Observable<{ success: boolean; product: Product }> {
+    return this.http.get<{ success: boolean; product: Product }>(`${this.apiUrl}/${id}`);
+  }
 
-    return this.http.get<any>(this.apiUrl, { params });
+  getProductBySlug(slug: string): Observable<{ success: boolean; product: Product }> {
+    return this.http.get<{ success: boolean; product: Product }>(`${this.apiUrl}/${slug}`);
+  }
+
+  getRelatedProducts(productId: string): Observable<{ success: boolean; products: Product[] }> {
+    return this.http.get<{ success: boolean; products: Product[] }>(`${this.apiUrl}/${productId}/related`);
+  }
+
+  getCategories(): Observable<{ success: boolean; categories: any[] }> {
+    return this.http.get<{ success: boolean; categories: any[] }>(`${environment.apiUrl}/categories`);
+  }
+
+  getRecentlyViewed(): Observable<{ success: boolean; products: Product[] }> {
+    return this.http.get<any>(this.recentlyViewedApiUrl, { headers: this.getDeviceHeaders() });
+  }
+
+  addRecentlyViewed(productId: string): Observable<any> {
+    console.log('addRecentlyViewed called:', productId, this.deviceId);
+    return this.http.post<any>(`${this.recentlyViewedApiUrl}/add`, { productId }, { headers: this.getDeviceHeaders() });
+  }
+
+  getFeaturedProducts(): Observable<{ success: boolean; products: Product[] }> {
+    return this.http.get<{ success: boolean; products: Product[] }>(`${this.apiUrl}?featured=true`);
+  }
+
+  getSaleProducts(): Observable<{ success: boolean; products: Product[] }> {
+    return this.http.get<{ success: boolean; products: Product[] }>(`${this.apiUrl}?onSale=true`);
   }
 
   getProduct(slug: string): Observable<{ success: boolean; product: Product }> {
-    return this.http.get<any>(`${this.apiUrl}/${slug}`);
+    return this.http.get<{ success: boolean; product: Product }>(`${this.apiUrl}/${slug}`);
   }
 
+  autocomplete(query: string): Observable<{ success: boolean; results: Product[] }> {
+    return this.http.get<{ success: boolean; results: Product[] }>(`${this.apiUrl}/autocomplete?q=${encodeURIComponent(query)}&limit=5`);
+  }
+
+  // === REVIEWS - Use the proper /api/reviews endpoint ===
+  
+  /**
+   * @deprecated Use ReviewService.getProductReviews() instead
+   * This method is kept for backward compatibility
+   */
   getProductReviews(slug: string): Observable<{
     success: boolean;
     reviews: Array<{
@@ -123,19 +155,31 @@ export class ProductService {
     }>;
     ratings: { average: number; count: number };
   }> {
-    return this.http.get<any>(`${this.apiUrl}/${slug}/reviews`);
+    // Route to the correct reviews endpoint
+    return this.http.get<any>(`${environment.apiUrl}/reviews/product/${slug}`);
   }
 
-  addReview(slug: string, data: { rating: number; title?: string; comment?: string }): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/${slug}/reviews`, data);
-  }
+  /**
+   * @deprecated Use ReviewService.createReview() instead  
+   * This method is kept for backward compatibility but routes to /api/reviews
+   */
+  addReview(slug: string, data: { rating: number; title?: string; comment?: string; productId?: string }, images?: File[]): Observable<any> {
+    // Build the correct review data
+    const reviewData = {
+      ...data,
+      productId: data.productId || slug // fallback to slug if no productId provided
+    };
 
-  getRecentlyViewed(): Observable<{ success: boolean; products: Product[] }> {
-    return this.http.get<any>(this.recentlyViewedApiUrl, { headers: this.getHeaders() });
-  }
+    if (images && images.length > 0) {
+      const formData = new FormData();
+      formData.append('rating', reviewData.rating.toString());
+      if (reviewData.title) formData.append('title', reviewData.title);
+      if (reviewData.comment) formData.append('comment', reviewData.comment);
+      if (reviewData.productId) formData.append('productId', reviewData.productId);
+      images.forEach(file => formData.append('images', file));
+      return this.http.post<any>(`${this.apiUrl}/${slug}/reviews`, formData);
+    }
 
-  addRecentlyViewed(productId: string): Observable<any> {
-    console.log('addRecentlyViewed called:', productId, this.deviceId);
-    return this.http.post<any>(`${this.recentlyViewedApiUrl}/add`, { productId }, { headers: this.getHeaders() });
+    return this.http.post<any>(`${this.apiUrl}/${slug}/reviews`, reviewData);
   }
 }

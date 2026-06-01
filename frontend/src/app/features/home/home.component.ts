@@ -249,6 +249,31 @@ import { environment } from '../../../environments/environment';
         </div>
       </section>
 
+      @if (allProducts().length > 0) {
+      <!-- All Products -->
+      <section class="py-10 sm:py-16">
+        <div class="container mx-auto px-3 sm:px-4">
+          <div class="flex items-center justify-between mb-4 sm:mb-8">
+            <div>
+              <h2 class="text-lg sm:text-2xl font-bold text-gray-900">{{ 'home.allProducts' | t }}</h2>
+              <p class="text-gray-500 mt-0.5 text-xs sm:text-sm hidden sm:block">{{ 'home.browseAll' | t }}</p>
+            </div>
+            <a routerLink="/products" class="text-primary-600 font-medium hover:underline flex items-center gap-1 text-sm">
+              {{ 'common.viewAll' | t }}
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </div>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-6">
+            @for (product of allProducts(); track product._id) {
+              <app-product-card [product]="product"/>
+            }
+          </div>
+        </div>
+      </section>
+      }
+
       @if (bundles().length > 0) {
       <!-- Bundles Section -->
       <section class="py-10 sm:py-16 bg-gradient-to-r from-indigo-600 to-purple-600">
@@ -299,6 +324,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   
   featuredProducts = signal<Product[]>([]);
   newProducts = signal<Product[]>([]);
+  allProducts = signal<Product[]>([]);
   bundles = signal<any[]>([]);
   flashDeals = signal<Product[]>([]);
 
@@ -353,6 +379,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   });
     this.loadFeaturedProducts();
     this.loadNewProducts();
+    this.loadAllProducts();
     this.loadBundles();
     this.loadFlashDeals();
     this.startCountdown();
@@ -373,6 +400,12 @@ export class HomeComponent implements OnInit, OnDestroy {
    private loadNewProducts() {
      this.productService.getProducts({ sort: '-createdAt', limit: 4 }).subscribe({
        next: (res) => this.newProducts.set(res.products)
+     });
+   }
+
+   private loadAllProducts() {
+     this.productService.getProducts({ limit: 100 }).subscribe({
+       next: (res) => this.allProducts.set(res.products)
      });
    }
 

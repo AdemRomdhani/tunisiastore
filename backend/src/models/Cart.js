@@ -14,7 +14,14 @@ const cartSchema = new mongoose.Schema({
     discount: Number,
     type: { type: String, enum: ['percentage', 'fixed', 'free_shipping'] }
   },
-  lastModified: { type: Date, default: Date.now }
+  lastModified: { type: Date, default: Date.now },
+  // Abandoned cart recovery fields
+  guestEmail: { type: String, default: null, index: true },
+  guestPhone: { type: String, default: null },
+  reminderCount: { type: Number, default: 0 },
+  lastReminderAt: { type: Date, default: null },
+  isRecovered: { type: Boolean, default: false },
+  recoveredAt: { type: Date, default: null }
 }, { timestamps: true });
 
 cartSchema.pre('save', function(next) {

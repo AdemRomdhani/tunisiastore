@@ -319,7 +319,25 @@ export class ProfileComponent implements OnInit {
   }
 
   updateProfile() {
-    this.toast.success('Succès', 'Profil mis à jour');
+    const token = localStorage.getItem('token');
+    this.http.put<{ success: boolean; user: any }>(`${this.apiUrl}/profile`, {
+      firstName: this.profile.firstName,
+      lastName: this.profile.lastName,
+      email: this.profile.email,
+      phone: this.profile.phone
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).subscribe({
+      next: (res) => {
+        if (res.user) {
+          this.authService.setAuth(token!, res.user);
+        }
+        this.toast.success('Succès', 'Profil mis à jour');
+      },
+      error: (err) => {
+        this.toast.error('Erreur', err.error?.message || 'Impossible de mettre à jour le profil');
+      }
+    });
   }
 
   changePassword() {

@@ -23,7 +23,7 @@ import { filter } from 'rxjs/operators';
     </main>
     <app-footer *ngIf="!isAdminRoute() && !isMobile()"/>
     <app-bottom-nav *ngIf="!isAdminRoute() && isMobile()" />
-    <app-whatsapp-chat *ngIf="!isAdminRoute() && !isMobile()" />
+    <app-whatsapp-chat *ngIf="!isAdminRoute()" />
     <app-offline-banner />
     <app-quick-view />
   `

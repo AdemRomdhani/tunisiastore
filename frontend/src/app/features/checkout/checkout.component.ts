@@ -5,8 +5,6 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { CartService } from '../../core/services/cart.service';
 import { OrderService } from '../../core/services/order.service';
-import { AddressService, Address } from '../../core/services/address.service';
-import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ShippingService } from '../../core/services/shipping.service';
 import { I18nService } from '../../core/services/i18n.service';
@@ -32,72 +30,41 @@ import { environment } from '../../../environments/environment';
               {{ 'checkout.deliveryAddress' | t }}
             </h2>
             
-            @if (addresses().length > 0) {
-              <div class="mb-5 p-4 bg-surface-100 rounded-xl">
-                <p class="text-sm text-surface-600 mb-3">Sélectionner une adresse enregistrée</p>
-                <div class="grid sm:grid-cols-2 gap-3">
-                  @for (addr of addresses(); track addr._id) {
-                    <button 
-                      type="button"
-                      (click)="selectAddress(addr)"
-                      class="text-left p-4 rounded-xl border-2 transition-all cursor-pointer"
-                      [class.border-primary-500]="selectedAddressId() === addr._id"
-                      [class.bg-white]="selectedAddressId() === addr._id"
-                      [class.border-surface-200]="selectedAddressId() !== addr._id"
-                      [class.bg-surface-50]="selectedAddressId() !== addr._id"
-                    >
-                      <p class="font-semibold text-surface-800">{{ addr.fullName }}</p>
-                      <p class="text-sm text-surface-500 mt-1">{{ addr.city }}, {{ addr.governorate }}</p>
-                    </button>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-surface-700 mb-2">Nom complet</label>
+                <input type="text" [(ngModel)]="shipping.fullName" name="fullName" class="input-field" placeholder="Prénom et nom">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-surface-700 mb-2">Téléphone</label>
+                <input type="tel" [(ngModel)]="shipping.phone" name="phone" class="input-field" placeholder="XX XXX XXX">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-surface-700 mb-2">Gouvernorat</label>
+                <select [(ngModel)]="shipping.governorate" name="governorate" class="input-field" (change)="onGovernorateChange()">
+                  <option value="">Sélectionner</option>
+                  @for (gov of governorates; track gov) {
+                    <option [value]="gov">{{ gov }}</option>
                   }
-                </div>
-                <button type="button" (click)="showAddressForm.set(true)" class="text-sm text-primary-600 mt-3 cursor-pointer hover:text-primary-700 transition-colors">
-                  + Utiliser une nouvelle adresse
-                </button>
+                </select>
               </div>
-            }
-
-            @if (showAddressForm() || addresses().length === 0) {
-              <div class="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-surface-700 mb-2">Nom complet</label>
-                  <input type="text" [(ngModel)]="shipping.fullName" name="fullName" class="input-field" placeholder="Prénom et nom">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-surface-700 mb-2">Email</label>
-                  <input type="email" [(ngModel)]="shipping.email" name="email" class="input-field" placeholder="votre@email.com">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-surface-700 mb-2">Téléphone</label>
-                  <input type="tel" [(ngModel)]="shipping.phone" name="phone" class="input-field" placeholder="XX XXX XXX">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-surface-700 mb-2">Gouvernorat</label>
-                  <select [(ngModel)]="shipping.governorate" name="governorate" class="input-field" (change)="onGovernorateChange()">
-                    <option value="">Sélectionner</option>
-                    @for (gov of governorates; track gov) {
-                      <option [value]="gov">{{ gov }}</option>
-                    }
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-surface-700 mb-2">Ville</label>
-                  <input type="text" [(ngModel)]="shipping.city" name="city" class="input-field" placeholder="Ville">
-                </div>
-                <div class="md:col-span-2">
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
-                  <input type="text" [(ngModel)]="shipping.streetAddress" name="streetAddress" class="input-field" placeholder="Rue, immeuble, appartement">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Code postal (optionnel)</label>
-                  <input type="text" [(ngModel)]="shipping.postalCode" name="postalCode" class="input-field">
-                </div>
-                <div class="md:col-span-2">
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Instructions de livraison (optionnel)</label>
-                  <textarea [(ngModel)]="shipping.additionalInfo" name="additionalInfo" rows="2" class="input-field" placeholder="Digicode, étage, etc."></textarea>
-                </div>
+              <div>
+                <label class="block text-sm font-medium text-surface-700 mb-2">Ville</label>
+                <input type="text" [(ngModel)]="shipping.city" name="city" class="input-field" placeholder="Ville">
               </div>
-            }
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
+                <input type="text" [(ngModel)]="shipping.streetAddress" name="streetAddress" class="input-field" placeholder="Rue, immeuble, appartement">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Code postal (optionnel)</label>
+                <input type="text" [(ngModel)]="shipping.postalCode" name="postalCode" class="input-field">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Instructions de livraison (optionnel)</label>
+                <textarea [(ngModel)]="shipping.additionalInfo" name="additionalInfo" rows="2" class="input-field" placeholder="Digicode, étage, etc."></textarea>
+              </div>
+            </div>
           </div>
 
          
@@ -310,8 +277,6 @@ import { environment } from '../../../environments/environment';
 export class CheckoutComponent implements OnInit {
   private cartService = inject(CartService);
   private orderService = inject(OrderService);
-  private addressService = inject(AddressService);
-  private authService = inject(AuthService);
   private toast = inject(ToastService);
   private router = inject(Router);
   private shippingService = inject(ShippingService);
@@ -348,9 +313,6 @@ export class CheckoutComponent implements OnInit {
   appliedCouponInfo = signal<{code: string, type: string, discount: number, label: string} | null>(null);
   
   placingOrder = signal(false);
-  addresses = signal<Address[]>([]);
-  selectedAddressId = signal<string>('');
-  showAddressForm = signal(false);
   selectedCarrier = 'poste';
 
   carriers = [
@@ -361,7 +323,6 @@ export class CheckoutComponent implements OnInit {
 
   shipping = {
     fullName: '',
-    email: '',
     phone: '',
     governorate: '',
     city: '',
@@ -384,38 +345,11 @@ export class CheckoutComponent implements OnInit {
     'Gafsa', 'Tozeur', 'Kebili'
   ];
 
-  ngOnInit() {
-    const userEmail = this.authService.currentUser()?.email;
-    if (userEmail) {
-      this.shipping.email = userEmail;
-    }
-    this.loadAddresses();
-  }
-
-  async loadAddresses() {
-    const result = await this.addressService.getAddresses().toPromise();
-    if (result?.addresses && result.addresses.length > 0) {
-      this.addresses.set(result.addresses);
-      this.selectAddress(result.addresses[0]);
-    }
-  }
-
-  selectAddress(addr: Address) {
-    this.selectedAddressId.set(addr._id || '');
-    this.shipping.fullName = addr.fullName;
-    this.shipping.email = (addr as any).email || '';
-    this.shipping.phone = addr.phone;
-    this.shipping.governorate = addr.governorate;
-    this.shipping.city = addr.city;
-    this.shipping.streetAddress = addr.streetAddress;
-    this.shipping.postalCode = addr.postalCode || '';
-    this.shipping.additionalInfo = (addr as any).additionalInfo || '';
-  }
+  ngOnInit() {}
 
   isValid(): boolean {
     return !!(
       this.shipping.fullName &&
-      this.shipping.email &&
       this.shipping.phone &&
       this.shipping.governorate &&
       this.shipping.city &&
@@ -439,15 +373,17 @@ export class CheckoutComponent implements OnInit {
       if (result?.success) {
         this.cartService.clearCart().subscribe();
         this.toast.success('Succès', 'Commande confirmée !');
-        this.router.navigate(['/orders'], { 
-          queryParams: { success: 'true', order: result.order?.orderNumber || 'new' }
+        const orderNumber = result.order?.orderNumber || 'new';
+        this.router.navigate(['/order/track'], { 
+          queryParams: { orderNumber, phone: this.shipping.phone }
         });
       } else {
         this.toast.error('Erreur', (result as any)?.message || 'Erreur lors de la commande');
         this.placingOrder.set(false);
       }
     } catch (error: any) {
-      this.toast.error('Erreur', error?.message || 'Erreur lors de la commande');
+      const msg = error?.error?.message || error?.message || 'Erreur lors de la commande';
+      this.toast.error('Erreur', msg);
       this.placingOrder.set(false);
     }
   }
