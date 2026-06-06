@@ -23,7 +23,11 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
         }
       </div>
 
-      @if (compareService.products().length === 0) {
+      @if (compareService.loading()) {
+        <div class="flex justify-center py-16">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        </div>
+      } @else if (compareService.products().length === 0) {
         <div class="bg-white rounded-xl shadow-sm p-16 text-center">
           <div class="text-gray-400 mb-4">
             <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,8 +97,8 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
               <tr>
                 <td class="p-4 font-medium text-gray-600">Description</td>
                 @for (product of compareService.products(); track product._id) {
-                  <td class="p-4 text-sm text-gray-600">
-                    {{ product.shortDescription || product.description || '—' }}
+                  <td class="p-4 text-sm text-gray-600 whitespace-pre-line">
+                    {{ product.description || '—' }}
                   </td>
                 }
               </tr>

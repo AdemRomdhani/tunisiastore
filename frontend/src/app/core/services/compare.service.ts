@@ -11,6 +11,7 @@ export class CompareService {
   private http = inject(HttpClient);
 
   products = signal<Product[]>([]);
+  loading = signal(true);
 
   constructor() {
     this.loadFromStorage();
@@ -18,27 +19,47 @@ export class CompareService {
 
   private loadFromStorage() {
     const stored = localStorage.getItem(this.storageKey);
-    if (stored) {
-      try {
-        const slugs: string[] = JSON.parse(stored);
-        if (slugs.length > 0) {
-          this.refreshProducts(slugs);
-        }
-      } catch (e) {
-        this.products.set([]);
-      }
+    if (!stored) {
+      this.loading.set(false);
+      return;
     }
-  }
 
-  private refreshProducts(slugs: string[]) {
-    const requests = slugs.map(slug =>
-      this.http.get<{ success: boolean; product: Product }>(`${environment.apiUrl}/products/${slug}`).toPromise()
-    );
-    Promise.all(requests).then(results => {
-      const fresh = results.filter(r => r?.success).map(r => r!.product);
-      this.products.set(fresh);
-      this.saveToStorage();
-    }).catch(() => {});
+    try {
+      const data = JSON.parse(stored);
+
+      if (!Array.isArray(data) || data.length === 0) {
+        this.loading.set(false);
+        return;
+      }
+
+      // Migration: old format stored product objects, new format stores slugs
+      const slugs: string[] = typeof data[0] === 'string'
+        ? data
+        : data.map((p: any) => p.slug).filter(Boolean);
+
+      if (slugs.length === 0) {
+        localStorage.removeItem(this.storageKey);
+        this.loading.set(false);
+        return;
+      }
+
+      const requests = slugs.map(slug =>
+        this.http.get<{ success: boolean; product: Product }>(`${environment.apiUrl}/products/${slug}`).toPromise()
+      );
+
+      Promise.all(requests).then(results => {
+        const fresh = results.filter(r => r?.success).map(r => r!.product);
+        this.products.set(fresh);
+        this.saveToStorage();
+        this.loading.set(false);
+      }).catch(() => {
+        this.loading.set(false);
+      });
+    } catch (e) {
+      this.products.set([]);
+      localStorage.removeItem(this.storageKey);
+      this.loading.set(false);
+    }
   }
 
   private saveToStorage() {
