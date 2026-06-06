@@ -94,7 +94,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
                 <td class="p-4 font-medium text-gray-600">Description</td>
                 @for (product of compareService.products(); track product._id) {
                   <td class="p-4 text-sm text-gray-600">
-                    {{ product.shortDescription || product.description || '—' | slice:0:150 }}{{ (product.shortDescription || product.description || '').length > 150 ? '...' : '' }}
+                    {{ product.shortDescription || product.description || '—' }}
                   </td>
                 }
               </tr>
