@@ -180,22 +180,13 @@ exports.getProducts = async (req, res) => {
 
 exports.getProduct = async (req, res) => {
   try {
-    const cacheKey = `slug:${req.params.slug}`;
-    let cached = await CacheService.get('product', cacheKey);
-    if (cached) {
-      return res.json({ success: true, product: cached, cached: true });
-    }
-
     const product = await Product.findOne({ slug: req.params.slug, isActive: true })
       .populate('category')
-      .populate('relatedProducts', 'name slug pricing images badges ratings');
+      .populate('relatedProducts', 'name slug pricing media badges ratings');
 
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
-
-    // Cache for 10 minutes
-    await CacheService.set('product', cacheKey, product, 10 * 60 * 1000);
 
     res.json({ success: true, product });
   } catch (error) {
