@@ -265,7 +265,7 @@ exports.getOrders = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)
-      .select('orderNumber status pricing payment shipping createdAt user guestEmail');
+      .select('orderNumber status items pricing payment shipping createdAt user guestEmail');
 
     const count = await Order.countDocuments(query);
 
@@ -570,6 +570,77 @@ exports.cancelOrder = async (req, res) => {
       success: true, 
       message: 'Order cancelled successfully. Your payment will be refunded within 5-7 business days.',
       order 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Customer: Reorder (add previous order items to cart)
+exports.reorder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id).populate('items.product');
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Commande non trouvée' });
+    }
+
+    // Verify ownership
+    if (req.user) {
+      if (order.user && order.user.toString() !== req.user.id) {
+        return res.status(403).json({ success: false, message: 'Non autorisé' });
+      }
+    }
+
+    // Get or create cart
+    let cart;
+    const deviceId = req.headers['x-device-id'];
+    
+    if (req.user?.id) {
+      cart = await Cart.findOne({ user: req.user.id });
+    }
+    if (!cart && deviceId) {
+      cart = await Cart.findOne({ deviceId });
+    }
+    if (!cart) {
+      cart = new Cart({ user: req.user?.id, deviceId, items: [] });
+    }
+
+    // Add order items to cart
+    let addedCount = 0;
+    for (const item of order.items) {
+      const product = await Product.findById(item.product);
+      
+      if (!product || !product.isActive) {
+        continue;
+      }
+
+      // Check if product already in cart
+      const existingItem = cart.items.find(
+        ci => ci.product.toString() === product._id.toString()
+      );
+
+      if (existingItem) {
+        existingItem.quantity += item.quantity;
+      } else {
+        cart.items.push({
+          product: product._id,
+          quantity: item.quantity,
+          selectedAttributes: item.selectedAttributes
+        });
+      }
+      addedCount++;
+    }
+
+    await cart.save();
+
+    // Reload cart with populated products
+    cart = await Cart.findById(cart._id).populate('items.product');
+
+    res.json({
+      success: true,
+      message: `${addedCount} produit(s) ajouté(s) au panier`,
+      cart: { items: cart.items }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

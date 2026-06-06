@@ -116,8 +116,8 @@ import { environment } from '../../../environments/environment';
             </a>
           </div>
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-6">
-            @for (product of featuredProducts(); track product._id) {
-              <app-product-card [product]="product"/>
+            @for (product of featuredProducts(); track product._id; let i = $index) {
+              <app-product-card [product]="product" [imageIndex]="i"/>
             }
           </div>
         </div>
@@ -190,10 +190,10 @@ import { environment } from '../../../environments/environment';
 
             <!-- Products Grid/Carousel -->
             <div class="flex overflow-x-auto pb-8 gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 sm:overflow-visible snap-x no-scrollbar">
-              @for (product of flashDeals(); track product._id) {
+              @for (product of flashDeals(); track product._id; let i = $index) {
                 <div class="flex-shrink-0 w-64 sm:w-auto snap-start flex flex-col gap-3 group">
                   <div class="relative">
-                    <app-product-card [product]="product"/>
+                    <app-product-card [product]="product" [imageIndex]="i"/>
                     <!-- Small over-card timer for each product -->
                     @if (getProductTimer(product._id); as timer) {
                       <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white rounded-full px-3 py-1 shadow-xl border border-surface-100 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -241,8 +241,8 @@ import { environment } from '../../../environments/environment';
           
           @if (newProducts().length > 0) {
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-6">
-              @for (product of newProducts(); track product._id) {
-                <app-product-card [product]="product"/>
+              @for (product of newProducts(); track product._id; let i = $index) {
+                <app-product-card [product]="product" [imageIndex]="i"/>
               }
             </div>
           }
@@ -266,8 +266,8 @@ import { environment } from '../../../environments/environment';
             </a>
           </div>
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-6">
-            @for (product of allProducts(); track product._id) {
-              <app-product-card [product]="product"/>
+            @for (product of allProducts(); track product._id; let i = $index) {
+              <app-product-card [product]="product" [imageIndex]="i"/>
             }
           </div>
         </div>

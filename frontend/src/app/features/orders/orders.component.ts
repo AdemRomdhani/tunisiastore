@@ -68,30 +68,41 @@ import { environment } from '../../../environments/environment';
                 </div>
               </div>
 
-              <div class="mt-4 pt-4 border-t flex flex-wrap items-center justify-between gap-2">
+              <div class="mt-4 pt-4 border-t flex flex-wrap items-center gap-2">
                 @if (order.shipping.trackingNumber) {
-                  <div class="text-sm">
-                    <span class="text-gray-500">Numéro de suivi:</span>
-                    <span class="font-mono font-medium ml-2">{{ order.shipping.trackingNumber }}</span>
+                  <div class="text-sm mr-auto">
+                    <span class="text-gray-500">Suivi:</span>
+                    <span class="font-mono font-medium ml-1">{{ order.shipping.trackingNumber }}</span>
                   </div>
                 }
                 @if (canCancel(order.status)) {
                   <button 
                     (click)="openCancelModal(order)"
-                    class="text-red-600 hover:text-red-700 text-sm font-medium"
+                    class="text-red-600 hover:text-red-700 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
                   >
-                    Annuler la commande
+                    Annuler
                   </button>
                 }
                 <button 
                   (click)="downloadInvoice(order._id)"
-                  class="text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center gap-1"
+                  class="text-surface-600 hover:text-primary-600 text-sm font-medium flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-surface-50 transition-colors"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
-                  Télécharger facture
+                  Facture
                 </button>
+                @if (order.status === 'DELIVERED') {
+                  <button 
+                    (click)="reorder(order)"
+                    class="bg-primary-600 text-white text-sm font-medium flex items-center gap-1.5 px-4 py-1.5 rounded-lg hover:bg-primary-700 transition-colors cursor-pointer"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Commander à nouveau
+                  </button>
+                }
               </div>
             </div>
           }
@@ -264,5 +275,25 @@ export class OrdersComponent implements OnInit {
       'FLOUSSI': 'Floussi'
     };
     return methods[method] || method;
+  }
+
+  reorder(order: Order) {
+    if (!order.items || order.items.length === 0) {
+      this.toast.error('Erreur', 'Aucun produit dans cette commande');
+      return;
+    }
+    this.orderService.reorder(order._id).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.toast.success('Succès', `${order.items.length} produit(s) ajouté(s) au panier`);
+          this.router.navigate(['/cart']);
+        } else {
+          this.toast.error('Erreur', res.message || 'Impossible de commander à nouveau');
+        }
+      },
+      error: (err) => {
+        this.toast.error('Erreur', err.error?.message || 'Erreur lors de la commande à nouveau');
+      }
+    });
   }
 }

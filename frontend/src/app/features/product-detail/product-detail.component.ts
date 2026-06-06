@@ -22,6 +22,12 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     .cursor-zoom-in { cursor: zoom-in; }
+    .sticky-add-to-cart {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+      background: white; border-top: 1px solid #e2e8f0;
+      padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+    @media (min-width: 1024px) { .sticky-add-to-cart { display: none; } }
   `],
   template: `
     <div class="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
@@ -55,7 +61,7 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
           <div class="space-y-3 sm:space-y-4">
             <div class="bg-surface-50 rounded-xl sm:rounded-2xl shadow-card p-4 sm:p-6 relative overflow-hidden group">
               <div class="relative cursor-zoom-in" (click)="toggleZoom()" (mousemove)="onImageMouseMove($event, mainImage)" #imageContainer>
-                <img #mainImage [src]="selectedImage() | imageUrl" [alt]="product()?.name" class="w-full max-w-md sm:max-w-lg mx-auto h-auto transition-transform duration-300" [class.scale-150]="zoomEnabled()" [style.transform-origin]="zoomEnabled() ? zoomPosition().x + '% ' + zoomPosition().y + '%' : 'center center'" width="500" height="500" loading="eager">
+                <img #mainImage [src]="selectedImage() | imageUrl:'detail'" [alt]="product()?.name" class="w-full max-w-md sm:max-w-lg mx-auto h-auto transition-transform duration-300" [class.scale-150]="zoomEnabled()" [style.transform-origin]="zoomEnabled() ? zoomPosition().x + '% ' + zoomPosition().y + '%' : 'center center'" width="500" height="500" loading="eager">
                 @if (!zoomEnabled()) {
                   <div class="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-black/60 text-white text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex">{{ 'productDetail.zoom' | t }}</div>
                 }
@@ -64,7 +70,7 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
             <div class="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide">
               @for (img of product()?.media?.images || []; track img; let i = $index) {
                 <button (click)="setImage(img); zoomEnabled.set(false)" [class.ring-2]="selectedImage() === img" [class.ring-primary-600]="selectedImage() === img" class="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-surface-50 rounded-lg sm:rounded-xl p-1.5 sm:p-2 border-2 border-transparent flex-shrink-0 hover:border-primary-300 transition-all">
-                  <img [src]="img | imageUrl" [alt]="(product()?.name || '') + ' - image ' + (i+1)" class="w-full h-full object-contain" width="80" height="80" loading="lazy">
+                  <img [src]="img | imageUrl:'thumb'" [alt]="(product()?.name || '') + ' - image ' + (i+1)" class="w-full h-full object-contain" width="80" height="80" loading="lazy">
                 </button>
               }
             </div>
@@ -117,6 +123,20 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
               <button (click)="addToCart()" [disabled]="availableStock() === 0 || addingToCart()" class="flex-1 btn-primary text-sm sm:text-base">
                 @if (addingToCart()) { <span>{{ 'productDetail.adding' | t }}</span> } @else { {{ 'product.addToCart' | t }} }
               </button>
+            </div>
+
+            <!-- Delivery Info -->
+            <div class="bg-surface-50 border border-surface-200 rounded-xl p-3 sm:p-4 mb-4 sm:mb-5">
+              <div class="flex items-center gap-3 text-sm">
+                <div class="flex items-center gap-2 text-surface-600">
+                  <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+                  <span>Livraison <strong>24-48h</strong> à {{ 'Tunis' }}</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-surface-500 mt-1.5 ml-8">
+                <span>7 DT</span>
+                <span class="text-green-600 font-medium">• Gratuite dès 200 DT</span>
+              </div>
             </div>
             @if (product()?.warranty) {
               <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4 mb-4 sm:mb-5">
@@ -245,14 +265,36 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
           <div class="mt-8 sm:mt-10">
             <h2 class="text-lg sm:text-xl font-bold mb-4 sm:mb-5 text-surface-800">{{ 'product.relatedProducts' | t }}</h2>
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-5">
-              @for (prod of relatedProducts(); track prod._id) {
-                <app-product-card [product]="prod"/>
+              @for (prod of relatedProducts(); track prod._id; let i = $index) {
+                <app-product-card [product]="prod" [imageIndex]="i"/>
               }
             </div>
           </div>
         }
       }
     </div>
+
+    <!-- Sticky Add to Cart (Mobile) -->
+    @if (product() && availableStock() > 0) {
+      <div class="sticky-add-to-cart lg:hidden">
+        <div class="flex items-center gap-3">
+          <div class="flex-1">
+            <p class="text-xs text-surface-500">{{ product()?.name }}</p>
+            <p class="font-bold text-primary-600">{{ product()?.pricing?.price | number:'1.3' }} DT</p>
+          </div>
+          <button (click)="addToCart()" [disabled]="addingToCart()" 
+            class="bg-primary-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-primary-700 transition disabled:bg-surface-300 flex items-center gap-2">
+            @if (addingToCart()) {
+              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              Ajout...
+            } @else {
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              Ajouter au panier
+            }
+          </button>
+        </div>
+      </div>
+    }
   `
 })
 export class ProductDetailComponent implements OnInit {

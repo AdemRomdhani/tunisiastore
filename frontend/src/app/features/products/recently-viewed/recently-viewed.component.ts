@@ -27,8 +27,8 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
         </div>
       } @else {
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          @for (product of products(); track product._id) {
-            <app-product-card [product]="product"/>
+          @for (product of products(); track product._id; let i = $index) {
+            <app-product-card [product]="product" [imageIndex]="i"/>
           }
         </div>
       }

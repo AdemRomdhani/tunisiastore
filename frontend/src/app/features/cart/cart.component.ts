@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { CartService, CartItem } from '../../core/services/cart.service';
@@ -11,6 +11,10 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
   selector: 'app-cart',
   standalone: true,
   imports: [CommonModule, RouterModule, ImageUrlPipe, TranslatePipe, EmptyStateComponent],
+  styles: [`
+    .fade-in { animation: fadeIn 0.2s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  `],
   template: `
     <div class="container mx-auto px-3 sm:px-4 py-6 sm:py-8 min-h-screen">
       <h1 class="text-2xl sm:text-3xl font-bold text-surface-900 mb-6 sm:mb-8">{{ 'cart.title' | t }}</h1>
@@ -70,6 +74,13 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
                 </div>
               </div>
             }
+
+            <!-- Continue Shopping Button -->
+            <a routerLink="/products" 
+               class="flex items-center justify-center gap-2 w-full py-3 border-2 border-surface-200 rounded-xl text-surface-600 hover:border-primary-300 hover:text-primary-600 font-medium transition-all text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+              Continuer les achats
+            </a>
           </div>
           
           <!-- Summary -->
@@ -79,31 +90,45 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
               
               <div class="space-y-2 sm:space-y-3 text-sm">
                 <div class="flex justify-between">
-                  <span class="text-surface-600">Sous-total HT</span>
+                  <span class="text-surface-600">Sous-total</span>
                   <span class="font-medium text-surface-800">{{ subtotal() | number:'1.2-2' }} DT</span>
                 </div>
                 
                 <div class="flex justify-between">
                   <span class="text-surface-600">Livraison</span>
-                  <span class="font-medium text-surface-800">{{ shippingCost() === 0 ? 'gratuite' : (shippingCost() | number:'1.2-2') + ' DT' }}</span>
+                  <span class="font-medium" [class.text-green-600]="shippingCost() === 0">
+                    {{ shippingCost() === 0 ? 'Gratuite' : (shippingCost() | number:'1.2-2') + ' DT' }}
+                  </span>
                 </div>
 
-                <div class="flex justify-between text-xs text-surface-500">
-                  <span>Montant HT</span>
-                  <span>{{ ht() | number:'1.2-2' }} DT</span>
-                </div>
+                <!-- Detailed Pricing Toggle -->
+                <button (click)="showDetails.set(!showDetails())" 
+                  class="flex items-center gap-1 text-xs text-surface-400 hover:text-primary-600 transition-colors cursor-pointer">
+                  <svg class="w-3 h-3 transition-transform" [class.rotate-90]="showDetails()" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                  {{ showDetails() ? 'Masquer le détail' : 'Voir le détail' }}
+                </button>
 
-                <div class="flex justify-between text-xs text-surface-500">
-                  <span>TVA (19%)</span>
-                  <span>{{ tva() | number:'1.2-2' }} DT</span>
-                </div>
+                @if (showDetails()) {
+                  <div class="fade-in border-t border-surface-200 pt-2 space-y-2">
+                    <div class="flex justify-between text-xs text-surface-500">
+                      <span>Montant HT</span>
+                      <span>{{ ht() | number:'1.2-2' }} DT</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-surface-500">
+                      <span>TVA (19%)</span>
+                      <span>{{ tva() | number:'1.2-2' }} DT</span>
+                    </div>
+                  </div>
+                }
 
                 @if (shippingCost() > 0) {
-                  <p class="text-xs text-surface-500">Livraison gratuite dès 200 DT</p>
+                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-2.5 text-xs text-blue-700">
+                    Livraison gratuite dès 200 DT
+                  </div>
                 }
                 
                 <div class="border-t border-surface-200 pt-2 sm:pt-3 flex justify-between text-base sm:text-xl font-bold">
-                  <span class="text-surface-900">Total TTC</span>
+                  <span class="text-surface-900">Total</span>
                   <span class="text-primary-600">{{ ttc() | number:'1.2-2' }} DT</span>
                 </div>
               </div>
@@ -111,12 +136,6 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
               <button (click)="goToCheckout()" class="btn-primary w-full mt-4 sm:mt-6 text-sm sm:text-base py-2.5 sm:py-3">
                 Passer la commande
               </button>
-              
-              <div class="mt-3 sm:mt-4 text-center">
-                <a routerLink="/products" class="text-xs sm:text-sm text-surface-500 hover:text-primary-600 transition-colors">
-                  continuer les achats
-                </a>
-              </div>
 
               <div class="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-surface-200">
                 <div class="flex items-center justify-center gap-3 sm:gap-4 text-surface-400">
@@ -150,6 +169,8 @@ export class CartComponent {
   ht = this.cartService.ht;
   tva = this.cartService.tva;
   ttc = this.cartService.ttc;
+
+  showDetails = signal(false);
 
   decreaseQty(item: CartItem) {
     if (item.quantity > 1) {

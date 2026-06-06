@@ -7,6 +7,17 @@ export interface Order {
   _id: string;
   orderNumber: string;
   status: string;
+  items: Array<{
+    product: {
+      _id: string;
+      name: string;
+      slug: string;
+      pricing: { price: number };
+      media: { images: string[] };
+    };
+    quantity: number;
+    price: number;
+  }>;
   pricing: {
     subtotal: number;
     shipping: number;
@@ -17,6 +28,13 @@ export interface Order {
     status: string;
   };
   shipping: {
+    address?: {
+      fullName: string;
+      phone: string;
+      governorate: string;
+      city: string;
+      streetAddress: string;
+    };
     estimatedDelivery: string;
     trackingNumber?: string;
   };
@@ -76,5 +94,9 @@ export class OrderService {
 
   validateCoupon(code: string, subtotal: number): Observable<any> {
     return this.http.post(`${environment.apiUrl}/coupons/validate`, { code, subtotal });
+  }
+
+  reorder(orderId: string): Observable<{ success: boolean; message?: string }> {
+    return this.http.post<any>(`${this.apiUrl}/reorder/${orderId}`, {}, { headers: this.getHeaders() });
   }
 }

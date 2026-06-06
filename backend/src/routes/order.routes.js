@@ -7,6 +7,7 @@ router.post('/', optionalAuth, orderController.createOrder);
 router.post('/track', orderController.trackOrder);
 router.post('/cancel/:id', authenticate, orderController.cancelOrder);
 router.post('/:id/cancel', authenticate, orderController.cancelOrder);
+router.post('/reorder/:id', authenticate, orderController.reorder);
 router.get('/my-orders', authenticate, orderController.getOrders);
 router.get('/my-orders/:id', authenticate, orderController.getOrder);
 
