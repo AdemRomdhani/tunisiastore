@@ -43,6 +43,9 @@ export class CompareService {
         return;
       }
 
+      // Always clear old data and show loading until fresh data arrives
+      this.products.set([]);
+
       const requests = slugs.map(slug =>
         this.http.get<{ success: boolean; product: Product }>(`${environment.apiUrl}/products/${slug}`).toPromise()
       );
