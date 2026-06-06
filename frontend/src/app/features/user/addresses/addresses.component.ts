@@ -6,6 +6,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { FormsModule } from '@angular/forms';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { GOVERNORATES } from '../../../shared/constants/governorates';
 
 @Component({
   selector: 'app-addresses',
@@ -150,12 +151,7 @@ export class AddressesComponent implements OnInit {
   saving = signal(false);
   editingAddress = signal<Address | null>(null);
 
-  governorates = [
-    'Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan',
-    'Bizerte', 'Beja', 'Jendouba', 'Kef', 'Siliana', 'Sousse',
-    'Monastir', 'Mahdia', 'Kairouan', 'Kasserine', 'Sidi Bouzid',
-    'Gabes', 'Medenine', 'Tataouine', 'Gafsa', 'Tozeur', 'Kebili'
-  ];
+  governorates = GOVERNORATES;
 
   formData: Partial<Address> = this.getEmptyForm();
 

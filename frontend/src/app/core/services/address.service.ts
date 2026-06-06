@@ -13,7 +13,7 @@ export interface Address {
   postalCode?: string;
   additionalInfo?: string;
   isDefault: boolean;
-  label: 'HOME' | 'WORK' | 'OTHER';
+  label: string;
 }
 
 @Injectable({
@@ -21,8 +21,8 @@ export interface Address {
 })
 export class AddressService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/addresses`;
-  
+  private apiUrl = `${environment.apiUrl}/auth/addresses`;
+
   addresses = signal<Address[]>([]);
 
   getAddresses(): Observable<{ success: boolean; addresses: Address[] }> {
@@ -31,19 +31,19 @@ export class AddressService {
     );
   }
 
-  createAddress(address: Omit<Address, '_id'>): Observable<{ success: boolean; address: Address }> {
-    return this.http.post<{ success: boolean; address: Address }>(this.apiUrl, address);
+  createAddress(address: Omit<Address, '_id'>): Observable<{ success: boolean; addresses: Address[] }> {
+    return this.http.post<{ success: boolean; addresses: Address[] }>(this.apiUrl, address);
   }
 
-  updateAddress(id: string, address: Partial<Address>): Observable<{ success: boolean; address: Address }> {
-    return this.http.put<{ success: boolean; address: Address }>(`${this.apiUrl}/${id}`, address);
+  updateAddress(id: string, address: Partial<Address>): Observable<{ success: boolean; addresses: Address[] }> {
+    return this.http.put<{ success: boolean; addresses: Address[] }>(`${this.apiUrl}/${id}`, address);
   }
 
-  deleteAddress(id: string): Observable<{ success: boolean }> {
-    return this.http.delete<{ success: boolean }>(`${this.apiUrl}/${id}`);
+  deleteAddress(id: string): Observable<{ success: boolean; addresses: Address[] }> {
+    return this.http.delete<{ success: boolean; addresses: Address[] }>(`${this.apiUrl}/${id}`);
   }
 
-  setDefaultAddress(id: string): Observable<{ success: boolean; address: Address }> {
-    return this.http.put<{ success: boolean; address: Address }>(`${this.apiUrl}/${id}/default`, {});
+  setDefaultAddress(id: string): Observable<{ success: boolean; addresses: Address[] }> {
+    return this.http.put<{ success: boolean; addresses: Address[] }>(`${this.apiUrl}/${id}/default`, {});
   }
 }

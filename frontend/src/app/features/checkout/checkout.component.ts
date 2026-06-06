@@ -8,6 +8,7 @@ import { OrderService } from '../../core/services/order.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ShippingService } from '../../core/services/shipping.service';
 import { ImageUrlPipe } from '../../shared/pipes/image-url.pipe';
+import { GOVERNORATES, GOVERNORATE_CITY_MAP } from '../../shared/constants/governorates';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { environment } from '../../../environments/environment';
 
@@ -444,21 +445,9 @@ export class CheckoutComponent implements OnInit {
     { value: 'D17', label: 'D17', desc: 'Payez en 17 fois sans frais', iconClass: 'payment-icon-d17', icon: '📱' }
   ];
 
-  governorates = [
-    'Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan', 'Bizerte',
-    'Beja', 'Jendouba', 'Kef', 'Siliana', 'Sousse', 'Monastir', 'Mahdia',
-    'Kairouan', 'Kasserine', 'Sidi Bouzid', 'Gabes', 'Medenine', 'Tataouine',
-    'Gafsa', 'Tozeur', 'Kebili'
-  ];
+  governorates = GOVERNORATES;
 
-  private governorateCityMap: Record<string, string> = {
-    'Tunis': 'Tunis', 'Ariana': 'Ariana', 'Ben Arous': 'Ben Arous', 'Manouba': 'Manouba',
-    'Nabeul': 'Nabeul', 'Zaghouan': 'Zaghouan', 'Bizerte': 'Bizerte', 'Beja': 'Beja',
-    'Jendouba': 'Jendouba', 'Kef': 'Le Kef', 'Siliana': 'Siliana', 'Sousse': 'Sousse',
-    'Monastir': 'Monastir', 'Mahdia': 'Mahdia', 'Kairouan': 'Kairouan', 'Kasserine': 'Kasserine',
-    'Sidi Bouzid': 'Sidi Bouzid', 'Gabes': 'Gabes', 'Medenine': 'Medenine', 'Tataouine': 'Tataouine',
-    'Gafsa': 'Gafsa', 'Tozeur': 'Tozeur', 'Kebili': 'Kebili'
-  };
+  private governorateCityMap = GOVERNORATE_CITY_MAP;
 
   ngOnInit() {}
 

@@ -20,24 +20,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis for caching and sessions
-  redis:
-    image: redis:7-alpine
-    container_name: tunisia-store-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # Backend API
   backend:
     build:
@@ -51,8 +33,6 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - MONGODB_URI=mongodb://mongo:27017/tunisia_store
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
       - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:4200}
       - SMTP_HOST=${SMTP_HOST}
@@ -67,8 +47,6 @@ services:
       - SENTRY_DSN=${SENTRY_DSN}
     depends_on:
       mongo:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     volumes:
       - ./backend:/app
@@ -122,7 +100,6 @@ services:
 
 volumes:
   mongo_data:
-  redis_data:
   uploads_data:
 
 networks:

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demande de retour reçue - Tunisia Store</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; width: 100%;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    {{header}}
+    <div style="background: #ffffff; padding: 30px; border-radius: 0 0 8px 8px;">
+      <h1 style="color: #1e293b; font-size: 24px; font-weight: 700; margin-bottom: 20px;">Demande de retour reçue</h1>
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 15px;">Bonjour <strong>{{userFirstName}}</strong>,</p>
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 15px;">Nous avons bien reçu votre demande de retour pour la commande <strong>#{{orderNumber}}</strong>.</p>
+      
+      <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 0 0 10px 0; font-size: 18px; font-weight: 700; color: #1e293b;">
+          Numéro de demande : #{{returnRequestId}}
+        </p>
+        <p style="margin: 0; color: #64748b; font-size: 13px;">
+          Date de la demande : {{returnDate}}
+        </p>
+      </div>
+
+      <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 5px;"><strong>Articles concernés :</strong></p>
+        {{returnItemsHtml}}
+      </div>
+
+      <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 5px;"><strong>Montant du remboursement :</strong></p>
+        <p style="margin: 0; font-size: 20px; font-weight: 700; color: #dc2626;">
+          {{refundAmount}} TND
+        </p>
+      </div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.6;">Notre équipe va examiner votre demande et vous contactera dans les plus brefs délais.</p>
+
+      <div style="text-align: center; margin-top: 25px;">
+        <a href="{{frontendUrl}}/returns" style="display: inline-block; background: #dc2626; color: #ffffff; padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 15px;">
+          Suivre ma demande
+        </a>
+      </div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-top: 25px; text-align: center;">
+        Une question ? <a href="mailto:contact@tunisiastore.tn" style="color: #dc2626;">Contactez-nous</a>
+      </p>
+    </div>
+    {{footer}}
+  </div>
+</body>
+</html>

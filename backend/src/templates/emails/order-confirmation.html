@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Commande confirmée - Tunisia Store</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; width: 100%;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    {{header}}
+    <div style="background: #ffffff; padding: 30px; border-radius: 0 0 8px 8px;">
+      <h1 style="color: #1e293b; font-size: 24px; font-weight: 700; margin-bottom: 20px;">Merci pour votre commande !</h1>
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 15px;">Bonjour <strong>{{userFirstName}}</strong>,</p>
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 15px;">Nous avons bien reçu votre commande. Voici le resumen :</p>
+      
+      <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 0 0 10px 0; color: #1e293b; font-size: 18px; font-weight: 700;">
+          Commande #{{orderNumber}}
+        </p>
+        <p style="margin: 0; color: #64748b; font-size: 13px;">
+          Passée le {{orderDate}}
+        </p>
+      </div>
+
+      {{itemsTable}}
+
+      <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <table style="width: 100%;">
+          <tr>
+            <td style="color: #64748b;">Sous-total HT</td>
+            <td style="text-align: right; font-weight: 600;">{{subtotal}} TND</td>
+          </tr>
+          <tr>
+            <td style="color: #64748b; padding: 6px 0;">Livraison</td>
+            <td style="text-align: right; font-weight: 600;">{{shipping}}</td>
+          </tr>
+          {{discountRow}}
+          <tr>
+            <td style="color: #64748b; padding: 8px 0; border-top: 1px solid #e2e8f0; font-size: 13px;">Montant HT</td>
+            <td style="text-align: right; font-weight: 600; padding: 8px 0; border-top: 1px solid #e2e8f0; font-size: 13px;">{{ht}} TND</td>
+          </tr>
+          <tr>
+            <td style="color: #64748b; padding: 6px 0;">TVA (19%)</td>
+            <td style="text-align: right; font-weight: 600; padding: 6px 0;">{{tva}} TND</td>
+          </tr>
+          {{timbreRow}}
+          <tr>
+            <td style="font-size: 18px; font-weight: 700; color: #1e293b; padding-top: 15px;">Total TTC</td>
+            <td style="font-size: 18px; font-weight: 700; color: #dc2626; text-align: right; padding-top: 15px;">{{total}} TND</td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 10px;"><strong>Adresse de livraison :</strong></p>
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0;">{{shippingFullName}}</p>
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0;">{{shippingAddress}}</p>
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0;">{{shippingCity}} {{shippingPostalCode}}</p>
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 10px 0 0 0;"><strong>Livraison estimée :</strong> {{deliveryDate}}</p>
+      </div>
+
+      <div style="text-align: center; margin-top: 25px;">
+        <a href="{{frontendUrl}}/orders" style="display: inline-block; background: #dc2626; color: #ffffff; padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 15px;">
+          Suivre ma commande
+        </a>
+      </div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-top: 25px; text-align: center;">
+        Une question ? <a href="mailto:contact@tunisiastore.tn" style="color: #dc2626;">Contactez-nous</a>
+      </p>
+    </div>
+    {{footer}}
+  </div>
+</body>
+</html>

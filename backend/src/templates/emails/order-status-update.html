@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mise à jour commande - Tunisia Store</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; width: 100%;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    {{header}}
+    <div style="background: #ffffff; padding: 30px; border-radius: 0 0 8px 8px;">
+      <h1 style="color: #1e293b; font-size: 24px; font-weight: 700; margin-bottom: 20px;">Mise à jour de votre commande</h1>
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 15px;">Bonjour <strong>{{userFirstName}}</strong>,</p>
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 15px;">Votre commande <strong>#{{orderNumber}}</strong> a été mise à jour.</p>
+      
+      <div style="text-align: center; padding: 25px; background: {{statusColor}}; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 0; font-size: 14px; color: {{statusTextColor}}; text-transform: uppercase; letter-spacing: 1px;">Statut</p>
+        <p style="margin: 10px 0 0 0; font-size: 24px; font-weight: 700; color: {{statusTextColor}};">{{statusLabel}}</p>
+      </div>
+
+      {{trackingHtml}}
+
+      <div style="height: 1px; background: #e2e8f0; margin: 25px 0;"></div>
+
+      <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 5px;"><strong>Récapitulatif :</strong></p>
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0;">{{itemCount}} produit(s)</p>
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 5px 0 0 0;"><strong>Total :</strong> <span style="color: #dc2626; font-weight: 700;">{{total}} TND</span></p>
+      </div>
+
+      <div style="text-align: center; margin-top: 25px;">
+        <a href="{{frontendUrl}}/orders/{{orderNumber}}" style="display: inline-block; background: #dc2626; color: #ffffff; padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 15px;">
+          Voir les détails
+        </a>
+      </div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-top: 25px; text-align: center;">
+        Merci pour votre confiance !
+      </p>
+    </div>
+    {{footer}}
+  </div>
+</body>
+</html>

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { GOVERNORATES } = require('../constants/governorates');
 
 const orderSchema = new mongoose.Schema({
   orderNumber: { type: String, unique: true, required: true },
@@ -23,10 +24,7 @@ const orderSchema = new mongoose.Schema({
     governorate: { 
       type: String, 
       required: true,
-      enum: ['Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan',
-             'Bizerte', 'Beja', 'Jendouba', 'Kef', 'Siliana', 'Sousse',
-             'Monastir', 'Mahdia', 'Kairouan', 'Kasserine', 'Sidi Bouzid',
-             'Gabes', 'Medenine', 'Tataouine', 'Gafsa', 'Tozeur', 'Kebili']
+      enum: GOVERNORATES
     },
     city: { type: String, required: true },
     streetAddress: { type: String, required: true },

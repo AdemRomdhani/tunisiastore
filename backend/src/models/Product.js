@@ -66,17 +66,6 @@ const productSchema = new mongoose.Schema({
     }
   },
   
-  reviews: [{
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    rating: { type: Number, required: true, min: 1, max: 5 },
-    title: String,
-    comment: String,
-    images: [String],
-    verified: { type: Boolean, default: false },
-    helpful: { type: Number, default: 0 },
-    createdAt: { type: Date, default: Date.now }
-  }],
-  
   relatedProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
   
   isActive: { type: Boolean, default: true },

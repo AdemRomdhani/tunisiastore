@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const Review = require('../models/Review');
 const Category = require('../models/Category');
 const CacheService = require('../services/cache.service');
 
@@ -295,31 +296,29 @@ exports.deleteProduct = async (req, res) => {
 
 exports.getProductReviews = async (req, res) => {
   try {
-    const product = await Product.findOne({ slug: req.params.slug })
-      .select('reviews ratings')
-      .populate('reviews.user', 'firstName lastName email')
-      .lean();
+    const product = await Product.findOne({ slug: req.params.slug }).select('ratings');
     
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    const reviews = (product.reviews || [])
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .map(r => ({
+    const reviews = await Review.find({ product: product._id })
+      .populate('user', 'firstName lastName email')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      reviews: reviews.map(r => ({
         _id: r._id,
         userId: { _id: r.user?._id, name: r.user ? `${r.user.firstName || ''} ${r.user.lastName || ''}`.trim() : 'Client' },
         rating: r.rating,
         title: r.title,
         comment: r.comment,
-        verified: r.verified,
+        verified: r.isVerified,
         helpful: r.helpful,
         createdAt: r.createdAt
-      }));
-
-    res.json({
-      success: true,
-      reviews,
+      })),
       ratings: product.ratings
     });
   } catch (error) {
@@ -341,36 +340,38 @@ exports.addReview = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    const existingReview = product.reviews.find(r => r.user.toString() === req.user.id);
+    const existingReview = await Review.findOne({ product: product._id, user: req.user.id });
     if (existingReview) {
       return res.status(400).json({ success: false, message: 'Vous avez déjà noté ce produit' });
     }
 
-    const newReview = {
+    await Review.create({
+      product: product._id,
       user: req.user.id,
       rating: Number(rating),
       title: title || '',
-      comment: comment || '',
-      verified: false,
-      helpful: 0,
-      createdAt: new Date()
-    };
-
-    product.reviews.push(newReview);
-
-    const totalRating = product.reviews.reduce((sum, r) => sum + r.rating, 0);
-    product.ratings.average = Math.round((totalRating / product.reviews.length) * 10) / 10;
-    product.ratings.count = product.reviews.length;
-
-    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    product.reviews.forEach(r => {
-      distribution[r.rating] = (distribution[r.rating] || 0) + 1;
+      comment: comment || ''
     });
-    product.ratings.distribution = distribution;
+
+    // Update product ratings from Review model
+    const stats = await Review.aggregate([
+      { $match: { product: product._id } },
+      { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } }
+    ]);
+
+    const distribution = await Review.aggregate([
+      { $match: { product: product._id } },
+      { $group: { _id: '$rating', count: { $sum: 1 } } }
+    ]);
+
+    const dist = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    distribution.forEach(d => { dist[d._id] = d.count; });
+
+    product.ratings.average = Math.round((stats[0]?.avg || 0) * 10) / 10;
+    product.ratings.count = stats[0]?.count || 0;
+    product.ratings.distribution = dist;
 
     await product.save();
-
-    // Invalidate product cache since reviews changed
     await CacheService.invalidateProduct(product._id);
 
     res.json({ success: true, message: 'Avis enregistré' });

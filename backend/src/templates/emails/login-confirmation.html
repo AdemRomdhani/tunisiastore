@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nouvelle connexion - Tunisia Store</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; width: 100%;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    {{header}}
+    <div style="background: #ffffff; padding: 30px; border-radius: 0 0 8px 8px;">
+      <h1 style="color: #1e293b; font-size: 24px; font-weight: 700; margin-bottom: 20px;">Nouvelle connexion détectée</h1>
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 15px;">Bonjour <strong>{{userFirstName}}</strong>,</p>
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 15px;">Une nouvelle connexion à votre compte a été détectée.</p>
+      
+      <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 5px;"><strong>Détails :</strong></p>
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0;"><strong>Date :</strong> {{loginDate}}</p>
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0;"><strong>IP :</strong> {{clientIp}}</p>
+        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0;"><strong>Navigateur :</strong> {{userAgent}}</p>
+      </div>
+
+      {{firstLoginMessage}}
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; color: #dc2626; font-weight: 600;">
+        Si ce n'est pas vous, veuillez changer votre mot de passe immédiatement.
+      </p>
+
+      <div style="text-align: center; margin-top: 25px;">
+        <a href="{{frontendUrl}}/account/security" style="display: inline-block; background: #dc2626; color: #ffffff; padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 15px;">
+          Sécuriser mon compte
+        </a>
+      </div>
+    </div>
+    {{footer}}
+  </div>
+</body>
+</html>

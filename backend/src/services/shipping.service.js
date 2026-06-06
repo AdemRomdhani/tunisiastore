@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { GOVERNORATE_SHIPPING_DAYS } = require('../constants/governorates');
 
 class ShippingService {
   constructor() {
@@ -87,33 +88,7 @@ class ShippingService {
       aramex: 2
     };
 
-    const additionalDays = {
-      'Tunis': 0,
-      'Ariana': 0,
-      'Ben Arous': 0,
-      'Manouba': 0,
-      'Nabeul': 1,
-      'Zaghouan': 1,
-      'Bizerte': 1,
-      'Beja': 2,
-      'Jendouba': 2,
-      'Kef': 2,
-      'Siliana': 2,
-      'Sousse': 1,
-      'Monastir': 1,
-      'Mahdia': 2,
-      'Kairouan': 2,
-      'Kasserine': 3,
-      'Sidi Bouzid': 3,
-      'Gabes': 3,
-      'Medenine': 4,
-      'Tataouine': 4,
-      'Gafsa': 3,
-      'Tozeur': 4,
-      'Kebili': 4
-    };
-
-    const days = (baseDays[carrier] || 3) + (additionalDays[governorate] || 3);
+    const days = (baseDays[carrier] || 3) + (GOVERNORATE_SHIPPING_DAYS[governorate] || 3);
     return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
   }
 

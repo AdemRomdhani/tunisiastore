@@ -28,14 +28,11 @@ initSentry();
 
 const CacheService = require('./src/services/cache.service');
 const AbandonedCartService = require('./src/services/abandoned-cart.service');
-const SessionConfig = require('./src/config/session.config');
 const security = require('./src/middleware/security');
-const { authenticate, authorize } = require('./src/middleware/auth');
 
 console.log('ENV CHECK - JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'NOT SET');
 console.log('ENV CHECK - NODE_ENV:', process.env.NODE_ENV);
 console.log('ENV CHECK - FRONTEND_URL:', process.env.FRONTEND_URL);
-console.log('ENV CHECK - REDIS_HOST:', process.env.REDIS_HOST || 'localhost (default)');
 
 const app = express();
 
@@ -79,10 +76,6 @@ app.use(compression());
 
 // ===== SECURITY MIDDLEWARE =====
 security.setupSecurity(app);
-
-// ===== SESSION MIDDLEWARE (Redis) =====
-const sessionMiddleware = SessionConfig.initSessionStore();
-app.use(sessionMiddleware);
 
 // Cookie parser for JWT in cookies
 app.use(cookieParser());
@@ -134,8 +127,6 @@ app.use('/api/returns', require('./src/routes/return.routes'));
 console.log('✓ Returns routes loaded');
 app.use('/api/audit', require('./src/routes/audit.routes'));
 console.log('✓ Audit routes loaded');
-app.use('/api/addresses', require('./src/routes/address.routes'));
-console.log('✓ Addresses routes loaded');
 app.use('/api/shipping', require('./src/routes/shipping.routes'));
 console.log('✓ Shipping routes loaded');
 app.use('/api/payments', require('./src/routes/payment.routes'));
@@ -150,122 +141,6 @@ app.get('/api/health/cache', async (req, res) => {
     status: 'OK',
     cache: CacheService.getStats()
   });
-});
-
-// Abandoned cart stats endpoint (admin)
-app.get('/api/admin/abandoned-carts/stats', authenticate, authorize('admin', 'supervisor'), async (req, res) => {
-  try {
-    const stats = await AbandonedCartService.getStats();
-    res.json({ success: true, stats });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// Abandoned carts list endpoint (admin)
-app.get('/api/admin/abandoned-carts', authenticate, authorize('admin', 'supervisor'), async (req, res) => {
-  try {
-    const Cart = require('./src/models/Cart');
-    const { page = 1, limit = 20 } = req.query;
-    const skip = (page - 1) * limit;
-    
-    // Find carts with items that haven't been recovered
-    const carts = await Cart.find({
-      items: { $exists: true, $ne: [] },
-      isRecovered: { $ne: true }
-    })
-    .populate('items.product', 'name slug pricing media')
-    .populate('user', 'firstName lastName email phone')
-    .sort({ lastModified: -1 })
-    .skip(skip)
-    .limit(parseInt(limit));
-
-    const total = await Cart.countDocuments({
-      items: { $exists: true, $ne: [] },
-      isRecovered: { $ne: true }
-    });
-
-    res.json({
-      success: true,
-      carts,
-      pagination: {
-        current: parseInt(page),
-        pages: Math.ceil(total / limit),
-        total
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// ===== AUDIT LOGGING ROUTES (Admin) =====
-app.get('/api/admin/audit-logs', authenticate, authorize('admin', 'supervisor'), async (req, res) => {
-  try {
-    const AuditService = require('./src/services/audit.service');
-    const { page = 1, limit = 50, action, category, userId, startDate, endDate } = req.query;
-    
-    const result = await AuditService.queryLogs(
-      {},
-      { page: parseInt(page), limit: parseInt(limit), action, category, userId, startDate, endDate }
-    );
-    
-    res.json({ success: true, ...result });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-app.get('/api/admin/audit-logs/security', authenticate, authorize('admin', 'supervisor'), async (req, res) => {
-  try {
-    const AuditService = require('./src/services/audit.service');
-    const { days = 7 } = req.query;
-    const events = await AuditService.getSecurityEvents(parseInt(days));
-    res.json({ success: true, events });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-app.get('/api/admin/audit-logs/user/:userId', authenticate, authorize('admin', 'supervisor'), async (req, res) => {
-  try {
-    const AuditService = require('./src/services/audit.service');
-    const { days = 30 } = req.query;
-    const activity = await AuditService.getUserActivity(req.params.userId, parseInt(days));
-    res.json({ success: true, activity });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// Test email endpoint (admin only)
-app.get('/api/test/email', authenticate, authorize('admin'), async (req, res) => {
-  const EmailService = require('./src/services/email.service');
-  const User = require('./src/models/User');
-  
-  const user = await User.findOne({ role: 'admin' });
-  if (!user) {
-    return res.json({ success: false, message: 'No user found' });
-  }
-  
-  const testOrder = {
-    orderNumber: 'TEST-' + Date.now(),
-    items: [{ name: 'Test Product', quantity: 1, price: 100 }],
-    pricing: { subtotal: 100, shipping: 7, total: 107 },
-    shipping: { estimatedDelivery: new Date() }
-  };
-  
-  try {
-    await EmailService.sendOrderConfirmation(testOrder, user);
-    await EmailService.sendStatusUpdate(testOrder, user);
-    res.json({ 
-      success: true, 
-      smtpConfigured: true,
-      message: 'Emails sent - check your inbox (and spam folder)' 
-    });
-  } catch (err) {
-    res.json({ success: false, error: err.message });
-  }
 });
 
 // SPA fallback - serve index.html for all non-API routes (MUST be last)

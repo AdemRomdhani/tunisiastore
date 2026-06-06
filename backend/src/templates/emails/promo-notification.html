@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nouvelle offre - Tunisia Store</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; width: 100%;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); padding: 25px; text-align: center; border-radius: 8px 8px 0 0;">
+      <p style="color: #ffffff; margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">Offre spéciale</p>
+      <h1 style="color: #ffffff; margin: 10px 0 0 0; font-size: 28px;">🔥 Nouveau !</h1>
+    </div>
+    <div style="background: #ffffff; padding: 30px; border-radius: 0 0 8px 8px;">
+      <img src="{{imageUrl}}" alt="{{productName}}" style="max-width: 250px; border-radius: 8px; margin: 0 auto; display: block;">
+      
+      <h2 style="color: #1e293b; font-size: 24px; font-weight: 700; margin-bottom: 20px; text-align: center; margin-top: 20px;">{{productName}}</h2>
+      
+      <div style="text-align: center; margin: 20px 0;">
+        <span style="font-size: 28px; font-weight: 700; color: #dc2626;">{{productPrice}} DT</span>
+        {{originalPriceHtml}}
+      </div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; text-align: center;">
+        {{productDescription}}
+      </p>
+
+      <div style="text-align: center; margin: 25px 0;">
+        <a href="{{productUrl}}" style="display: inline-block; background: #dc2626; color: #ffffff; padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 15px;">
+          Voir le produit
+        </a>
+      </div>
+
+      <div style="height: 1px; background: #e2e8f0; margin: 25px 0;"></div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; text-align: center; font-size: 13px; color: #64748b;">
+        Offre limitée dans le temps. Ne manquez pas cette opportunité !
+      </p>
+    </div>
+    {{footer}}
+  </div>
+</body>
+</html>

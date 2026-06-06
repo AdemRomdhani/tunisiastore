@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Votre panier vous attend - Tunisia Store</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; width: 100%;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    {{header}}
+    <div style="background: #ffffff; padding: 30px; border-radius: 0 0 8px 8px;">
+      <h1 style="color: #1e293b; font-size: 24px; font-weight: 700; margin-bottom: 20px;">Votre panier vous attend !</h1>
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 15px;">Bonjour <strong>{{userFirstName}}</strong>,</p>
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 15px;">Vous avez laissé des articles dans votre panier. Ne perdez pas cette opportunité !</p>
+
+      {{discountBanner}}
+
+      <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 0 0 10px 0; color: #1e293b; font-size: 18px; font-weight: 700;">
+          Articles dans votre panier ({{cartItemCount}}):
+        </p>
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+          <thead>
+            <tr>
+              <th style="background: #f1f5f9; padding: 12px; text-align: left; font-weight: 600; color: #1e293b; border-bottom: 2px solid #e2e8f0;">Produit</th>
+              <th style="background: #f1f5f9; padding: 12px; text-align: left; font-weight: 600; color: #1e293b; border-bottom: 2px solid #e2e8f0; text-align: center;">Qté</th>
+              <th style="background: #f1f5f9; padding: 12px; text-align: left; font-weight: 600; color: #1e293b; border-bottom: 2px solid #e2e8f0; text-align: right;">Prix</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{cartItemsRows}}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <table style="width: 100%;">
+          <tr>
+            <td style="color: #64748b; font-size: 16px; font-weight: 600;">Sous-total</td>
+            <td style="text-align: right; font-size: 20px; font-weight: 700; color: #dc2626;">{{subtotal}} TND</td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="text-align: center; margin: 25px 0;">
+        <a href="{{cartUrl}}" style="display: inline-block; background: #dc2626; color: #ffffff; padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 15px;">
+          Compléter ma commande
+        </a>
+      </div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-top: 20px; text-align: center; color: #64748b; font-size: 13px;">
+        Ces articles pourraient être en rupture de stock bientôt. Ne perdez pas cette opportunité !
+      </p>
+    </div>
+    {{footer}}
+  </div>
+</body>
+</html>

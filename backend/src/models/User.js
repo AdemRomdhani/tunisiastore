@@ -37,16 +37,6 @@ const userSchema = new mongoose.Schema({
     notified: { type: Boolean, default: false }
   }],
 
-  address: {
-    fullName: String,
-    phone: String,
-    governorate: String,
-    city: String,
-    streetAddress: String,
-    postalCode: String,
-    additionalInfo: String
-  },
-  
   addresses: [{
     fullName: String,
     phone: String,
